@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Button } from "../components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Plus } from "lucide-react"
@@ -8,7 +7,7 @@ import { PeopleCard } from "../components/course/PeopleCard"
 import { GradeCard } from "../components/course/GradeCard"
 
 export function Course() {
-  const [activeTab, setActiveTab] = useState("stream")
+  // const [activeTab, setActiveTab] = useState("stream")
 
   return (
     <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">

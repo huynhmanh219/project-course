@@ -6,20 +6,34 @@ import { Home } from "./pages/Home"
 import { Course } from "./pages/Course"
 import { Calendar } from "./pages/Calendar"
 import { People } from "./pages/People"
+import { Login } from "./pages/Login"
+import { Register } from "./pages/Register"
 // import { Settings } from "./pages/settings"
 
 export function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/course/:id" element={<Course />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/people" element={<People />} />
-          {/* <Route path="/settings" element={<Settings />} /> */}
-        </Routes>
-      </Layout>
+      <Routes>
+        {/* Các trang không cần layout */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Các trang cần layout */}
+        <Route
+          path="/*"
+          element={
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                {/* tạo :id  động để điều hướng lớp học */}
+                <Route path="/course" element={<Course />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/people" element={<People />} />
+              </Routes>
+            </Layout>
+          }
+        />
+      </Routes>
     </Router>
   )
 }
