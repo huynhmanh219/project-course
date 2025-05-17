@@ -8,6 +8,10 @@ import { Calendar } from "./pages/student/Calendar"
 import { People } from "./pages/student/People"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
+import { TeacherClasses } from "./pages/teacher/Classes"
+import { TeacherCreateAssignment } from "./pages/teacher/CreateAssignment"
+import { TeacherManageStudents } from "./pages/teacher/ManageStudent"
+import { TeacherGradebook } from "./pages/teacher/Gradebook"
 // import { Settings } from "./pages/settings"
 
 export function App() {
@@ -29,6 +33,11 @@ export function App() {
                 <Route path="/course" element={<Course />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/people" element={<People />} />
+                {/* Teacher routes */}
+                <Route path="/teacher/classes" element={<TeacherClasses />} />
+                <Route path="/teacher/create-assignment" element={<TeacherCreateAssignment />} />
+                <Route path="/teacher/manage-students" element={<TeacherManageStudents />} />
+                <Route path="/teacher/gradebook" element={<TeacherGradebook />} />
               </Routes>
             </Layout>
           }
