@@ -1,7 +1,7 @@
-import { Button } from "../components/ui/button"
+import { Button } from "../../components/ui/button"
 import { Plus } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { ClassCard } from "../components/home/ClassCard"
+import { ClassCard } from "../../components/home/ClassCard"
 
 export function Home() {
   const navigate = useNavigate();

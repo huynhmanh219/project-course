@@ -1,10 +1,10 @@
-import { Button } from "../components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { Button } from "../../components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { Plus } from "lucide-react"
-import { AnnouncementCard } from "../components/course/AnnouncementCard"
-import { AssignmentCard } from "../components/course/AssignmentCard"
-import { PeopleCard } from "../components/course/PeopleCard"
-import { GradeCard } from "../components/course/GradeCard"
+import { AnnouncementCard } from "../../components/course/AnnouncementCard"
+import { AssignmentCard } from "../../components/course/AssignmentCard"
+import { PeopleCard } from "../../components/course/PeopleCard"
+import { GradeCard } from "../../components/course/GradeCard"
 
 export function Course() {
   // const [activeTab, setActiveTab] = useState("stream")
