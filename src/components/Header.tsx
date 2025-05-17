@@ -14,11 +14,11 @@ export function Header() {
   return (
     <header className="w-full flex items-center justify-between px-4 py-2 border-b bg-white">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+        {/* <Button variant="default" size="icon" className="h-10 w-10">
           <Menu className="h-5 w-5" />
-        </Button>
+        </Button> */}
         <div className="flex items-center gap-2">
-          <img src="/classroom-logo.png" alt="Classroom" className="h-8" />
+          <img src="/classroom-logo.png" alt="Class" className="h-8" />
           <span className="text-xl font-normal text-gray-700">Classroom</span>
         </div>
       </div>
@@ -35,10 +35,10 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+        <Button variant="default" size="icon" className="h-10 w-10">
           <Bell className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+        <Button variant="default" size="icon" className="h-10 w-10">
           <User className="h-5 w-5" />
         </Button>
         

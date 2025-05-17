@@ -4,8 +4,8 @@ import { Layout } from "./components/Layout"
 // Pages
 import { Home } from "./pages/Home"
 import { Course } from "./pages/Course"
-// import { Calendar } from "./pages/calendar"
-// import { People } from "./pages/people"
+import { Calendar } from "./pages/Calendar"
+import { People } from "./pages/People"
 // import { Settings } from "./pages/settings"
 
 export function App() {
@@ -14,9 +14,9 @@ export function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/course" element={<Course />} />
-          {/* <Route path="/calendar" element={<Calendar />} /> */}
-          {/* <Route path="/people" element={<People />} /> */}
+          <Route path="/course/:id" element={<Course />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/people" element={<People />} />
           {/* <Route path="/settings" element={<Settings />} /> */}
         </Routes>
       </Layout>
