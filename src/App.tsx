@@ -13,6 +13,13 @@ import { TeacherCreateAssignment } from "./pages/teacher/CreateAssignment"
 import { TeacherManageStudents } from "./pages/teacher/ManageStudent"
 import { TeacherGradebook } from "./pages/teacher/Gradebook"
 // import { Settings } from "./pages/settings"
+// Admin Pages
+import AdminLayout from "./pages/admin";
+import Dashboard from "./pages/admin/Dashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import ClassManagement from "./pages/admin/ClassManagement";
+import CourseManagement from "./pages/admin/CourseManagement";
+import Statistics from "./pages/admin/Statistics";
 
 export function App() {
   return (
@@ -38,6 +45,14 @@ export function App() {
                 <Route path="/teacher/create-assignment" element={<TeacherCreateAssignment />} />
                 <Route path="/teacher/manage-students" element={<TeacherManageStudents />} />
                 <Route path="/teacher/gradebook" element={<TeacherGradebook />} />
+                {/* Admin routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="classes" element={<ClassManagement />} />
+                  <Route path="courses" element={<CourseManagement />} />
+                  <Route path="statistics" element={<Statistics />} />
+                </Route>
               </Routes>
             </Layout>
           }
