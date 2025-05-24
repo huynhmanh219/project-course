@@ -18,8 +18,8 @@ export function Header() {
           <Menu className="h-5 w-5" />
         </Button> */}
         <div className="flex items-center gap-2">
-          <img src="/classroom-logo.png" alt="Class" className="h-8" />
-          <span className="text-xl font-normal text-gray-700">Classroom</span>
+          <img src="/logo.jpg" alt="Class" className="h-8" />
+          <span className="text-xl font-normal text-gray-700">My Class</span>
         </div>
       </div>
 
