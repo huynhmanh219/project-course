@@ -10,8 +10,8 @@ const adminSections = [
     description: 'Tạo, chỉnh sửa, xóa và quản lý các lớp học.',
   },
   {
-    title: 'Quản lý khóa học',
-    description: 'Quản lý thông tin các khóa học, phân công giáo viên.',
+    title: 'Quản lý Bộ môn',
+    description: 'Quản lý thông tin các bộ môn, phân công giáo viên.',
   },
   {
     title: 'Thống kê & Báo cáo',

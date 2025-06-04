@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu"
 import { Button } from "../components/ui/button"
-import { Menu, Search, Bell, User } from "lucide-react"
+import {  Search, Bell, User } from "lucide-react"
 
 export function Header() {
   return (

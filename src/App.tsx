@@ -7,19 +7,27 @@ import { Course } from "./pages/student/Course"
 import { Calendar } from "./pages/student/Calendar"
 import { People } from "./pages/student/People"
 import { Login } from "./pages/Login"
-import { Register } from "./pages/Register"
-import { TeacherClasses } from "./pages/teacher/Classes"
-import { TeacherCreateAssignment } from "./pages/teacher/CreateAssignment"
-import { TeacherManageStudents } from "./pages/teacher/ManageStudent"
-import { TeacherGradebook } from "./pages/teacher/Gradebook"
+import { ChangePassword } from "./pages/ChangePassword"
+import  TeacherClasses  from "./pages/teacher/Classes"
+import  TeacherCreateAssignment  from "./pages/teacher/CreateAssignment"
+import  TeacherManageStudents  from "./pages/teacher/ManageStudent"
+import  TeacherGradebook  from "./pages/teacher/Gradebook"
 // import { Settings } from "./pages/settings"
 // Admin Pages
 import AdminLayout from "./pages/admin";
 import Dashboard from "./pages/admin/Dashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import ClassManagement from "./pages/admin/ClassManagement";
-import CourseManagement from "./pages/admin/CourseManagement";
+import CourseManagement from "./pages/teacher/CourseManagement";
 import Statistics from "./pages/admin/Statistics";
+import TeacherAdd from "./pages/admin/TeacherAdd";
+import TeacherEdit from "./pages/admin/TeacherEdit";
+import RoleManagement from "./pages/admin/RoleManagement";
+import DepartmentManagement from "./pages/admin/DepartmentManagement";
+import DepartmentAdd from "./pages/admin/DepartmentAdd";
+import DepartmentEdit from "./pages/admin/DepartmentEdit";
+import ClassAdd from "./pages/admin/ClassAdd";
+import ClassEdit from "./pages/admin/ClassEdit";
 
 export function App() {
   return (
@@ -27,7 +35,7 @@ export function App() {
       <Routes>
         {/* Các trang không cần layout */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/change-password" element={<ChangePassword />} />
 
         {/* Các trang cần layout */}
         <Route
@@ -50,8 +58,16 @@ export function App() {
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="users" element={<UserManagement />} />
                   <Route path="classes" element={<ClassManagement />} />
+                  <Route path="classes/add" element={<ClassAdd />} />
+                  <Route path="classes/edit/:id" element={<ClassEdit />} />
                   <Route path="courses" element={<CourseManagement />} />
                   <Route path="statistics" element={<Statistics />} />
+                  <Route path="teachers/add" element={<TeacherAdd />} />
+                  <Route path="teachers/edit/:id" element={<TeacherEdit />} />
+                  <Route path="roles" element={<RoleManagement />} />
+                  <Route path="departments" element={<DepartmentManagement />} />
+                  <Route path="departments/add" element={<DepartmentAdd />} />
+                  <Route path="departments/edit/:id" element={<DepartmentEdit />} />
                 </Route>
               </Routes>
             </Layout>

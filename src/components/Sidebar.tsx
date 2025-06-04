@@ -1,8 +1,23 @@
 import { NavLink } from "react-router-dom"
-import { Home, BookOpen, Calendar, Users, Settings, ClipboardList, UserPlus, BarChart2, LayoutDashboard, UserCog, Layers, FileBarChart2 } from "lucide-react"
+import { Home, 
+  BookOpen,
+  Calendar,
+  Users,
+  Settings,
+  ClipboardList,
+  UserPlus,
+  BarChart2,
+  LayoutDashboard,
+  UserCog,
+  Layers,
+  FileBarChart2,
+  User,
+  Shield,
+  Briefcase,
+} from "lucide-react";
 
 // Giả lập role, sau này lấy từ context hoặc API
-const role: string = "teacher"; // "student" | "teacher" | "admin"
+const role: string = "admin"; // "student" | "teacher" | "admin"
 
 export function Sidebar() {
   return (
@@ -10,7 +25,7 @@ export function Sidebar() {
       <nav className="flex-1 p-4 space-y-1">
 
         {/* Student & Teacher menu */}
-        {(role === "student" || role === "teacher") && (
+        {(role === "student" ) && (
           <>
           <NavLink
           to="/"
@@ -139,6 +154,33 @@ export function Sidebar() {
               <LayoutDashboard className="h-5 w-5" />
               <span>Dashboard</span>
             </NavLink>
+
+            <NavLink
+              to="/admin/roles"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <Shield className="h-5 w-5" />
+              <span>Quản lý vai trò</span>
+            </NavLink>
+            <NavLink
+              to="/admin/departments"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <Briefcase className="h-5 w-5" />
+              <span>Quản lý bộ môn</span>
+            </NavLink>
             <NavLink
               to="/admin/users"
               className={({ isActive }) =>
@@ -150,7 +192,7 @@ export function Sidebar() {
               }
             >
               <UserCog className="h-5 w-5" />
-              <span>Quản lý người dùng</span>
+              <span>Quản lý giảng viên</span>
             </NavLink>
             <NavLink
               to="/admin/classes"
@@ -165,19 +207,7 @@ export function Sidebar() {
               <Layers className="h-5 w-5" />
               <span>Quản lý lớp học</span>
             </NavLink>
-            <NavLink
-              to="/admin/courses"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-                  isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-                }`
-              }
-            >
-              <BookOpen className="h-5 w-5" />
-              <span>Quản lý khóa học</span>
-            </NavLink>
+
             <NavLink
               to="/admin/statistics"
               className={({ isActive }) =>
@@ -193,7 +223,8 @@ export function Sidebar() {
             </NavLink>
           </>
         )}
-        <NavLink
+
+        {/* <NavLink
           to="/settings"
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
@@ -205,7 +236,8 @@ export function Sidebar() {
         >
           <Settings className="h-5 w-5" />
           <span>Settings</span>
-        </NavLink>
+        </NavLink> */}
+
       </nav>
     </aside>
   )

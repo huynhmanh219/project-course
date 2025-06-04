@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 const events = [
