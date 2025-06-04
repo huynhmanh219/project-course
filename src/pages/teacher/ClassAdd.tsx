@@ -36,10 +36,10 @@ const ClassAdd: React.FC = () => {
 
   return (
     <div className="p-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Thêm lớp học</h1>
+      <h1 className="text-2xl font-bold mb-4 text-blue-700">Thêm sinh viên vào lớp</h1>
       <form className="bg-white p-6 rounded shadow flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-gray-700 mb-1">Tên lớp</label>
+          <label className="block text-gray-700 mb-1">Tên sinh viên</label>
           <input name="name" value={form.name} onChange={handleChange} required className="border rounded px-2 py-1 w-full" />
         </div>
         <div>

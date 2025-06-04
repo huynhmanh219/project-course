@@ -1,56 +1,59 @@
-import React from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const teacherClasses = [
-  {
-    className: 'Lớp 10A1',
-    courseName: 'Toán 10',
-    students: 35,
-    createdAt: '2024-06-01',
-    status: true,
-  },
-  {
-    className: 'Lớp 11B2',
-    courseName: 'Văn 11',
-    students: 32,
-    createdAt: '2024-06-02',
-    status: false,
-  },
+const courseOptions = [
+  { id: 1, name: 'Toán 10' },
+  { id: 2, name: 'Văn 11' },
+];
+
+const initialClasses = [
+  { id: 1, name: 'Lớp 10A1', courseId: 1, description: 'Lớp chuyên Toán', status: true, createdAt: '2024-06-01 10:00' },
+  { id: 2, name: 'Lớp 11B2', courseId: 2, description: 'Lớp chuyên Văn', status: false, createdAt: '2024-06-02 09:30' },
 ];
 
 const TeacherClasses: React.FC = () => {
+  const [classes, setClasses] = useState(initialClasses);
+  const navigate = useNavigate();
+
+  const handleDelete = (id: number) => {
+    setClasses(classes.filter((cls) => cls.id !== id));
+  };
+
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Danh sách lớp phụ trách</h1>
-      <p className="mb-6 text-gray-600">Quản lý các lớp học mà bạn đang phụ trách.</p>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border rounded-lg">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border">Tên lớp</th>
-              <th className="px-4 py-2 border">Khóa học</th>
-              <th className="px-4 py-2 border">Số sinh viên</th>
-              <th className="px-4 py-2 border">Ngày tạo</th>
-              <th className="px-4 py-2 border">Trạng thái</th>
-              <th className="px-4 py-2 border">Hành động</th>
+      <h1 className="text-2xl font-bold mb-4 text-blue-700">Lớp học của tôi</h1>
+      <button
+        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
+        onClick={() => navigate('/teacher/classes/add')}
+      >
+        Thêm sinh viên vào lớp
+      </button>
+      <table className="min-w-full bg-white border rounded-lg">
+        <thead>
+          <tr>
+            <th className="text-center">Tên lớp</th>
+            <th className="text-center">Khóa học</th>
+            <th className="text-center">Ngày tạo</th>
+            <th className="text-center">Trạng thái</th>
+            <th className="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {classes.map((cls) => (
+            <tr key={cls.id} className="text-center">
+              <td className="text-center">{cls.name}</td>
+              <td className="text-center">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
+              <td className="text-center">{cls.createdAt}</td>
+              <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+              <td className="text-center">
+                <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/teacher/classes/${cls.id}/students`)}>Quản lý sinh viên</button>
+                <button className="text-blue-600 mr-2" onClick={() => navigate(`/teacher/classes/edit/${cls.id}`)}>Sửa</button>
+                <button className="text-red-600" onClick={() => handleDelete(cls.id)}>Xóa</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {teacherClasses.map((cls, idx) => (
-              <tr key={idx} className="text-center">
-                <td className="px-4 py-2 border">{cls.className}</td>
-                <td className="px-4 py-2 border">{cls.courseName}</td>
-                <td className="px-4 py-2 border">{cls.students}</td>
-                <td className="px-4 py-2 border">{cls.createdAt}</td>
-                <td className="px-4 py-2 border">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
-                <td className="px-4 py-2 border">
-                  <button className="text-blue-500 hover:underline mr-2">Xem chi tiết</button>
-                  <button className="text-indigo-500 hover:underline">Quản lý sinh viên</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -53,7 +53,7 @@ const ClassManagement: React.FC = () => {
               <td className="text-center">{cls.createdAt}</td>
               <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
               <td className="text-center">
-                <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/admin/classes/edit/${cls.id}`)}>Sửa</button>
+                <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>Sửa</button>
                 <button className="text-red-500 hover:underline" onClick={() => handleDelete(cls.id)}>Xóa</button>
               </td>
             </tr>

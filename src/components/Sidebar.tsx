@@ -14,10 +14,11 @@ import { Home,
   User,
   Shield,
   Briefcase,
+  FileText,
 } from "lucide-react";
 
 // Giả lập role, sau này lấy từ context hoặc API
-const role: string = "admin"; // "student" | "teacher" | "admin"
+const role: string = "teacher"; // "student" | "teacher" | "admin"
 
 export function Sidebar() {
   return (
@@ -94,24 +95,11 @@ export function Sidebar() {
                 }`
               }
             >
-              <BookOpen className="h-5 w-5" />
-              <span>My Classes</span>
-            </NavLink>
-            <NavLink
-              to="/teacher/create-assignment"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-                  isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-                }`
-              }
-            >
               <ClipboardList className="h-5 w-5" />
-              <span>Create Assignment</span>
+              <span>Lớp học của tôi</span>
             </NavLink>
             <NavLink
-              to="/teacher/manage-students"
+              to="/teacher/materials"
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
                   isActive
@@ -120,8 +108,34 @@ export function Sidebar() {
                 }`
               }
             >
-              <UserPlus className="h-5 w-5" />
-              <span>Manage Students</span>
+            <FileText className="h-5 w-5" />
+              <span>Quản lý tài liệu</span>
+            </NavLink>
+            <NavLink
+              to="/teacher/courses"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <BookOpen className="h-5 w-5" />
+              <span>Quản lý khóa học</span>
+            </NavLink>
+            <NavLink
+              to="/teacher/my-classes"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <Layers className="h-5 w-5" />
+              <span>Quản lý lớp học</span>
             </NavLink>
             <NavLink
               to="/teacher/gradebook"
@@ -134,7 +148,7 @@ export function Sidebar() {
               }
             >
               <BarChart2 className="h-5 w-5" />
-              <span>Gradebook</span>
+              <span>Bảng điểm</span>
             </NavLink>
           </>
         )}
@@ -194,19 +208,7 @@ export function Sidebar() {
               <UserCog className="h-5 w-5" />
               <span>Quản lý giảng viên</span>
             </NavLink>
-            <NavLink
-              to="/admin/classes"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-                  isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-                }`
-              }
-            >
-              <Layers className="h-5 w-5" />
-              <span>Quản lý lớp học</span>
-            </NavLink>
+
 
             <NavLink
               to="/admin/statistics"
