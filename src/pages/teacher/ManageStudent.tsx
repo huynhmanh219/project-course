@@ -59,7 +59,7 @@ const QuanLySinhVien: React.FC = () => {
     setDanhSach(danhSach.filter((_, i) => i !== idx));
   };
 
-  return (
+    return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4 text-blue-700">Quản lý sinh viên trong lớp</h1>
       <p className="mb-6 text-gray-600">Xem, thêm, xóa sinh viên khỏi lớp học.</p>
@@ -116,8 +116,8 @@ const QuanLySinhVien: React.FC = () => {
           </tbody>
         </table>
       </div>
-    </div>
-  );
+      </div>
+    );
 };
 
 export default QuanLySinhVien;

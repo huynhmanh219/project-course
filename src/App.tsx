@@ -35,6 +35,11 @@ import CourseEdit from "./pages/teacher/CourseEdit";
 import TeacherMaterials from "./pages/teacher/Materials";
 import MaterialAdd from "./pages/teacher/MaterialAdd";
 import MaterialEdit from "./pages/teacher/MaterialEdit";
+import StudentJoinClasses from "./pages/student/Classes";
+import ClassDetail from "./pages/student/ClassDetail";
+import Profile from "./pages/student/Profile";
+import StudentManagement from "./pages/teacher/StudentManagement";
+
 export function App() {
   return (
     <Router>
@@ -54,6 +59,9 @@ export function App() {
                 <Route path="/course" element={<Course />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/people" element={<People />} />
+                <Route path="/student/classes" element={<StudentJoinClasses />} />
+                <Route path="/student/classes/:id" element={<ClassDetail />} />
+                <Route path="/student/profile" element={<Profile />} />
                 {/* Teacher routes group */}
                 <Route path="/teacher">
                   <Route path="classes" element={<TeacherClasses />} />
@@ -73,6 +81,7 @@ export function App() {
                   <Route path="materials" element={<TeacherMaterials />} />
                   <Route path="materials/add" element={<MaterialAdd />} />
                   <Route path="materials/edit/:id" element={<MaterialEdit />} />
+                  <Route path="students" element={<StudentManagement />} />
                 </Route>
                 {/* Admin routes */}
                 <Route path="/admin" element={<AdminLayout />}>

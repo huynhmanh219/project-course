@@ -39,8 +39,21 @@ export function Sidebar() {
           }
         >
           <Home className="h-5 w-5" />
-          <span>Home</span>
+          <span>Trang chủ</span>
         </NavLink>
+          <NavLink
+            to="/student/classes"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                isActive
+                  ? "bg-blue-100 text-blue-700 shadow"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+              }`
+            }
+          >
+            <ClipboardList className="h-5 w-5" />
+            <span>Lớp học để tham gia</span>
+          </NavLink>
             <NavLink
               to="/course"
               className={({ isActive }) =>
@@ -52,7 +65,7 @@ export function Sidebar() {
               }
             >
               <BookOpen className="h-5 w-5" />
-              <span>Classes</span>
+              <span>Khóa học của tôi</span>
             </NavLink>
             <NavLink
               to="/calendar"
@@ -65,7 +78,7 @@ export function Sidebar() {
               }
             >
               <Calendar className="h-5 w-5" />
-              <span>Calendar</span>
+              <span>Lịch học</span>
             </NavLink>
             <NavLink
               to="/people"
@@ -78,7 +91,20 @@ export function Sidebar() {
               }
             >
               <Users className="h-5 w-5" />
-              <span>People</span>
+              <span>Mọi người</span>
+            </NavLink>
+            <NavLink
+              to="/student/profile"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <User className="h-5 w-5" />
+              <span>Thông tin cá nhân</span>
             </NavLink>
           </>
         )}
@@ -149,6 +175,19 @@ export function Sidebar() {
             >
               <BarChart2 className="h-5 w-5" />
               <span>Bảng điểm</span>
+            </NavLink>
+            <NavLink
+              to="/teacher/students"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                }`
+              }
+            >
+              <Users className="h-5 w-5" />
+              <span>Quản lý sinh viên</span>
             </NavLink>
           </>
         )}
