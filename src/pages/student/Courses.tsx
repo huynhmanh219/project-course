@@ -119,9 +119,9 @@ const Courses: React.FC = () => {
             <h3 className="font-bold text-xl text-blue-900 flex-1 truncate">
               {course.Ten_Khoa_Hoc}
             </h3>
-            <Badge variant={status.variant as any} className="ml-2 text-xs px-3 py-1 rounded-full font-semibold">
+            {/* <Badge variant={status.variant as any} className="ml-2 text-xs px-3 py-1 rounded-full font-semibold">
               {status.label}
-            </Badge>
+            </Badge> */}
           </div>
           <CardContent className="flex-1 flex flex-col px-6 pb-6 pt-2">
             <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">

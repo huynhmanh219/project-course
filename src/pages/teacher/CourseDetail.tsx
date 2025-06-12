@@ -97,14 +97,14 @@ const CourseDetail: React.FC = () => {
         {/* Tab content */}
         {tab === "info" && (
           <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2"><Info className="w-6 h-6" /> Thông tin khoá học</h2>
+            <h2 className="text-2xl font-bold mb-4 text-blue-800 flex items-center gap-2"><Info className="w-6 h-6" /> Thông tin môn học</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="mb-2"><span className="font-semibold text-blue-700">Mã môn học:</span> {c.maMonHoc}</div>
                 <div className="mb-2"><span className="font-semibold text-blue-700">Tên môn học:</span> {c.tenMonHoc}</div>
                 <div className="mb-2"><span className="font-semibold text-blue-700">Giảng viên:</span> {c.giangVien.hoTen}</div>
                 <div className="mb-2"><span className="font-semibold text-blue-700">Ngày tạo:</span> {c.ngayTao}</div>
-                <div className="mb-2"><span className="font-semibold text-blue-700">Trạng thái:</span> {statusBadge(c.trangThai)}</div>
+                {/* <div className="mb-2"><span className="font-semibold text-blue-700">Trạng thái:</span> {statusBadge(c.trangThai)}</div> */}
               </div>
               <div>
                 <div className="mb-2"><span className="font-semibold text-blue-700">Mô tả:</span> {c.moTa}</div>

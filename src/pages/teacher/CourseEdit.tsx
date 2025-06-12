@@ -65,8 +65,8 @@ const CourseEdit: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 flex items-center gap-4 text-white">
           <BookOpen className="w-10 h-10 text-white drop-shadow-lg" />
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-1">Sửa khoá học</h1>
-            <p className="text-blue-100 text-base">Cập nhật thông tin khoá học.</p>
+            <h1 className="text-3xl font-extrabold tracking-tight mb-1">Sửa môn học</h1>
+            <p className="text-blue-100 text-base">Cập nhật thông tin môn học.</p>
           </div>
         </div>
         <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>

@@ -55,7 +55,7 @@ const ClassManagement: React.FC = () => {
                 <th className="px-4 py-3 text-left font-semibold">Khóa học</th>
                 <th className="px-4 py-3 text-left font-semibold">Giảng viên</th>
                 <th className="px-4 py-3 text-left font-semibold">Ngày tạo</th>
-                <th className="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                {/* <th className="px-4 py-3 text-left font-semibold">Trạng thái</th> */}
                 <th className="px-4 py-3 text-center font-semibold">Hành động</th>
               </tr>
             </thead>
@@ -76,7 +76,7 @@ const ClassManagement: React.FC = () => {
                     <td className="px-4 py-3">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
                     <td className="px-4 py-3">{teacherOptions.find(t => t.id === cls.teacherId)?.name}</td>
                     <td className="px-4 py-3">{cls.createdAt}</td>
-                    <td className="px-4 py-3">{statusBadge(cls.status)}</td>
+                    {/* <td className="px-4 py-3">{statusBadge(cls.status)}</td> */}
                     <td className="px-4 py-3 text-center flex gap-2 justify-center">
                       <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>
                         <Edit className="w-4 h-4" /> Sửa

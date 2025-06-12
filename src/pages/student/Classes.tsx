@@ -35,7 +35,7 @@ const statusBadge = (active: boolean) => (
     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm
       ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}
   >
-    {active ? (
+    {/* {active ? (
       <>
         <CheckCircle className="w-4 h-4 mr-1 text-green-500" /> Hoạt động
       </>
@@ -43,7 +43,7 @@ const statusBadge = (active: boolean) => (
       <>
         <XCircle className="w-4 h-4 mr-1 text-red-500" /> Khóa
       </>
-    )}
+    )} */}
   </span>
 );
 
@@ -76,8 +76,8 @@ const StudentClasses: React.FC = () => {
                   <span className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-2 shadow">
                     <BookOpen className="text-white w-6 h-6" />
                   </span>
-                  <span className="font-bold text-lg text-blue-900 truncate flex-1">{cls.tenLop}</span>
-                  {statusBadge(cls.trangThai)}
+                  {/* <span className="font-bold text-lg text-blue-900 truncate flex-1">{cls.tenLop}</span>
+                  {statusBadge(cls.trangThai)} */}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                   <User2 className="w-4 h-4 text-blue-500" />

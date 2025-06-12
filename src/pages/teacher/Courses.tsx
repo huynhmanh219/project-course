@@ -28,7 +28,7 @@ const TeacherCourses: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-blue-900 mb-1 flex items-center gap-2">
-              <BookOpen className="w-7 h-7 text-blue-600" /> Quản lý khóa học
+              <BookOpen className="w-7 h-7 text-blue-600" /> Quản lý môn học
             </h1>
             <p className="text-gray-500 text-base">Tạo, chỉnh sửa, xóa và quản lý các khoá học.</p>
           </div>
@@ -36,18 +36,18 @@ const TeacherCourses: React.FC = () => {
             className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold shadow hover:from-indigo-600 hover:to-blue-700 transition"
             onClick={() => navigate('/teacher/courses/add')}
           >
-            <Plus className="w-5 h-5" /> Thêm khóa học
+            <Plus className="w-5 h-5" /> Thêm môn học
           </button>
         </div>
         <div className="bg-white rounded-2xl shadow-xl p-6">
           <table className="min-w-full">
             <thead>
               <tr className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-900">
-                <th className="px-4 py-3 text-left font-semibold">Tên khóa học</th>
+                <th className="px-4 py-3 text-left font-semibold">Tên môn học</th>
                 <th className="px-4 py-3 text-left font-semibold">Mô tả</th>
                 <th className="px-4 py-3 text-left font-semibold">Ngày bắt đầu</th>
                 <th className="px-4 py-3 text-left font-semibold">Ngày kết thúc</th>
-                <th className="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                {/* <th className="px-4 py-3 text-left font-semibold">Trạng thái</th> */}
                 <th className="px-4 py-3 text-center font-semibold">Hành động</th>
               </tr>
             </thead>
@@ -56,7 +56,7 @@ const TeacherCourses: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-gray-500">
                     <Info className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                    Không có khoá học nào.
+                    Không có môn học nào.
                   </td>
                 </tr>
               ) : (
@@ -73,7 +73,7 @@ const TeacherCourses: React.FC = () => {
                     <td className="px-4 py-3">{course.moTa}</td>
                     <td className="px-4 py-3">{course.ngayBatDau}</td>
                     <td className="px-4 py-3">{course.ngayKetThuc}</td>
-                    <td className="px-4 py-3">{statusBadge(course.trangThai)}</td>
+                    {/* <td className="px-4 py-3">{statusBadge(course.trangThai)}</td> */}
                     <td className="px-4 py-3 text-center flex gap-2 justify-center">
                       <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}>
                         <Edit className="w-4 h-4" /> Sửa

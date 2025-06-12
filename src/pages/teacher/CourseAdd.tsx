@@ -62,8 +62,8 @@ const CourseAdd: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 flex items-center gap-4 text-white">
           <BookOpen className="w-10 h-10 text-white drop-shadow-lg" />
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-1">Thêm khoá học</h1>
-            <p className="text-blue-100 text-base">Tạo mới một khoá học cho hệ thống.</p>
+            <h1 className="text-3xl font-extrabold tracking-tight mb-1">Thêm môn học</h1>
+            <p className="text-blue-100 text-base">Tạo mới một môn học cho hệ thống.</p>
           </div>
         </div>
         <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>
@@ -176,7 +176,7 @@ const CourseAdd: React.FC = () => {
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
             />
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <input
               name="trangThai"
               type="checkbox"
@@ -185,7 +185,7 @@ const CourseAdd: React.FC = () => {
               className="w-4 h-4 rounded border-gray-300 focus:ring-blue-500"
             />
             <label className="text-gray-700 font-semibold">Hoạt động</label>
-          </div>
+          </div> */}
           <div className="flex gap-3 justify-end">
             <button
               type="submit"

@@ -33,12 +33,12 @@ const DepartmentEdit: React.FC = () => {
           <span className="bg-yellow-100 p-3 rounded-full mb-2">
             <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487a2.25 2.25 0 013.182 3.182L7.5 20.213 3.75 21.25l1.037-3.75L16.862 4.487z" /></svg>
           </span>
-          <h1 className="text-2xl font-extrabold text-yellow-600 text-center">Sửa bộ môn</h1>
+          <h1 className="text-2xl font-extrabold text-yellow-600 text-center">Sửa khoa</h1>
         </div>
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Tên bộ môn <span className="text-red-500">*</span></label>
-            <input name="name" value={form.name} onChange={handleChange} required className="border border-yellow-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Nhập tên bộ môn" />
+            <label className="block text-gray-700 font-medium mb-1">Tên khoa <span className="text-red-500">*</span></label>
+            <input name="name" value={form.name} onChange={handleChange} required className="border border-yellow-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Nhập tên khoa" />
           </div>
           <div>
             <label className="block text-gray-700 font-medium mb-1">Mô tả</label>

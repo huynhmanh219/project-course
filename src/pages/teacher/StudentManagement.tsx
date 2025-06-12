@@ -46,7 +46,7 @@ const StudentManagement: React.FC = () => {
                 <th className="px-4 py-3 text-left font-semibold">Họ tên</th>
                 <th className="px-4 py-3 text-left font-semibold">MSSV</th>
                 <th className="px-4 py-3 text-left font-semibold">Lớp</th>
-                <th className="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                {/* <th className="px-4 py-3 text-left font-semibold">Trạng thái</th> */}
                 <th className="px-4 py-3 text-center font-semibold">Hành động</th>
               </tr>
             </thead>
@@ -64,7 +64,7 @@ const StudentManagement: React.FC = () => {
                     <td className="px-4 py-3 font-semibold text-blue-900">{s.name}</td>
                     <td className="px-4 py-3">{s.mssv}</td>
                     <td className="px-4 py-3">{s.class}</td>
-                    <td className="px-4 py-3">{statusBadge(s.status)}</td>
+                    {/* <td className="px-4 py-3">{statusBadge(s.status)}</td> */}
                     <td className="px-4 py-3 text-center flex gap-2 justify-center">
                       <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/classes/${s.id}/students/edit/${s.id}`)}>
                         <Edit className="w-4 h-4" /> Sửa
