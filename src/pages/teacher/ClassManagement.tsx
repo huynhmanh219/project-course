@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BookOpen, Users, Edit, Trash2, CheckCircle, XCircle, Plus, Info } from 'lucide-react';
 
 const courseOptions = [
   { id: 1, name: 'Toán 10' },
@@ -15,6 +16,12 @@ const initialClasses = [
   { id: 2, name: 'Lớp 11B2', courseId: 2, teacherId: 2, description: 'Lớp chuyên Văn', status: false, createdAt: '2024-06-02 09:30' },
 ];
 
+const statusBadge = (active: boolean) => (
+  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+    {active ? (<><CheckCircle className="w-4 h-4 mr-1 text-green-500" /> Hoạt động</>) : (<><XCircle className="w-4 h-4 mr-1 text-red-500" /> Khóa</>)}
+  </span>
+);
+
 const ClassManagement: React.FC = () => {
   const [classes, setClasses] = useState(initialClasses);
   const navigate = useNavigate();
@@ -24,42 +31,67 @@ const ClassManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Quản lý lớp học</h1>
-      <p className="mb-6 text-gray-600">Tạo, chỉnh sửa, xóa và quản lý các lớp học.</p>
-      <button
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        onClick={() => navigate('/teacher/my-classes/add')}
-      >
-        Thêm lớp học
-      </button>
-      <table className="min-w-full bg-white border rounded-lg">
-        <thead>
-          <tr>
-            <th className="text-center">Tên lớp</th>
-            <th className="text-center">Khóa học</th>
-            <th className="text-center">Giảng viên</th>
-            <th className="text-center">Ngày tạo</th>
-            <th className="text-center">Trạng thái</th>
-            <th className="text-center">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {classes.map((cls) => (
-            <tr key={cls.id} className="text-center">
-              <td className="text-center">{cls.name}</td>
-              <td className="text-center">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
-              <td className="text-center">{teacherOptions.find(t => t.id === cls.teacherId)?.name}</td>
-              <td className="text-center">{cls.createdAt}</td>
-              {/* <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
-              <td className="text-center">
-                <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>Sửa</button>
-                <button className="text-red-500 hover:underline" onClick={() => handleDelete(cls.id)}>Xóa</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-blue-900 mb-1 flex items-center gap-2">
+              <BookOpen className="w-7 h-7 text-blue-600" /> Quản lý lớp học
+            </h1>
+            <p className="text-gray-500 text-base">Tạo, chỉnh sửa, xóa và quản lý các lớp học.</p>
+          </div>
+          <button
+            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold shadow hover:from-indigo-600 hover:to-blue-700 transition"
+            onClick={() => navigate('/teacher/my-classes/add')}
+          >
+            <Plus className="w-5 h-5" /> Thêm lớp học
+          </button>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-900">
+                <th className="px-4 py-3 text-left font-semibold">Tên lớp</th>
+                <th className="px-4 py-3 text-left font-semibold">Khóa học</th>
+                <th className="px-4 py-3 text-left font-semibold">Giảng viên</th>
+                <th className="px-4 py-3 text-left font-semibold">Ngày tạo</th>
+                <th className="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                <th className="px-4 py-3 text-center font-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {classes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-gray-500">
+                    <Info className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                    Không có lớp học nào.
+                  </td>
+                </tr>
+              ) : (
+                classes.map((cls) => (
+                  <tr key={cls.id} className="border-b border-blue-100 hover:bg-blue-50 transition">
+                    <td className="px-4 py-3 font-semibold text-blue-900 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-blue-500" /> {cls.name}
+                    </td>
+                    <td className="px-4 py-3">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
+                    <td className="px-4 py-3">{teacherOptions.find(t => t.id === cls.teacherId)?.name}</td>
+                    <td className="px-4 py-3">{cls.createdAt}</td>
+                    <td className="px-4 py-3">{statusBadge(cls.status)}</td>
+                    <td className="px-4 py-3 text-center flex gap-2 justify-center">
+                      <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>
+                        <Edit className="w-4 h-4" /> Sửa
+                      </button>
+                      <button className="flex items-center gap-1 text-red-600 hover:underline font-semibold" onClick={() => handleDelete(cls.id)}>
+                        <Trash2 className="w-4 h-4" /> Xóa
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

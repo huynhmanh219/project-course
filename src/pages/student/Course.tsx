@@ -5,7 +5,7 @@ import { Progress } from "../../components/ui/progress";
 import { AnnouncementCard } from "../../components/course/AnnouncementCard";
 import { AssignmentCard } from "../../components/course/AssignmentCard";
 import { Button } from "../../components/ui/button";
-import { Star } from "lucide-react";
+import { Star, FileText, FileDown } from "lucide-react";
 
 // Danh sách khoá học mẫu giống Courses.tsx
 const sampleCourses = [
@@ -189,16 +189,14 @@ export function Course() {
 
         {/* Main Content */}
         <div className="bg-white rounded-3xl shadow-xl p-8">
-          <Tabs defaultValue="stream" className="space-y-6">
+          <Tabs defaultValue="materials" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-2 bg-gray-100 p-2 rounded-2xl">
               <TabsTrigger
-                value="stream"
+                value="materials"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg bg-transparent text-gray-600 font-semibold rounded-xl px-4 py-3 transition-all duration-200 flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                Thông báo
+                <FileText className="w-4 h-4" />
+                Tài liệu để học
               </TabsTrigger>
               <TabsTrigger
                 value="classwork"
@@ -238,51 +236,43 @@ export function Course() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Tab Thông báo */}
-            <TabsContent value="stream" className="space-y-4">
+            {/* Tab Tài liệu để học */}
+            <TabsContent value="materials" className="space-y-4">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
+                  <FileText className="w-5 h-5 text-blue-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Thông báo mới nhất</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Tài liệu để học</h2>
               </div>
-              {announcements.length === 0 ? (
+              {materials.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  Chưa có thông báo nào.
+                  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  Chưa có tài liệu nào.
                 </div>
               ) : (
-                announcements.map(a => (
-                  <div key={a.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-200">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                        {a.author[0]}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">{a.title}</h3>
-                        <p className="text-gray-600 mb-3">{a.content}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                            {a.author}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                            </svg>
-                            {a.time}
-                          </span>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {materials.map(m => (
+                    <div key={m.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-200">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                          <FileText className="w-5 h-5" />
                         </div>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          m.type === 'PDF' ? 'bg-red-100 text-red-800' :
+                          m.type === 'PPT' ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {m.type}
+                        </span>
                       </div>
+                      <h3 className="font-semibold text-gray-800 mb-3 line-clamp-2">{m.name}</h3>
+                      <Button size="sm" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg flex items-center gap-2">
+                        <FileDown className="w-4 h-4" />
+                        Tải về
+                      </Button>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </TabsContent>
 

@@ -41,6 +41,7 @@ import Profile from "./pages/student/Profile";
 import StudentManagement from "./pages/teacher/StudentManagement";
 import ClassAdd from "./pages/teacher/ClassAdd"
 import Courses from "./pages/student/Courses"
+import CourseDetail from "./pages/teacher/CourseDetail"
 
 export function App() {
   return (
@@ -76,6 +77,7 @@ export function App() {
                   <Route path="classes/:id/students/edit/:studentId" element={<TeacherStudentEdit />} />
                   <Route path="gradebook" element={<TeacherGradebook />} />
                   <Route path="courses" element={<TeacherCourses />} />
+                  <Route path="courses/:id" element={<CourseDetail />} />
                   <Route path="courses/add" element={<CourseAdd />} />
                   <Route path="courses/edit/:id" element={<CourseEdit />} />
                   <Route path="classes" element={<TeacherClasses />} />

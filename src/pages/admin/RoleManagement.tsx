@@ -1,50 +1,71 @@
 import React, { useState } from "react";
 
 const initialRoles = [
-  { id: 1, name: "Quản trị", desc: "Quản lý toàn bộ hệ thống" },
-  { id: 2, name: "Giảng viên", desc: "Quản lý lớp, khóa học" },
-  { id: 3, name: "Sinh viên", desc: "Học tập, tham gia lớp" },
+  {
+    id: 1,
+    name: "Quản trị",
+    desc: "Quản lý toàn bộ hệ thống",
+    icon: (
+      <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25v-1.5A2.25 2.25 0 016.75 16.5h10.5a2.25 2.25 0 012.25 2.25v1.5" /></svg>
+    ),
+  },
+  {
+    id: 2,
+    name: "Giảng viên",
+    desc: "Quản lý lớp, khóa học",
+    icon: (
+      <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
+    ),
+  },
+  {
+    id: 3,
+    name: "Sinh viên",
+    desc: "Học tập, tham gia lớp",
+    icon: (
+      <svg className="w-7 h-7 text-yellow-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 14c-4 0-7 1.5-7 3.5V20h14v-2.5c0-2-3-3.5-7-3.5z" /><circle cx="12" cy="8" r="4" /></svg>
+    ),
+  },
 ];
 
 const RoleManagement: React.FC = () => {
-  const [roles, setRoles] = useState(initialRoles);
-
-  const handleDelete = (id: number) => {
-    setRoles(roles.filter((role) => role.id !== id));
-  };
+  const [roles] = useState(initialRoles);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Quản lý vai trò</h1>
-      {/* <button className="mb-4 px-4 py-2 bg-blue-600 text-white rounded">
-        Thêm vai trò
-      </button> */}
-      <table className="min-w-full bg-white border rounded-lg">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 border text-center">Tên vai trò</th>
-            <th className="px-4 py-2 border text-center">Mô tả</th>
-            {/* <th className="text-center">Hành động</th> */}
-          </tr>
-        </thead>
-        <tbody>
-          {roles.map((role) => (
-            <tr key={role.id}>
-              <td className="px-4 py-2 border text-center">{role.name}</td>
-              <td className="px-4 py-2 border text-center">{role.desc}</td>
-              {/* <td className="text-center">
-                <button className="text-blue-600 mr-2">Sửa</button>
-                <button
-                  className="text-red-600"
-                  onClick={() => handleDelete(role.id)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-8">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-extrabold mb-8 text-blue-700 text-center drop-shadow">Quản lý vai trò</h1>
+        <div className="overflow-x-auto rounded-2xl shadow-lg bg-white">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-blue-100">
+                <th className="px-6 py-4 text-left text-sm font-bold text-blue-700 rounded-tl-2xl">Vai trò</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-blue-700">Mô tả</th>
+                {/* <th className="px-6 py-4 text-center text-sm font-bold text-blue-700 rounded-tr-2xl">Hành động</th> */}
+              </tr>
+            </thead>
+            <tbody>
+              {roles.map((role, idx) => (
+                <tr
+                  key={role.id}
+                  className={
+                    `hover:bg-blue-50 transition-colors ${idx === roles.length - 1 ? 'rounded-b-2xl' : ''}`
+                  }
                 >
-                  Xóa
-                </button>
-              </td> */}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  <td className="px-6 py-4 flex items-center gap-3 font-medium text-gray-800">
+                    {role.icon}
+                    <span>{role.name}</span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">{role.desc}</td>
+                  {/* <td className="px-6 py-4 text-center">
+                    <button className="text-blue-600 mr-2" disabled>Sửa</button>
+                    <button className="text-red-600" disabled>Xóa</button>
+                  </td> */}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
