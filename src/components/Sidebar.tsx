@@ -22,84 +22,73 @@ const role: string = "student"; // "student" | "teacher" | "admin"
 
 export function Sidebar() {
   return (
-    <aside className="w-64 bg-white border-r shadow-md h-screen hidden md:flex flex-col">
-      <nav className="flex-1 p-4 space-y-1">
-
-        {/* Student & Teacher menu */}
-        {(role === "student" ) && (
+    <aside className="w-64 bg-gradient-to-b from-blue-50 via-white to-indigo-50 border-r-2 border-blue-100 shadow-lg h-screen hidden md:flex flex-col">
+      {/* <div className="flex items-center gap-3 px-6 py-6 border-b border-blue-100 mb-2">
+        <img src="/logo.jpg" alt="Class" className="h-10 w-10 rounded-full shadow border-2 border-blue-200" />
+        <span className="text-2xl font-extrabold text-blue-800 tracking-tight drop-shadow">My Class</span>
+      </div> */}
+      <nav className="flex-1 p-4 space-y-2">
+        {(role === "student") && (
           <>
-          <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-              isActive
-                ? "bg-blue-100 text-blue-700 shadow"
-                : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-            }`
-          }
-        >
-          <Home className="h-5 w-5" />
-          <span>Trang chủ</span>
-        </NavLink>
-          <NavLink
-            to="/student/classes"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-                isActive
-                  ? "bg-blue-100 text-blue-700 shadow"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-              }`
-            }
-          >
-            <ClipboardList className="h-5 w-5" />
-            <span>Lớp học để tham gia</span>
-          </NavLink>
             <NavLink
-              to="/course"
+              to="/"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
                   isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                    ? "bg-blue-100 text-blue-700 shadow-lg border-l-4 border-blue-500"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                }`
+              }
+            >
+              <Home className="h-5 w-5" />
+              <span>Trang chủ</span>
+            </NavLink>
+            <NavLink
+              to="/student/classes"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow-lg border-l-4 border-blue-500"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                }`
+              }
+            >
+              <ClipboardList className="h-5 w-5" />
+              <span>Lớp học để tham gia</span>
+            </NavLink>
+            <NavLink
+              to="/courses"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
+                  isActive
+                    ? "bg-blue-100 text-blue-700 shadow-lg border-l-4 border-blue-500"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                 }`
               }
             >
               <BookOpen className="h-5 w-5" />
               <span>Khóa học của tôi</span>
             </NavLink>
-            <NavLink
-              to="/calendar"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
-                  isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
-                }`
-              }
-            >
-              <Calendar className="h-5 w-5" />
-              <span>Lịch học</span>
-            </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/people"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
                   isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                    ? "bg-blue-100 text-blue-700 shadow-lg border-l-4 border-blue-500"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                 }`
               }
             >
               <Users className="h-5 w-5" />
               <span>Mọi người</span>
-            </NavLink>
+            </NavLink> */}
             <NavLink
               to="/student/profile"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition text-base ${
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
                   isActive
-                    ? "bg-blue-100 text-blue-700 shadow"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
+                    ? "bg-blue-100 text-blue-700 shadow-lg border-l-4 border-blue-500"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                 }`
               }
             >

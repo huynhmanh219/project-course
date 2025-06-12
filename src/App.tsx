@@ -40,6 +40,7 @@ import ClassDetail from "./pages/student/ClassDetail";
 import Profile from "./pages/student/Profile";
 import StudentManagement from "./pages/teacher/StudentManagement";
 import ClassAdd from "./pages/teacher/ClassAdd"
+import Courses from "./pages/student/Courses"
 
 export function App() {
   return (
@@ -56,8 +57,9 @@ export function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Home />} />
-                {/* tạo :id  động để điều hướng lớp học */}
-                <Route path="/course" element={<Course />} />
+                {/* Student routes */}
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/course/:id" element={<Course />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/people" element={<People />} />
                 <Route path="/student/classes" element={<StudentJoinClasses />} />
