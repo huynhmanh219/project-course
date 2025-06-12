@@ -50,10 +50,10 @@ const TeacherStudentEdit: React.FC = () => {
           <input name="hinhAnh" type="file" accept="image/*" onChange={handleImageChange} className="border rounded px-2 py-1 w-full" />
           {form.hinhAnh && <div className="mt-2 text-sm text-gray-500">Đã chọn: {form.hinhAnh}</div>}
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <input name="trangThai" type="checkbox" checked={form.trangThai} onChange={handleChange} />
           <label className="text-gray-700">Hoạt động</label>
-        </div>
+        </div> */}
         <div className="flex gap-2">
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Lưu</button>
           <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" onClick={() => navigate(`/teacher/classes/${id}/students`)}>Hủy</button>

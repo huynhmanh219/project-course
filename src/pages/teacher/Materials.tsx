@@ -32,7 +32,7 @@ const TeacherMaterials: React.FC = () => {
             <th className="text-center">Đường dẫn file</th>
             <th className="text-center">Ngày upload</th>
             <th className="text-center">Trạng thái</th>
-            <th className="text-center">Hành động</th>
+            {/* <th className="text-center">Hành động</th> */}
           </tr>
         </thead>
         <tbody>
@@ -43,7 +43,7 @@ const TeacherMaterials: React.FC = () => {
               <td className="text-center">{m.loaiTaiLieu}</td>
               <td className="text-center"><a href={m.duongDanFile} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">{m.duongDanFile}</a></td>
               <td className="text-center">{m.ngayUpload}</td>
-              <td className="text-center">{m.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+              {/* <td className="text-center">{m.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
               <td className="text-center">
                 <button className="text-blue-600 mr-2" onClick={() => navigate(`/teacher/materials/edit/${m.id}`)}>Sửa</button>
                 <button className="text-red-600" onClick={() => handleDelete(m.id)}>Xóa</button>

@@ -55,10 +55,10 @@ const StudentManagement: React.FC = () => {
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     setForm(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +99,7 @@ const StudentManagement: React.FC = () => {
               <th className="px-4 py-2 border">Ảnh</th>
               <th className="px-4 py-2 border">Ngày thêm</th>
               <th className="px-4 py-2 border">Trạng thái</th>
-              <th className="px-4 py-2 border">Hành động</th>
+              {/* <th className="px-4 py-2 border">Hành động</th> */}
             </tr>
           </thead>
           <tbody>
@@ -116,7 +116,7 @@ const StudentManagement: React.FC = () => {
                   <td className="px-4 py-2 border">{s.email}</td>
                   <td className="px-4 py-2 border"><img src={s.hinhAnh} alt="avatar" className="w-10 h-10 rounded-full mx-auto" /></td>
                   <td className="px-4 py-2 border">{s.ngayThem}</td>
-                  <td className="px-4 py-2 border">{s.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khoá</span>}</td>
+                  {/* <td className="px-4 py-2 border">{s.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khoá</span>}</td> */}
                   <td className="px-4 py-2 border flex gap-2 justify-center">
                     <Button size="sm" className="bg-yellow-400 hover:bg-yellow-500 text-white" onClick={() => handleOpenEdit(s)}><Edit className="h-4 w-4" /></Button>
                     <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4" /></Button>
@@ -160,7 +160,7 @@ const StudentManagement: React.FC = () => {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Lưu</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Huỷ</Button>
+                <Button type="button" variant="default" onClick={() => setShowForm(false)}>Huỷ</Button>
               </div>
             </form>
           </div>

@@ -48,7 +48,7 @@ const UserManagement: React.FC = () => {
               <td className="px-4 py-2 border">
                 <button
                   className="text-blue-500 hover:underline mr-2"
-                  // onClick={() => ...} // Có thể mở form sửa ở đây nếu muốn
+                  onClick={() => navigate(`/admin/teachers/edit/${t.id}`)} // Có thể mở form sửa ở đây nếu muốn
                 >
                   Sửa
                 </button>

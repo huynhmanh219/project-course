@@ -26,7 +26,7 @@ import RoleManagement from "./pages/admin/RoleManagement";
 import DepartmentManagement from "./pages/admin/DepartmentManagement";
 import DepartmentAdd from "./pages/admin/DepartmentAdd";
 import DepartmentEdit from "./pages/admin/DepartmentEdit";
-import ClassAdd from "./pages/teacher/ClassAdd";
+import StudentAddClass from "./pages/teacher/StudentAddClass";
 import ClassEdit from "./pages/teacher/ClassEdit";
 import TeacherStudentAdd from "./pages/teacher/TeacherStudentAdd";
 import TeacherStudentEdit from "./pages/teacher/TeacherStudentEdit";
@@ -39,6 +39,7 @@ import StudentJoinClasses from "./pages/student/Classes";
 import ClassDetail from "./pages/student/ClassDetail";
 import Profile from "./pages/student/Profile";
 import StudentManagement from "./pages/teacher/StudentManagement";
+import ClassAdd from "./pages/teacher/ClassAdd"
 
 export function App() {
   return (
@@ -62,21 +63,23 @@ export function App() {
                 <Route path="/student/classes" element={<StudentJoinClasses />} />
                 <Route path="/student/classes/:id" element={<ClassDetail />} />
                 <Route path="/student/profile" element={<Profile />} />
+                <Route path="/student/change-password" element={<ChangePassword />} />
                 {/* Teacher routes group */}
                 <Route path="/teacher">
-                  <Route path="classes" element={<TeacherClasses />} />
+                  <Route path="my-classes" element={<ClassManagement />} />
                   {/* <Route path="classes/add" element={<TeacherClassAdd />} />
                   <Route path="classes/edit/:id" element={<TeacherClassEdit />} /> */}
                   <Route path="classes/:id/students" element={<TeacherManageStudents />} />
-                  <Route path="classes/:id/students/add" element={<TeacherStudentAdd />} />
+                  <Route path="classes/students/add" element={<TeacherStudentAdd />} />
                   <Route path="classes/:id/students/edit/:studentId" element={<TeacherStudentEdit />} />
                   <Route path="gradebook" element={<TeacherGradebook />} />
                   <Route path="courses" element={<TeacherCourses />} />
                   <Route path="courses/add" element={<CourseAdd />} />
                   <Route path="courses/edit/:id" element={<CourseEdit />} />
-                  <Route path="my-classes" element={<ClassManagement />} />
-                  <Route path="my-classes/add" element={<ClassAdd />} />
+                  <Route path="classes" element={<TeacherClasses />} />
+                  <Route path="classes/add" element={<StudentAddClass />} />
                   <Route path="my-classes/edit/:id" element={<ClassEdit />} />
+                  <Route path="my-classes/add" element={<ClassAdd />} />
                   {/* Materials management */}
                   <Route path="materials" element={<TeacherMaterials />} />
                   <Route path="materials/add" element={<MaterialAdd />} />

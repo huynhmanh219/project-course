@@ -76,12 +76,12 @@ const Profile: React.FC = () => {
         {isEditing ? (
           <>
             <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">Lưu thay đổi</Button>
-            <Button variant="outline" onClick={() => setIsEditing(false)}>Hủy</Button>
+            <Button variant="default" onClick={() => setIsEditing(false)}>Hủy</Button>
           </>
         ) : (
           <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700">Chỉnh sửa</Button>
         )}
-        <Button variant="outline" onClick={() => navigate("/change-password")}>Đổi mật khẩu</Button>
+        <Button variant="default" onClick={() => navigate("/student/change-password")}>Đổi mật khẩu</Button>
       </div>
     </div>
   );

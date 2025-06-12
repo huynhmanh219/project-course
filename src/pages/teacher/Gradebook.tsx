@@ -38,7 +38,7 @@ const TeacherGradebook: React.FC = () => {
               <th className="px-4 py-2 border">MSSV</th>
               <th className="px-4 py-2 border">Tiến độ</th>
               <th className="px-4 py-2 border">Điểm</th>
-              <th className="px-4 py-2 border">Trạng thái</th>
+              {/* <th className="px-4 py-2 border">Trạng thái</th> */}
             </tr>
           </thead>
           <tbody>
@@ -48,7 +48,7 @@ const TeacherGradebook: React.FC = () => {
                 <td className="px-4 py-2 border">{sv.mssv}</td>
                 <td className="px-4 py-2 border">{sv.progress}</td>
                 <td className="px-4 py-2 border">{sv.grade}</td>
-                <td className="px-4 py-2 border">{sv.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+                {/* <td className="px-4 py-2 border">{sv.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
               </tr>
             ))}
           </tbody>

@@ -31,7 +31,7 @@ const TeacherCourses: React.FC = () => {
             <th className="text-center">Ngày bắt đầu</th>
             <th className="text-center">Ngày kết thúc</th>
             <th className="text-center">Trạng thái</th>
-            <th className="text-center">Hành động</th>
+            {/* <th className="text-center">Hành động</th> */}
           </tr>
         </thead>
         <tbody>
@@ -41,7 +41,7 @@ const TeacherCourses: React.FC = () => {
               <td className="text-center">{course.moTa}</td>
               <td className="text-center">{course.ngayBatDau}</td>
               <td className="text-center">{course.ngayKetThuc}</td>
-              <td className="text-center">{course.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+              {/* <td className="text-center">{course.trangThai ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
               <td className="text-center">
                 <button className="text-blue-600 mr-2" onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}>Sửa</button>
                 <button className="text-red-600" onClick={() => handleDelete(course.id)}>Xóa</button>

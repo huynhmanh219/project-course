@@ -29,7 +29,7 @@ const ClassManagement: React.FC = () => {
       <p className="mb-6 text-gray-600">Tạo, chỉnh sửa, xóa và quản lý các lớp học.</p>
       <button
         className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        onClick={() => navigate('/admin/classes/add')}
+        onClick={() => navigate('/teacher/my-classes/add')}
       >
         Thêm lớp học
       </button>
@@ -51,7 +51,7 @@ const ClassManagement: React.FC = () => {
               <td className="text-center">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
               <td className="text-center">{teacherOptions.find(t => t.id === cls.teacherId)?.name}</td>
               <td className="text-center">{cls.createdAt}</td>
-              <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+              {/* <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
               <td className="text-center">
                 <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>Sửa</button>
                 <button className="text-red-500 hover:underline" onClick={() => handleDelete(cls.id)}>Xóa</button>

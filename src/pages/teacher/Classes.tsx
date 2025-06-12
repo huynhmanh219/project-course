@@ -44,10 +44,10 @@ const TeacherClasses: React.FC = () => {
               <td className="text-center">{cls.name}</td>
               <td className="text-center">{courseOptions.find(c => c.id === cls.courseId)?.name}</td>
               <td className="text-center">{cls.createdAt}</td>
-              <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td>
+              {/* <td className="text-center">{cls.status ? <span className="text-green-600 font-semibold">Hoạt động</span> : <span className="text-red-500">Khóa</span>}</td> */}
               <td className="text-center">
                 <button className="text-blue-500 hover:underline mr-2" onClick={() => navigate(`/teacher/classes/${cls.id}/students`)}>Quản lý sinh viên</button>
-                <button className="text-blue-600 mr-2" onClick={() => navigate(`/teacher/classes/edit/${cls.id}`)}>Sửa</button>
+                <button className="text-blue-600 mr-2" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>Sửa</button>
                 <button className="text-red-600" onClick={() => handleDelete(cls.id)}>Xóa</button>
               </td>
             </tr>

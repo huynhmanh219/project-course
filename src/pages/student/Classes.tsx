@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/button";
 
 const initialClasses = [
   {
@@ -52,9 +53,9 @@ const StudentClasses: React.FC = () => {
             initialClasses.map((cls) => (
               <tr key={cls.id} className="text-center">
                 <td className="px-4 py-2 border font-semibold">
-                  <button className="text-blue-700 underline hover:text-blue-900" onClick={() => navigate(`/student/classes/${cls.id}`)}>
+                  <Button variant="default" className="text-red-700 hover:text-blue-900 bg-white-500" onClick={() => navigate(`/student/classes/${cls.id}`)}>
                     {cls.tenLop}
-                  </button>
+                  </Button>
                 </td>
                 <td className="px-4 py-2 border">{cls.tenKhoaHoc}</td>
                 <td className="px-4 py-2 border">{cls.giangVien}</td>

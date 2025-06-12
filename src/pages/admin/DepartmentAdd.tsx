@@ -35,10 +35,10 @@ const DepartmentAdd: React.FC = () => {
           <label className="block text-gray-700 mb-1">Mô tả</label>
           <textarea name="desc" value={form.desc} onChange={handleChange} className="border rounded px-2 py-1 w-full" />
         </div>
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           <input name="status" type="checkbox" checked={form.status} onChange={handleChange} />
           <label className="text-gray-700">Hoạt động</label>
-        </div>
+        </div> */}
         <div className="flex gap-2">
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Lưu</button>
           <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" onClick={() => navigate('/admin/departments')}>Hủy</button>

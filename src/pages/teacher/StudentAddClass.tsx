@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const courseOptions = [
   { id: 1, name: 'Toán 10' },
@@ -10,18 +10,15 @@ const teacherOptions = [
   { id: 2, name: 'Trần Thị B' },
 ];
 
-const fakeClass = {
-  name: 'Lớp 10A1',
-  courseId: 1,
-  teacherId: 1,
-  description: 'Lớp chuyên Toán',
-  status: true,
-};
-
-const ClassEdit: React.FC = () => {
+const StudentAddClass: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [form, setForm] = useState(fakeClass);
+  const [form, setForm] = useState({
+    name: '',
+    courseId: courseOptions[0].id,
+    teacherId: teacherOptions[0].id,
+    description: '',
+    status: true,
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -33,16 +30,16 @@ const ClassEdit: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Đã cập nhật lớp học: ' + JSON.stringify(form, null, 2));
+    alert('Đã thêm lớp học: ' + JSON.stringify(form, null, 2));
     navigate('/admin/classes');
   };
 
   return (
     <div className="p-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-blue-700">Sửa lớp học</h1>
+      <h1 className="text-2xl font-bold mb-4 text-blue-700">Thêm sinh viên vào lớp</h1>
       <form className="bg-white p-6 rounded shadow flex flex-col gap-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-gray-700 mb-1">Tên lớp</label>
+          <label className="block text-gray-700 mb-1">Tên sinh viên</label>
           <input name="name" value={form.name} onChange={handleChange} required className="border rounded px-2 py-1 w-full" />
         </div>
         <div>
@@ -74,4 +71,4 @@ const ClassEdit: React.FC = () => {
   );
 };
 
-export default ClassEdit; 
+export default StudentAddClass; 

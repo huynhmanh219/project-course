@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/button";
 
 const classInfo = {
   tenLop: "Lớp Toán 10A",
@@ -35,12 +36,13 @@ const ClassDetail: React.FC = () => {
   const navigate = useNavigate();
   return (
     <div className="p-8 max-w-3xl mx-auto">
-      <button
-        className="mb-6 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+      <Button
+        variant="default" 
+        className="mb-6 px-4 py-2  rounded hover:bg-gray-400"
         onClick={() => navigate("/student/classes")}
       >
         ← Quay lại danh sách lớp học
-      </button>
+      </Button>
 
       {/* Section: Thông tin lớp học */}
       <section className="mb-8">

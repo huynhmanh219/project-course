@@ -18,7 +18,7 @@ import { Home,
 } from "lucide-react";
 
 // Giả lập role, sau này lấy từ context hoặc API
-const role: string = "teacher"; // "student" | "teacher" | "admin"
+const role: string = "student"; // "student" | "teacher" | "admin"
 
 export function Sidebar() {
   return (
@@ -205,7 +205,7 @@ export function Sidebar() {
               }
             >
               <LayoutDashboard className="h-5 w-5" />
-              <span>Dashboard</span>
+              <span>Trang Chủ</span>
             </NavLink>
 
             <NavLink
