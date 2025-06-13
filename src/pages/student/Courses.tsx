@@ -2,222 +2,219 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Search, Calendar, User2, GraduationCap, ArrowUpDown, BookOpen } from "lucide-react";
+import { Calendar, User2, GraduationCap, BookOpen, CheckCircle, Clock } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
-import { Badge } from "../../components/ui/badge";
-import { Progress } from "../../components/ui/progress";
 
 // Danh sách khoá học mẫu
 const sampleCourses = [
   {
     ID: 1,
     Ten_Khoa_Hoc: "Lập trình Web",
-    Mo_Ta: "Khóa học về HTML, CSS, JavaScript và framework hiện đại.",
+    Mo_Ta: "Khóa học về HTML, CSS, JavaScript và framework hiện đại. Học cách xây dựng website responsive và ứng dụng web động.",
     Giang_Vien_ID: 1,
     Ngay_Bat_Dau: "2024-06-01",
     Ngay_Ket_Thuc: "2024-08-01",
     Trang_Thai: true,
     giang_vien: { Ho_Ten: "Nguyễn Văn A" },
-    tien_do: { Hoan_Thanh: false, phan_tram: 75 },
+    completed: true,
   },
   {
     ID: 2,
     Ten_Khoa_Hoc: "Toán Cao Cấp",
-    Mo_Ta: "Giải tích, đại số tuyến tính và ứng dụng.",
+    Mo_Ta: "Giải tích, đại số tuyến tính và ứng dụng trong khoa học máy tính. Nền tảng toán học cho lập trình viên.",
     Giang_Vien_ID: 2,
     Ngay_Bat_Dau: "2024-07-01",
     Ngay_Ket_Thuc: "2024-09-01",
     Trang_Thai: true,
     giang_vien: { Ho_Ten: "Trần Thị B" },
-    tien_do: { Hoan_Thanh: false, phan_tram: 40 },
+    completed: false,
   },
   {
     ID: 3,
     Ten_Khoa_Hoc: "Kỹ năng mềm",
-    Mo_Ta: "Phát triển kỹ năng giao tiếp, làm việc nhóm, thuyết trình.",
+    Mo_Ta: "Phát triển kỹ năng giao tiếp, làm việc nhóm, thuyết trình và quản lý thời gian hiệu quả.",
     Giang_Vien_ID: 3,
     Ngay_Bat_Dau: "2024-05-15",
     Ngay_Ket_Thuc: "2024-07-15",
-    Trang_Thai: false,
+    Trang_Thai: true,
     giang_vien: { Ho_Ten: "Lê Văn C" },
-    tien_do: { Hoan_Thanh: true, phan_tram: 100 },
+    completed: true,
+  },
+  {
+    ID: 4,
+    Ten_Khoa_Hoc: "Cơ sở dữ liệu",
+    Mo_Ta: "Thiết kế và quản lý cơ sở dữ liệu, SQL, NoSQL và các hệ quản trị cơ sở dữ liệu phổ biến.",
+    Giang_Vien_ID: 4,
+    Ngay_Bat_Dau: "2024-08-01",
+    Ngay_Ket_Thuc: "2024-10-01",
+    Trang_Thai: true,
+    giang_vien: { Ho_Ten: "Phạm Văn D" },
+    completed: false,
+  },
+  {
+    ID: 5,
+    Ten_Khoa_Hoc: "Mạng máy tính",
+    Mo_Ta: "Kiến thức về mạng máy tính, giao thức TCP/IP, bảo mật mạng và quản trị hệ thống mạng.",
+    Giang_Vien_ID: 5,
+    Ngay_Bat_Dau: "2024-09-01",
+    Ngay_Ket_Thuc: "2024-11-01",
+    Trang_Thai: true,
+    giang_vien: { Ho_Ten: "Hoàng Thị E" },
+    completed: false,
+  },
+  {
+    ID: 6,
+    Ten_Khoa_Hoc: "Trí tuệ nhân tạo",
+    Mo_Ta: "Giới thiệu về AI, machine learning, deep learning và các ứng dụng thực tế trong cuộc sống.",
+    Giang_Vien_ID: 6,
+    Ngay_Bat_Dau: "2024-10-01",
+    Ngay_Ket_Thuc: "2024-12-01",
+    Trang_Thai: true,
+    giang_vien: { Ho_Ten: "Nguyễn Văn F" },
+    completed: false,
   },
 ];
 
 const Courses: React.FC = () => {
   const navigate = useNavigate();
   const [courses] = useState(sampleCourses);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  const handleSort = (value: string) => {
-    if (value === sortBy) {
-      setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(value);
-      setSortOrder('asc');
-    }
-  };
-
-  const sortedAndFilteredCourses = React.useMemo(() => {
-    return courses
-      .filter(course => 
-        course.Ten_Khoa_Hoc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.Mo_Ta?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.giang_vien?.Ho_Ten.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .sort((a, b) => {
-        const multiplier = sortOrder === 'asc' ? 1 : -1;
-        switch (sortBy) {
-          case 'name':
-            return multiplier * a.Ten_Khoa_Hoc.localeCompare(b.Ten_Khoa_Hoc);
-          case 'date':
-            return multiplier * (new Date(a.Ngay_Bat_Dau).getTime() - new Date(b.Ngay_Bat_Dau).getTime());
-          case 'progress':
-            return multiplier * ((a.tien_do?.phan_tram || 0) - (b.tien_do?.phan_tram || 0));
-          default:
-            return 0;
-        }
-      });
-  }, [courses, searchTerm, sortBy, sortOrder]);
-
-  const getStatusInfo = (course: any) => {
-    if (!course.Trang_Thai) return { label: 'Đã đóng', variant: 'destructive' };
-    if (course.tien_do?.Hoan_Thanh) return { label: 'Đã hoàn thành', variant: 'success' };
-    const now = new Date();
-    const startDate = new Date(course.Ngay_Bat_Dau);
-    const endDate = new Date(course.Ngay_Ket_Thuc);
-    if (now < startDate) return { label: 'Sắp diễn ra', variant: 'secondary' };
-    if (now > endDate) return { label: 'Đã kết thúc', variant: 'destructive' };
-    return { label: 'Đang diễn ra', variant: 'default' };
-  };
 
   const CourseCard: React.FC<{ course: any }> = ({ course }) => {
-    const status = getStatusInfo(course);
     return (
       <div className="group h-full">
         <Card 
-          className="h-full flex flex-col shadow-xl border-0 bg-gradient-to-br from-white via-blue-50 to-indigo-50 group-hover:scale-[1.025] group-hover:shadow-2xl transition-transform duration-200 cursor-pointer relative overflow-hidden"
+          className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
           onClick={() => navigate(`/course/${course.ID}`)}
         >
-          {/* Header gradient bar & icon */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 z-10" />
-          <div className="flex items-center gap-3 px-6 pt-6 pb-2">
-            <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-2 shadow-lg">
-              <BookOpen className="text-white w-7 h-7" />
-            </div>
-            <h3 className="font-bold text-xl text-blue-900 flex-1 truncate">
-              {course.Ten_Khoa_Hoc}
-            </h3>
-            {/* <Badge variant={status.variant as any} className="ml-2 text-xs px-3 py-1 rounded-full font-semibold">
-              {status.label}
-            </Badge> */}
-          </div>
-          <CardContent className="flex-1 flex flex-col px-6 pb-6 pt-2">
-            <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-              <User2 className="w-4 h-4 text-blue-500" />
-              <span className="font-medium">{course.giang_vien?.Ho_Ten || 'Chưa có giảng viên'}</span>
-            </div>
-            <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4 text-indigo-500" />
-              <span>
-                {format(new Date(course.Ngay_Bat_Dau), 'dd/MM/yyyy', { locale: vi })} -
-                {format(new Date(course.Ngay_Ket_Thuc), 'dd/MM/yyyy', { locale: vi })}
-              </span>
-            </div>
-            <div className="mb-3 text-gray-700 text-sm line-clamp-3 min-h-[48px]">
-              {course.Mo_Ta || 'Chưa có mô tả'}
-            </div>
-            {course.tien_do && (
-              <div className="mt-auto">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-500">Tiến độ</span>
-                  <span className="text-xs font-semibold text-blue-700">{course.tien_do.phan_tram}%</span>
-                </div>
-                <Progress value={course.tien_do.phan_tram} className="h-2 bg-blue-100" />
+          {/* Header gradient bar */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+          
+          <CardContent className="flex-1 flex flex-col p-6">
+            {/* Header */}
+            <div className="flex items-start gap-4 mb-4">
+              <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
+                <BookOpen className="text-white w-6 h-6" />
               </div>
-            )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+                  {course.Ten_Khoa_Hoc}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    course.completed 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {course.completed ? (
+                      <>
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Đã hoàn thành
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="w-3 h-3 mr-1" />
+                        Đang học
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Course Info */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <User2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                <span className="font-medium">{course.giang_vien?.Ho_Ten || 'Chưa có giảng viên'}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                <span>
+                  {format(new Date(course.Ngay_Bat_Dau), 'dd/MM/yyyy', { locale: vi })} - {format(new Date(course.Ngay_Ket_Thuc), 'dd/MM/yyyy', { locale: vi })}
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="flex-1">
+              <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
+                {course.Mo_Ta || 'Chưa có mô tả'}
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/course/${course.ID}`);
+                }}
+              >
+                Xem chi tiết
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
     );
   };
 
+  const completedCount = courses.filter(course => course.completed).length;
+  const inProgressCount = courses.length - completedCount;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-blue-900 mb-1">Danh sách môn học</h1>
-            <p className="text-gray-500 text-base">Khám phá các môn học bạn đã tham gia hoặc có thể học.</p>
-          </div>
-          {/* <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Tìm kiếm khoá học..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-[1600px] mx-auto space-y-8">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight mb-3">Danh sách môn học</h1>
+                <p className="text-blue-100 text-lg">Khám phá và theo dõi tiến độ học tập của bạn</p>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{completedCount}</div>
+                  <div className="text-blue-100 text-sm">Đã hoàn thành</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{inProgressCount}</div>
+                  <div className="text-blue-100 text-sm">Đang học</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{courses.length}</div>
+                  <div className="text-blue-100 text-sm">Tổng số môn</div>
+                </div>
+              </div>
             </div>
-            <Select
-              value={sortBy}
-              onValueChange={handleSort}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sắp xếp theo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">
-                  <span className="flex items-center">
-                    Tên khoá học
-                    {sortBy === 'name' && (
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    )}
-                  </span>
-                </SelectItem>
-                <SelectItem value="date">
-                  <span className="flex items-center">
-                    Ngày bắt đầu
-                    {sortBy === 'date' && (
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    )}
-                  </span>
-                </SelectItem>
-                <SelectItem value="progress">
-                  <span className="flex items-center">
-                    Tiến độ
-                    {sortBy === 'progress' && (
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    )}
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div> */}
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {sortedAndFilteredCourses.map((course) => (
+
+        {/* Course Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+          {courses.map((course) => (
             <CourseCard key={course.ID} course={course} />
           ))}
         </div>
-        {sortedAndFilteredCourses.length === 0 && (
-          <div className="text-center py-12">
-            <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
-            <h3 className="mt-4 text-lg font-semibold text-muted-foreground">
-              {searchTerm ? 'Không tìm thấy khoá học phù hợp' : 'Chưa có khoá học nào'}
-            </h3>
+
+        {/* Empty State */}
+        {courses.length === 0 && (
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
+              <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                Chưa có môn học nào
+              </h3>
+              <p className="text-gray-500">
+                Các môn học sẽ xuất hiện ở đây
+              </p>
+            </div>
           </div>
         )}
       </div>

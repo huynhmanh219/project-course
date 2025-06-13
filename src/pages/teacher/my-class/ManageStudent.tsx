@@ -25,7 +25,7 @@ const ManageStudent: React.FC = () => {
     const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" khỏi lớp học này không?\n\nHành động này không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
-      setStudents(students.filter((s) => s.id !== id));
+    setStudents(students.filter((s) => s.id !== id));
       alert("Đã xóa sinh viên khỏi lớp học thành công!");
     }
   };
@@ -71,8 +71,8 @@ const ManageStudent: React.FC = () => {
         {/* Students Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
+          <table className="min-w-full">
+            <thead>
                 <tr className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                   <th className="px-6 py-4 text-left font-semibold">Họ tên</th>
                   <th className="px-6 py-4 text-left font-semibold">MSSV</th>
@@ -80,17 +80,17 @@ const ManageStudent: React.FC = () => {
                   <th className="px-6 py-4 text-left font-semibold">Số điện thoại</th>
                   {/* <th className="px-6 py-4 text-left font-semibold">Trạng thái</th> */}
                   <th className="px-6 py-4 text-center font-semibold">Hành động</th>
-                </tr>
-              </thead>
+              </tr>
+            </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredStudents.length === 0 ? (
-                  <tr>
+                <tr>
                     <td colSpan={6} className="text-center py-12 text-gray-500">
-                      <Info className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                    <Info className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                       Không tìm thấy sinh viên nào.
-                    </td>
-                  </tr>
-                ) : (
+                  </td>
+                </tr>
+              ) : (
                   filteredStudents.map((s) => (
                     <tr key={s.id} className="hover:bg-blue-50 transition-colors duration-200">
                       <td className="px-6 py-4">
@@ -112,20 +112,20 @@ const ManageStudent: React.FC = () => {
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-110"
                           >
                             <Edit className="w-5 h-5" />
-                          </button>
+                      </button>
                           <button 
                             onClick={() => handleDelete(s.id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:scale-110"
                           >
                             <Trash2 className="w-5 h-5" />
-                          </button>
+                      </button>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
           </div>
         </div>
       </div>

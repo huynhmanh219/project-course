@@ -57,7 +57,7 @@ const StudentClasses: React.FC = () => {
             <h1 className="text-3xl font-extrabold tracking-tight text-blue-900 mb-1 flex items-center gap-2">
               <BookOpen className="w-7 h-7 text-blue-600" /> Danh sách lớp học
             </h1>
-            <p className="text-gray-500 text-base">Các lớp học bạn có thể tham gia hoặc đang học.</p>
+            <p className="text-gray-500 text-base">Các lớp học của bạn.</p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

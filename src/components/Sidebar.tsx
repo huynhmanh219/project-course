@@ -19,7 +19,7 @@ import { Home,
 } from "lucide-react";
 
 // Giả lập role, sau này lấy từ context hoặc API
-const role: string = "admin"; // "student" | "teacher" | "admin"
+const role: string = "teacher"; // "student" | "teacher" | "admin"
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition text-base shadow-sm ${
@@ -44,7 +44,7 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/student/classes" className={navLinkClass}>
               <ClipboardList className="h-5 w-5" />
-              <span>Lớp học để tham gia</span>
+              <span>Lớp học đã tham gia</span>
             </NavLink>
             <NavLink to="/courses" className={navLinkClass}>
               <BookOpen className="h-5 w-5" />
