@@ -99,7 +99,29 @@ const MaterialEdit: React.FC = () => {
               placeholder="Nhập mô tả tài liệu"
             />
           </div>
-
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Loại tài liệu <span className="text-red-500">*</span></label>
+            <select
+              value={material.Loai_Tai_Lieu}
+              onChange={e => setMaterial({ ...material, Loai_Tai_Lieu: Number(e.target.value) })}
+              className="border border-blue-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
+            >
+              <option value={1}>Tài liệu học tập</option>
+              <option value={2}>Bài tập</option>
+              <option value={3}>Đề thi</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">File tài liệu <span className="text-red-500">*</span></label>
+            <input
+              type="file"
+              required
+              onChange={e => setMaterial({ ...material, Duong_Dan_File: e.target.files?.[0]?.name || '' })}
+              className="border border-blue-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <p className="text-sm text-gray-500 mt-1">File hiện tại: {material.Duong_Dan_File}</p>
+          </div>
           <div className="flex justify-end gap-4 mt-4">
             <button
               type="button"
