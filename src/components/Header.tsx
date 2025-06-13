@@ -9,8 +9,25 @@ import {
 } from "../components/ui/dropdown-menu"
 import { Button } from "../components/ui/button"
 import { Search, Bell, User } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export function Header() {
+  const navigate = useNavigate();
+  // Giả lập role, sau này lấy từ context hoặc API
+  const role = "student"; // "student" | "teacher" | "admin"
+
+  const handleProfile = () => {
+    navigate(`/${role}/profile`);
+  };
+
+  const handleLogout = () => {
+    // Xóa token và thông tin user từ localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    // Chuyển hướng về trang đăng nhập
+    navigate("/login");
+  };
+
   return (
     <header className="w-full flex items-center justify-between px-6 py-3 border-b bg-gradient-to-r from-blue-50 via-white to-indigo-50 shadow-sm">
       <div className="flex items-center gap-4">
@@ -55,10 +72,13 @@ export function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Thông tin cá nhân</DropdownMenuItem>
-            <DropdownMenuItem>Cài đặt</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleProfile}>
+              Thông tin cá nhân
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              Đăng xuất
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

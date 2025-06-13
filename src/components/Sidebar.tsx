@@ -103,6 +103,10 @@ export function Sidebar() {
               <ClipboardList className="h-5 w-5" />
               <span>Lớp học của tôi</span>
             </NavLink>
+            <NavLink to="/teacher/profile" className={navLinkClass}>
+              <User className="h-5 w-5" />
+              <span>Thông tin cá nhân</span>
+            </NavLink>
 
           </>
         )}
@@ -131,6 +135,10 @@ export function Sidebar() {
             <NavLink to="/admin/statistics" className={navLinkClass}>
               <FileBarChart2 className="h-5 w-5" />
               <span>Thống kê</span>
+            </NavLink>
+            <NavLink to="/admin/profile" className={navLinkClass}>
+              <User className="h-5 w-5" />
+              <span>Thông tin cá nhân</span>
             </NavLink>
           </>
         )}

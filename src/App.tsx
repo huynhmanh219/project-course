@@ -37,7 +37,7 @@ import MaterialAdd from "./pages/teacher/material/MaterialAdd";
 import MaterialEdit from "./pages/teacher/material/MaterialEdit";
 import StudentJoinClasses from "./pages/student/Classes";
 import ClassDetail from "./pages/student/ClassDetail";
-import Profile from "./pages/student/Profile";
+import Profile from "./pages/Profile";
 import StudentManagement from "./pages/teacher/studentManagement/StudentManagement";
 import ClassAdd from "./pages/teacher/class/ClassAdd"
 import Courses from "./pages/student/Courses"
@@ -105,6 +105,9 @@ export function App() {
                   <Route path="lectures/add" element={<LectureAdd />} />
                   <Route path="lectures/:id" element={<LectureDetail />} />
                   <Route path="lectures/edit/:id" element={<LectureEdit />} />
+                  {/* Profile */}
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="change-password" element={<ChangePassword />} />
                 </Route>
                 {/* Admin routes */}
                 <Route path="/admin" element={<AdminLayout />}>
@@ -119,6 +122,9 @@ export function App() {
                   <Route path="departments" element={<DepartmentManagement />} />
                   <Route path="departments/add" element={<DepartmentAdd />} />
                   <Route path="departments/edit/:id" element={<DepartmentEdit />} />
+                  {/* Profile */}
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="change-password" element={<ChangePassword />} />
                 </Route>
               </Routes>
             </Layout>
