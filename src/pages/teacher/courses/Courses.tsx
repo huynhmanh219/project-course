@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Edit, Trash2, CheckCircle, XCircle, Plus, Info } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../../components/ui/button";
 
 const initialCourses = [
   { id: 1, tenKhoaHoc: "Toán 10", moTa: "Khóa học Toán nâng cao", ngayBatDau: "2024-06-01", ngayKetThuc: "2024-07-01", trangThai: true },
@@ -33,7 +33,7 @@ const TeacherCourses: React.FC = () => {
             <p className="text-gray-500 text-base">Tạo, chỉnh sửa, xóa và quản lý các khoá học.</p>
           </div>
           <button
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold shadow hover:from-indigo-600 hover:to-blue-700 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 transition duration-200 transform hover:scale-105"
             onClick={() => navigate('/teacher/courses/add')}
           >
             <Plus className="w-5 h-5" /> Thêm môn học
@@ -62,23 +62,30 @@ const TeacherCourses: React.FC = () => {
               ) : (
                 courses.map((course) => (
                   <tr key={course.id} className="border-b border-blue-100 hover:bg-blue-50 transition">
-                    <td className="px-4 py-3 font-semibold text-blue-900">
-                      <Button
-                        
+                    <td className="px-4 py-3">
+                      <button
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-lg font-semibold shadow-sm hover:from-blue-100 hover:to-indigo-100 hover:shadow-md transition duration-200 border border-blue-200 hover:border-blue-300 group"
                         onClick={() => navigate(`/teacher/courses/${course.id}`)}
                       >
-                        {course.tenKhoaHoc}
-                      </Button>
+                        <BookOpen className="w-4 h-4 text-blue-500 group-hover:text-blue-600 transition-colors" />
+                        <span className="group-hover:text-blue-800 transition-colors">{course.tenKhoaHoc}</span>
+                      </button>
                     </td>
                     <td className="px-4 py-3">{course.moTa}</td>
                     <td className="px-4 py-3">{course.ngayBatDau}</td>
                     <td className="px-4 py-3">{course.ngayKetThuc}</td>
                     {/* <td className="px-4 py-3">{statusBadge(course.trangThai)}</td> */}
-                    <td className="px-4 py-3 text-center flex gap-2 justify-center">
-                      <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}>
+                    <td className="px-4 py-3 text-center flex gap-3 justify-center">
+                      <button 
+                        className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-semibold shadow hover:from-green-600 hover:to-emerald-600 transition duration-200"
+                        onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}
+                      >
                         <Edit className="w-4 h-4" /> Sửa
                       </button>
-                      <button className="flex items-center gap-1 text-red-600 hover:underline font-semibold" onClick={() => handleDelete(course.id)}>
+                      <button 
+                        className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg font-semibold shadow hover:from-red-600 hover:to-rose-600 transition duration-200"
+                        onClick={() => handleDelete(course.id)}
+                      >
                         <Trash2 className="w-4 h-4" /> Xóa
                       </button>
                     </td>

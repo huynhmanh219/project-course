@@ -41,7 +41,7 @@ const ClassManagement: React.FC = () => {
             <p className="text-gray-500 text-base">Tạo, chỉnh sửa, xóa và quản lý các lớp học.</p>
           </div>
           <button
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold shadow hover:from-indigo-600 hover:to-blue-700 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 transition duration-200 transform hover:scale-105"
             onClick={() => navigate('/teacher/my-classes/add')}
           >
             <Plus className="w-5 h-5" /> Thêm lớp học
@@ -77,11 +77,17 @@ const ClassManagement: React.FC = () => {
                     <td className="px-4 py-3">{teacherOptions.find(t => t.id === cls.teacherId)?.name}</td>
                     <td className="px-4 py-3">{cls.createdAt}</td>
                     {/* <td className="px-4 py-3">{statusBadge(cls.status)}</td> */}
-                    <td className="px-4 py-3 text-center flex gap-2 justify-center">
-                      <button className="flex items-center gap-1 text-green-600 hover:underline font-semibold" onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}>
+                    <td className="px-4 py-3 text-center flex gap-3 justify-center">
+                      <button 
+                        className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-semibold shadow hover:from-green-600 hover:to-emerald-600 transition duration-200"
+                        onClick={() => navigate(`/teacher/my-classes/edit/${cls.id}`)}
+                      >
                         <Edit className="w-4 h-4" /> Sửa
                       </button>
-                      <button className="flex items-center gap-1 text-red-600 hover:underline font-semibold" onClick={() => handleDelete(cls.id)}>
+                      <button 
+                        className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg font-semibold shadow hover:from-red-600 hover:to-rose-600 transition duration-200"
+                        onClick={() => handleDelete(cls.id)}
+                      >
                         <Trash2 className="w-4 h-4" /> Xóa
                       </button>
                     </td>

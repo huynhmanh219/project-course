@@ -158,8 +158,8 @@ const Courses: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-blue-900 mb-1">Danh sách khoá học</h1>
-            <p className="text-gray-500 text-base">Khám phá các khoá học bạn đã tham gia hoặc có thể học.</p>
+            <h1 className="text-4xl font-extrabold tracking-tight text-blue-900 mb-1">Danh sách môn học</h1>
+            <p className="text-gray-500 text-base">Khám phá các môn học bạn đã tham gia hoặc có thể học.</p>
           </div>
           {/* <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <div className="relative flex-1 max-w-xs">

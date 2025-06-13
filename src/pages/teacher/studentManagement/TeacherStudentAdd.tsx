@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { UserPlus, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../../../components/ui/button";
 
 const TeacherStudentAdd: React.FC = () => {
   const navigate = useNavigate();
@@ -81,19 +82,20 @@ const TeacherStudentAdd: React.FC = () => {
             />
             <label className="text-gray-700 font-semibold">Hoạt động</label>
           </div>
-          <div className="flex gap-3 justify-end">
-            <button
-              type="submit"
-              className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-lg text-base"
-            >
-              <User className="w-5 h-5" /> Lưu
-            </button>
+          <div className="flex justify-end gap-4 mt-4">
             <button
               type="button"
-              className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold hover:bg-gray-500 text-base"
-              onClick={() => navigate("/teacher/students")}
+              onClick={() => navigate('/teacher/chapters')}
+              className="px-6 py-2 bg-gradient-to-r from-gray-300 to-gray-500 text-white rounded-xl font-bold shadow hover:from-gray-500 hover:to-gray-700 transition duration-200"
             >
               Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition duration-200 flex items-center gap-2"
+            >
+              <User className="w-5 h-5" />
+              Lưu
             </button>
           </div>
         </form>
@@ -101,33 +103,5 @@ const TeacherStudentAdd: React.FC = () => {
     </div>
   );
 };
-
-    // <div className="p-8 max-w-xl mx-auto">
-    //   <h1 className="text-2xl font-bold mb-4 text-blue-700">Thêm sinh viên</h1>
-    //   <form className="bg-white p-6 rounded shadow flex flex-col gap-4" onSubmit={handleSubmit}>
-    //     <div>
-    //       <label className="block text-gray-700 mb-1">Họ tên</label>
-    //       <input name="hoTen" value={form.hoTen} onChange={handleChange} required className="border rounded px-2 py-1 w-full" />
-    //     </div>
-    //     <div>
-    //       <label className="block text-gray-700 mb-1">MSSV</label>
-    //       <input name="mssv" value={form.mssv } onChange={handleChange} required className="border rounded px-2 py-1 w-full" />
-    //     </div>
-    //     <div>
-    //       <label className="block text-gray-700 mb-1">Ảnh đại diện</label>
-    //       <input name="hinhAnh" type="file" accept="image/*" onChange={handleImageChange} className="border rounded px-2 py-1 w-full" />
-    //       {form.hinhAnh && <div className="mt-2 text-sm text-gray-500">Đã chọn: {form.hinhAnh}</div>}
-    //     </div>
-    //     {/* <div className="flex items-center gap-2">
-    //       <input name="trangThai" type="checkbox" checked={form.trangThai} onChange={handleChange} />
-    //       <label className="text-gray-700">Hoạt động</label>
-    //     </div> */}
-    //     <div className="flex gap-2">
-    //       <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Lưu</button>
-    //       <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" onClick={() => navigate(`/teacher/classes/${id}/students`)}>Hủy</button>
-    //     </div>
-    //   </form>
-    // </div>
-
 
 export default TeacherStudentAdd; 

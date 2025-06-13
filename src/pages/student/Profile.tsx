@@ -8,6 +8,7 @@ import { Separator } from "../../components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
 import { Badge } from "../../components/ui/badge"
 import { Camera, Save, X, KeyRound, User } from "lucide-react"
+import ChangePasswordModal from "../../components/ChangePasswordModal"
 
 const mockStudent = {
   hoTen: "Nguyễn Văn Sinh Viên",
@@ -21,6 +22,7 @@ const Profile: React.FC = () => {
   const [hoTen, setHoTen] = useState(mockStudent.hoTen)
   const [hinhAnh, setHinhAnh] = useState(mockStudent.hinhAnh)
   const [isEditing, setIsEditing] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -183,7 +185,7 @@ const Profile: React.FC = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate("/student/change-password")}
+                  onClick={() => setShowPasswordModal(true)}
                   className="border-2 border-orange-300 hover:border-orange-400 text-orange-700 hover:text-orange-900 hover:bg-orange-50 font-semibold px-6 py-3 rounded-lg transition-all duration-200 flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -195,6 +197,12 @@ const Profile: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Password Change Modal */}
+        <ChangePasswordModal 
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+        />
       </div>
     </div>
   )

@@ -113,60 +113,6 @@ const CourseAdd: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold flex items-center gap-2"><Layers className="w-5 h-5 text-blue-500" /> Chọn chương</label>
-            <select
-              name="chuong"
-              multiple
-              value={form.chuong.map(String)}
-              onChange={handleChange}
-              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base h-32"
-            >
-              {chuongOptions.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            {form.chuong.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {form.chuong.map(id => {
-                  const c = chuongOptions.find(c => c.id === id);
-                  return c ? (
-                    <span key={id} className="inline-flex items-center px-3 py-1 rounded-full bg-blue-200 text-blue-800 text-xs font-semibold">
-                      {c.name}
-                      <button type="button" className="ml-1" onClick={() => handleRemove("chuong", id)}><X className="w-3 h-3" /></button>
-                    </span>
-                  ) : null;
-                })}
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-2 font-semibold flex items-center gap-2"><FileText className="w-5 h-5 text-blue-500" /> Chọn tài liệu</label>
-            <select
-              name="taiLieu"
-              multiple
-              value={form.taiLieu.map(String)}
-              onChange={handleChange}
-              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base h-32"
-            >
-              {taiLieuOptions.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
-            </select>
-            {form.taiLieu.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {form.taiLieu.map(id => {
-                  const t = taiLieuOptions.find(t => t.id === id);
-                  return t ? (
-                    <span key={id} className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-200 text-indigo-800 text-xs font-semibold">
-                      {t.name}
-                      <button type="button" className="ml-1" onClick={() => handleRemove("taiLieu", id)}><X className="w-3 h-3" /></button>
-                    </span>
-                  ) : null;
-                })}
-              </div>
-            )}
-          </div>
-          <div>
             <label className="block text-gray-700 mb-2 font-semibold">Ngày tạo</label>
             <input
               name="ngayTao"
