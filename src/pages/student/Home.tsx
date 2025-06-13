@@ -20,7 +20,7 @@ export function Home() {
     {
       id: "2",
       title: "Data Structures",
-      description: "CS201 - Section B", 
+      description: "CS201 - Section B",
       teacher: "Jane Smith",
       studentsCount: 28,
       color: "from-green-400 to-green-600",
@@ -69,7 +69,7 @@ export function Home() {
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
         {/* Thống kê tổng quan */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -95,7 +95,7 @@ export function Home() {
                 <div className="text-gray-600 text-sm">Lớp đã hoàn thành</div>
               </div>
             </div>
-          </div>
+      </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center gap-4">

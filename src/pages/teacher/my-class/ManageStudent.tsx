@@ -1,34 +1,31 @@
 // src/pages/TeacherManageStudents.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Info, Search } from "lucide-react";
+import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Search, GraduationCap, Mail, Phone, UserCheck, UserX } from "lucide-react";
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
 
-const initialStudents = [
+interface Student {
+  id: number;
+  name: string;
+  mssv: string;
+  status: boolean;
+  email: string;
+  phone: string;
+}
+
+const initialStudents: Student[] = [
   { id: 1, name: "Nguyễn Văn A", mssv: "SV001", status: true, email: "nguyenvana@example.com", phone: "0123456789" },
   { id: 2, name: "Trần Thị B", mssv: "SV002", status: true, email: "tranthib@example.com", phone: "0123456788" },
   { id: 3, name: "Lê Văn C", mssv: "SV003", status: false, email: "levanc@example.com", phone: "0123456787" },
+  { id: 4, name: "Phạm Thị D", mssv: "SV004", status: true, email: "phamthid@example.com", phone: "0123456786" },
+  { id: 5, name: "Hoàng Văn E", mssv: "SV005", status: true, email: "hoangvane@example.com", phone: "0123456785" },
 ];
-
-const statusBadge = (active: boolean) => (
-  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-    {active ? (<><CheckCircle className="w-4 h-4 mr-1 text-green-500" /> Hoạt động</>) : (<><XCircle className="w-4 h-4 mr-1 text-red-500" /> Khóa</>)}
-  </span>
-);
 
 const ManageStudent: React.FC = () => {
   const [students, setStudents] = useState(initialStudents);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-
-  const handleDelete = (id: number) => {
-    const student = students.find(s => s.id === id);
-    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" khỏi lớp học này không?\n\nHành động này không thể hoàn tác.`;
-    
-    if (window.confirm(confirmMessage)) {
-    setStudents(students.filter((s) => s.id !== id));
-      alert("Đã xóa sinh viên khỏi lớp học thành công!");
-    }
-  };
 
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -36,26 +33,147 @@ const ManageStudent: React.FC = () => {
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const activeStudents = students.filter(s => s.status).length;
+  const inactiveStudents = students.filter(s => !s.status).length;
+
+  const handleDelete = (id: number) => {
+    const student = students.find(s => s.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" khỏi lớp học này không?\n\nHành động này không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setStudents(students.filter((s) => s.id !== id));
+      alert("Đã xóa sinh viên khỏi lớp học thành công!");
+    }
+  };
+
+  const StudentCard: React.FC<{ student: Student }> = ({ student }) => {
+    return (
+      <div className="group h-full">
+        <Card 
+          className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
+          onClick={() => navigate(`/teacher/students/${student.id}`)}
+        >
+          {/* Header gradient bar */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+          
+          <CardContent className="flex-1 flex flex-col p-6">
+            {/* Header */}
+            <div className="flex items-start gap-4 mb-4">
+              <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold text-sm">
+                  {student.name.charAt(0)}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+                  {student.name}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    {student.mssv}
+                  </span>
+                  {/* <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    student.status 
+                      ? "bg-green-100 text-green-700" 
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    {student.status ? (
+                      <>
+                        <UserCheck className="w-3 h-3 mr-1" />
+                        Hoạt động
+                      </>
+                    ) : (
+                      <>
+                        <UserX className="w-3 h-3 mr-1" />
+                        Khóa
+                      </>
+                    )}
+                  </span> */}
+                </div>
+              </div>
+            </div>
+
+            {/* Student Info */}
+            <div className="space-y-3 mb-4 flex-1">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Mail className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                <span className="font-medium truncate">{student.email}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Phone className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                <span className="font-medium">{student.phone}</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-auto pt-4 border-t border-gray-100 flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/teacher/students/edit/${student.id}`);
+                }}
+              >
+                <Edit className="w-3 h-3 mr-1" /> Sửa
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(student.id);
+                }}
+              >
+                <Trash2 className="w-3 h-3 mr-1" /> Xóa
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-blue-900 mb-1 flex items-center gap-2">
-              <Users className="w-7 h-7 text-blue-600" /> Quản lý sinh viên lớp
-            </h1>
-            <p className="text-gray-500 text-base">Danh sách sinh viên trong lớp này.</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-[1600px] mx-auto space-y-8">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý sinh viên lớp</h1>
+                <p className="text-blue-100 text-lg">Danh sách sinh viên trong lớp học này</p>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{students.length}</div>
+                  <div className="text-blue-100 text-sm">Tổng sinh viên</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{activeStudents}</div>
+                  <div className="text-blue-100 text-sm">Hoạt động</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{inactiveStudents}</div>
+                  <div className="text-blue-100 text-sm">Khóa</div>
+                </div>
+                <Button
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
+                  onClick={() => navigate('/teacher/classes/add')}
+                >
+                  <UserPlus className="w-4 h-4 mr-2" /> Thêm sinh viên
+                </Button>
+              </div>
+            </div>
           </div>
-          <button
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold shadow-lg hover:from-emerald-600 hover:to-teal-600 transition duration-200 transform hover:scale-105"
-            onClick={() => navigate('/teacher/classes/add')}
-          >
-            <UserPlus className="w-5 h-5" /> Thêm sinh viên
-          </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        {/* Search Section */}
+        {/* <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -66,68 +184,29 @@ const ManageStudent: React.FC = () => {
               className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             />
           </div>
+        </div> */}
+
+        {/* Students Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+          {filteredStudents.map((student) => (
+            <StudentCard key={student.id} student={student} />
+          ))}
         </div>
 
-        {/* Students Table */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-                <tr className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
-                  <th className="px-6 py-4 text-left font-semibold">Họ tên</th>
-                  <th className="px-6 py-4 text-left font-semibold">MSSV</th>
-                  <th className="px-6 py-4 text-left font-semibold">Email</th>
-                  <th className="px-6 py-4 text-left font-semibold">Số điện thoại</th>
-                  {/* <th className="px-6 py-4 text-left font-semibold">Trạng thái</th> */}
-                  <th className="px-6 py-4 text-center font-semibold">Hành động</th>
-              </tr>
-            </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredStudents.length === 0 ? (
-                <tr>
-                    <td colSpan={6} className="text-center py-12 text-gray-500">
-                    <Info className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      Không tìm thấy sinh viên nào.
-                  </td>
-                </tr>
-              ) : (
-                  filteredStudents.map((s) => (
-                    <tr key={s.id} className="hover:bg-blue-50 transition-colors duration-200">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold">
-                            {s.name.charAt(0)}
-                          </div>
-                          <span className="font-semibold text-blue-900">{s.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">{s.mssv}</td>
-                      <td className="px-6 py-4 text-gray-600">{s.email}</td>
-                      <td className="px-6 py-4 text-gray-600">{s.phone}</td>
-                      {/* <td className="px-6 py-4">{statusBadge(s.status)}</td> */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-3">
-                          <button 
-                            onClick={() => navigate(`/teacher/students/edit/${s.id}`)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-110"
-                          >
-                            <Edit className="w-5 h-5" />
-                      </button>
-                          <button 
-                            onClick={() => handleDelete(s.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:scale-110"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                      </button>
-                        </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Empty State */}
+        {filteredStudents.length === 0 && (
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
+              <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {searchTerm ? "Không tìm thấy sinh viên nào" : "Chưa có sinh viên nào"}
+              </h3>
+              <p className="text-gray-500">
+                {searchTerm ? "Thử thay đổi từ khóa tìm kiếm" : "Các sinh viên sẽ xuất hiện ở đây"}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

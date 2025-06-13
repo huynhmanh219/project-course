@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, User, Eye, Download, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, User, Eye, Download, Share2, Bookmark, GraduationCap, Star } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
 
 interface Lecture {
   id: number;
@@ -86,7 +88,7 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
 
   if (!lecture) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Đang tải...</p>
@@ -98,197 +100,212 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
   const monHoc = monHocList.find(mh => mh.id === lecture.Mon_Hoc_ID);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-[1600px] mx-auto space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/teacher/lectures')}
-              className="p-3 hover:bg-blue-100 rounded-xl transition-all duration-200 group"
-            >
-              <ArrowLeft className="w-6 h-6 text-blue-600 group-hover:text-blue-700" />
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
-                <BookOpen className="w-8 h-8 text-white" />
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/teacher/lectures')}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 p-3"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight mb-3">Chi tiết bài giảng</h1>
+                  <p className="text-blue-100 text-lg">Quản lý và xem nội dung bài giảng</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-extrabold text-blue-700">Chi tiết bài giảng</h1>
-                <p className="text-blue-600 mt-1">Quản lý nội dung bài giảng</p>
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{lecture.Luot_Xem?.toLocaleString()}</div>
+                  <div className="text-blue-100 text-sm">Lượt xem</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{lecture.Thoi_Luong}</div>
+                  <div className="text-blue-100 text-sm">Phút</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">#{lecture.Thu_Tu}</div>
+                  <div className="text-blue-100 text-sm">Thứ tự</div>
+                </div>
+                <Button
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
+                  onClick={() => navigate(`/teacher/lectures/edit/${lecture.id}`)}
+                >
+                  <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
+                </Button>
               </div>
             </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsBookmarked(!isBookmarked)}
-              className={`p-3 rounded-xl transition-all duration-200 ${
-                isBookmarked 
-                  ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-            </button>
-            <button className="p-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl transition-all duration-200">
-              <Share2 className="w-5 h-5" />
-            </button>
-            <button className="p-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl transition-all duration-200">
-              <Download className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => navigate(`/teacher/lectures/edit/${lecture.id}`)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold shadow-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-105"
-            >
-              <Edit className="w-5 h-5" /> Chỉnh sửa
-            </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Lecture title and info */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(lecture.Trang_Thai || '')}`}>
-                      {lecture.Trang_Thai}
-                    </span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                      Bài {lecture.Thu_Tu}
-                    </span>
+            {/* Lecture Info Card */}
+            <Card className="shadow-lg border border-gray-200 bg-white">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
+                    <BookOpen className="text-white w-8 h-8" />
                   </div>
-                  <h2 className="text-3xl font-bold text-blue-900 mb-3 leading-tight">{lecture.Ten_Bai_Giang}</h2>
-                  <p className="text-gray-600 text-lg leading-relaxed">{lecture.Mo_Ta}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(lecture.Trang_Thai || '')}`}>
+                        {lecture.Trang_Thai}
+                      </span>
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1">
+                        <Hash className="w-3 h-3" />
+                        Bài {lecture.Thu_Tu}
+                      </span>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4 leading-tight">{lecture.Ten_Bai_Giang}</h2>
+                    <p className="text-gray-600 text-lg leading-relaxed">{lecture.Mo_Ta}</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
-                <div className="text-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl mx-auto mb-2">
-                    <Eye className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">{lecture.Luot_Xem?.toLocaleString()}</p>
-                  <p className="text-sm text-gray-600">Lượt xem</p>
+                {/* Quick Actions */}
+                <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsBookmarked(!isBookmarked)}
+                    className={`${
+                      isBookmarked 
+                        ? 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' 
+                        : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
+                    {isBookmarked ? 'Đã lưu' : 'Lưu'}
+                  </Button>
+                  <Button variant="outline" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Xem trước
+                  </Button>
+                  <Button variant="outline" size="sm" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
+                    <Download className="w-4 h-4 mr-2" />
+                    Tải PDF
+                  </Button>
+                  <Button variant="outline" size="sm" className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Chia sẻ
+                  </Button>
                 </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-xl mx-auto mb-2">
-                    <Clock className="w-6 h-6 text-green-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">{lecture.Thoi_Luong}</p>
-                  <p className="text-sm text-gray-600">Phút</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-xl mx-auto mb-2">
-                    <Hash className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">{lecture.Thu_Tu}</p>
-                  <p className="text-sm text-gray-600">Thứ tự</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl mx-auto mb-2">
-                    <BookOpen className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">{monHoc?.ma}</p>
-                  <p className="text-sm text-gray-600">Mã môn</p>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Content */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg">
-                  <FileText className="w-6 h-6 text-white" />
+            {/* Content Card */}
+            <Card className="shadow-lg border border-gray-200 bg-white">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="rounded-xl bg-gradient-to-tr from-green-500 to-emerald-500 p-3 shadow-lg">
+                    <FileText className="text-white w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800">Nội dung bài giảng</h3>
                 </div>
-                <h3 className="text-2xl font-bold text-blue-900">Nội dung bài giảng</h3>
-              </div>
-              <div className="prose prose-blue max-w-none">
-                <div className="bg-gray-50 p-6 rounded-xl border-l-4 border-blue-500">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed">
+                <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200">
+                  <pre className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed text-sm">
                     {lecture.Noi_Dung}
                   </pre>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Course info */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100">
-              <h3 className="text-xl font-bold text-blue-900 mb-4">Thông tin môn học</h3>
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-xl">
-                  <p className="text-sm text-blue-600 font-semibold mb-1">Tên môn học</p>
-                  <p className="text-blue-900 font-bold">{monHoc?.ten}</p>
+            {/* Course Info Card */}
+            <Card className="shadow-lg border border-gray-200 bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 p-2 shadow-lg">
+                    <GraduationCap className="text-white w-5 h-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800">Thông tin môn học</h3>
                 </div>
-                <div className="p-4 bg-blue-50 rounded-xl">
-                  <p className="text-sm text-blue-600 font-semibold mb-1">Mã môn học</p>
-                  <p className="text-blue-900 font-bold">{monHoc?.ma}</p>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <p className="text-sm text-blue-600 font-semibold mb-1">Tên môn học</p>
+                    <p className="text-gray-800 font-bold">{monHoc?.ten}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <p className="text-sm text-blue-600 font-semibold mb-1">Mã môn học</p>
+                    <p className="text-gray-800 font-bold">{monHoc?.ma}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* Author and dates */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100">
-              <h3 className="text-xl font-bold text-blue-900 mb-4">Thông tin khác</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <User className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm text-gray-600">Tác giả</p>
-                    <p className="font-semibold text-gray-900">{lecture.Tac_Gia}</p>
+            {/* Author and Dates Card */}
+            <Card className="shadow-lg border border-gray-200 bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="rounded-xl bg-gradient-to-tr from-orange-500 to-red-500 p-2 shadow-lg">
+                    <User className="text-white w-5 h-5" />
                   </div>
+                  <h3 className="text-xl font-bold text-gray-800">Thông tin khác</h3>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <Calendar className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm text-gray-600">Ngày tạo</p>
-                    <p className="font-semibold text-gray-900">{formatDate(lecture.Ngay_Tao)}</p>
-                  </div>
-                </div>
-                {lecture.Ngay_Cap_Nhat && (
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <Calendar className="w-5 h-5 text-gray-600" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
+                    <User className="w-5 h-5 text-indigo-600" />
                     <div>
-                      <p className="text-sm text-gray-600">Cập nhật lần cuối</p>
-                      <p className="font-semibold text-gray-900">{formatDate(lecture.Ngay_Cap_Nhat)}</p>
+                      <p className="text-sm text-gray-600">Tác giả</p>
+                      <p className="font-semibold text-gray-800">{lecture.Tac_Gia}</p>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
+                    <Calendar className="w-5 h-5 text-indigo-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Ngày tạo</p>
+                      <p className="font-semibold text-gray-800">{formatDate(lecture.Ngay_Tao)}</p>
+                    </div>
+                  </div>
+                  {lecture.Ngay_Cap_Nhat && (
+                    <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
+                      <Calendar className="w-5 h-5 text-indigo-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">Cập nhật lần cuối</p>
+                        <p className="font-semibold text-gray-800">{formatDate(lecture.Ngay_Cap_Nhat)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Quick actions */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100">
-              <h3 className="text-xl font-bold text-blue-900 mb-4">Thao tác nhanh</h3>
-              <div className="space-y-3">
-                <button className="w-full flex items-center gap-3 p-3 text-left hover:bg-blue-50 rounded-xl transition-all duration-200">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Eye className="w-4 h-4 text-blue-600" />
+            {/* Statistics Card */}
+            <Card className="shadow-lg border border-gray-200 bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 p-2 shadow-lg">
+                    <Star className="text-white w-5 h-5" />
                   </div>
-                  <span className="font-semibold text-blue-700">Xem trước</span>
-                </button>
-                <button className="w-full flex items-center gap-3 p-3 text-left hover:bg-green-50 rounded-xl transition-all duration-200">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Download className="w-4 h-4 text-green-600" />
+                  <h3 className="text-xl font-bold text-gray-800">Thống kê</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-lg mx-auto mb-2">
+                      <Eye className="w-4 h-4 text-white" />
+                    </div>
+                    <p className="text-lg font-bold text-gray-800">{lecture.Luot_Xem?.toLocaleString()}</p>
+                    <p className="text-xs text-gray-600">Lượt xem</p>
                   </div>
-                  <span className="font-semibold text-green-700">Tải xuống PDF</span>
-                </button>
-                <button className="w-full flex items-center gap-3 p-3 text-left hover:bg-purple-50 rounded-xl transition-all duration-200">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Share2 className="w-4 h-4 text-purple-600" />
+                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                    <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-lg mx-auto mb-2">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <p className="text-lg font-bold text-gray-800">{lecture.Thoi_Luong}</p>
+                    <p className="text-xs text-gray-600">Phút</p>
                   </div>
-                  <span className="font-semibold text-purple-700">Chia sẻ</span>
-                </button>
-              </div>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

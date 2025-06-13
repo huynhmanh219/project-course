@@ -17,6 +17,12 @@ const taiLieuOptions = [
   { id: 3, name: "Video bài giảng.mp4" },
 ];
 
+// Thêm danh sách khoa từ DepartmentManagement
+const khoaOptions = [
+  { id: 1, name: "Công nghệ thông tin", desc: "CNTT" },
+  { id: 2, name: "Toán học", desc: "Bộ môn Toán" },
+];
+
 const CourseAdd: React.FC = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -24,6 +30,7 @@ const CourseAdd: React.FC = () => {
     tenMonHoc: "",
     moTa: "",
     giangVienId: giangVienOptions[0].id,
+    khoaId: khoaOptions[0].id, // Thêm trường khoa
     ngayTao: new Date().toISOString().slice(0, 10),
     trangThai: true,
     chuong: [] as number[],
@@ -109,6 +116,19 @@ const CourseAdd: React.FC = () => {
             >
               {giangVienOptions.map((gv) => (
                 <option key={gv.id} value={gv.id}>{gv.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">Khoa</label>
+            <select
+              name="khoaId"
+              value={form.khoaId}
+              onChange={handleChange}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+            >
+              {khoaOptions.map((khoa) => (
+                <option key={khoa.id} value={khoa.id}>{khoa.name}</option>
               ))}
             </select>
           </div>

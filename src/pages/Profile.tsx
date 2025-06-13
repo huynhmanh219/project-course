@@ -36,10 +36,10 @@ type UserData = Student | Teacher | Admin;
 // Mock data cho 3 role
 const mockData: Record<UserRole, UserData> = {
   student: {
-    hoTen: "Nguyễn Văn Sinh Viên",
-    mssv: "SV001234",
-    email: "sinhvien@email.com",
-    hinhAnh: "https://ui-avatars.com/api/?name=Nguyen+Van+Sinh+Vien&background=0D8ABC&color=fff",
+  hoTen: "Nguyễn Văn Sinh Viên",
+  mssv: "SV001234",
+  email: "sinhvien@email.com",
+  hinhAnh: "https://ui-avatars.com/api/?name=Nguyen+Van+Sinh+Vien&background=0D8ABC&color=fff",
     role: "student",
     khoa: "Công nghệ thông tin",
     lop: "CNTT1",
@@ -156,7 +156,7 @@ const Profile: React.FC = () => {
       )
     }
     
-    if (currentRole === "teacher") {
+    if (currentRole === "teacher" as unknown as UserRole) {
       const teacherData = userData as Teacher
       return (
         <>
@@ -194,7 +194,7 @@ const Profile: React.FC = () => {
       )
     }
     
-    if (currentRole === "admin") {
+    if (currentRole === "admin" as unknown as UserRole) {
       const adminData = userData as Admin
       return (
         <>
@@ -259,30 +259,30 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-3xl shadow-xl p-8 text-center sticky top-8">
               <div className="relative inline-block mb-6">
-                <div className="relative">
-                  <img
-                    src={hinhAnh}
-                    alt="avatar"
+            <div className="relative">
+              <img
+                src={hinhAnh}
+                alt="avatar"
                     className="w-40 h-40 rounded-full object-cover ring-4 ring-blue-200 ring-offset-4 shadow-2xl mx-auto"
-                  />
-                  {isEditing && (
-                    <div className="absolute -bottom-2 -right-2">
+              />
+              {isEditing && (
+                <div className="absolute -bottom-2 -right-2">
                       <label className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full p-3 cursor-pointer shadow-xl transition-all duration-200 hover:scale-110">
                         <Camera className="w-5 h-5" />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
+              )}
+            </div>
               </div>
               
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-900">{hoTen}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{hoTen}</h2>
                 {getRoleBadge(currentRole)}
                 
                 <div className="pt-4 border-t border-gray-100">
@@ -308,21 +308,21 @@ const Profile: React.FC = () => {
                   <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center mr-3">
                     <User className="w-5 h-5 text-white" />
                   </div>
-                  Họ và tên
-                </label>
+                Họ và tên
+              </label>
                 <Star className="w-5 h-5 text-gray-500" />
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={hoTen}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHoTen(e.target.value)}
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={hoTen}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHoTen(e.target.value)}
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-lg font-semibold focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                  />
-                ) : (
+                />
+              ) : (
                   <div className="text-gray-900 font-bold text-xl">{hoTen}</div>
-                )}
+              )}
               </div>
             </div>
 
@@ -337,7 +337,7 @@ const Profile: React.FC = () => {
                     <Mail className="w-5 h-5 text-white" />
                   </div>
                   Email
-                </label>
+              </label>
                 <Star className="w-5 h-5 text-orange-500" />
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm">
@@ -353,54 +353,54 @@ const Profile: React.FC = () => {
                     <MapPin className="w-5 h-5 text-white" />
                   </div>
                   Khoa
-                </label>
+              </label>
                 <Star className="w-5 h-5 text-green-500" />
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="text-gray-900 font-bold text-xl">{userData.khoa}</div>
-              </div>
             </div>
+          </div>
 
-            {/* Action Buttons */}
+          {/* Action Buttons */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <div className="flex flex-wrap gap-4">
-                {isEditing ? (
-                  <>
-                    <Button 
-                      onClick={handleSave} 
+            {isEditing ? (
+              <>
+                <Button 
+                  onClick={handleSave} 
                       className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg"
-                    >
+                >
                       <Save className="w-5 h-5" />
-                      Lưu thay đổi
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsEditing(false)}
+                  Lưu thay đổi
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditing(false)}
                       className="flex-1 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-bold px-8 py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg hover:bg-gray-50"
                     >
                       <X className="w-5 h-5" />
                       Hủy bỏ
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      onClick={() => setIsEditing(true)} 
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  onClick={() => setIsEditing(true)} 
                       className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg"
                     >
                       <Edit className="w-5 h-5" />
                       Chỉnh sửa thông tin
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowPasswordModal(true)}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPasswordModal(true)}
                       className="flex-1 border-2 border-orange-300 hover:border-orange-400 text-orange-700 hover:text-orange-900 hover:bg-orange-50 font-bold px-8 py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg"
-                    >
+                >
                       <KeyRound className="w-5 h-5" />
-                      Đổi mật khẩu
-                    </Button>
-                  </>
-                )}
+                  Đổi mật khẩu
+                </Button>
+              </>
+            )}
               </div>
             </div>
           </div>

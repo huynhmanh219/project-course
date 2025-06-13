@@ -17,11 +17,18 @@ const taiLieuOptions = [
   { id: 3, name: "Video bài giảng.mp4" },
 ];
 
+// Thêm danh sách khoa từ DepartmentManagement
+const khoaOptions = [
+  { id: 1, name: "Công nghệ thông tin", desc: "CNTT" },
+  { id: 2, name: "Toán học", desc: "Bộ môn Toán" },
+];
+
 const fakeCourse = {
   maMonHoc: "MATH10",
   tenMonHoc: "Toán 10",
   moTa: "Khóa học Toán nâng cao",
   giangVienId: 1,
+  khoaId: 2,
   ngayTao: "2024-06-01",
   trangThai: true,
   chuong: [1, 2],
@@ -102,6 +109,20 @@ const CourseEdit: React.FC = () => {
             >
               {giangVienOptions.map((gv) => (
                 <option key={gv.id} value={gv.id}>{gv.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">Khoa</label>
+            <select
+              name="khoaId"
+              value={form.khoaId}
+              onChange={handleChange}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+            >
+              {khoaOptions.map((khoa) => (
+                <option key={khoa.id} value={khoa.id}>{khoa.name}</option>
               ))}
             </select>
           </div>
