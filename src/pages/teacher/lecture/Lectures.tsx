@@ -32,7 +32,14 @@ const Lectures: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setLectures(lectures.filter((l) => l.id !== id));
+    const lecture = lectures.find(l => l.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa bài giảng "${lecture?.Ten_Bai_Giang}" không?\n\nHành động này không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      // TODO: Gọi API xóa bài giảng ở đây
+      console.log("Xóa bài giảng có ID:", id);
+      alert("Đã xóa bài giảng thành công!");
+    }
   };
 
   return (

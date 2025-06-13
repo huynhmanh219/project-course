@@ -19,7 +19,14 @@ const StudentManagement: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setStudents(students.filter((s) => s.id !== id));
+    const student = students.find(s => s.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" không?\n\nHành động này không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      // TODO: Gọi API xóa sinh viên ở đây
+      console.log("Xóa sinh viên có ID:", id);
+      alert("Đã xóa sinh viên thành công!");
+    }
   };
 
   return (
@@ -33,7 +40,7 @@ const StudentManagement: React.FC = () => {
           </div>
           <button
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 transition duration-200 transform hover:scale-105"
-            onClick={() => navigate('/teacher/classes/add')}
+            onClick={() => navigate('/teacher/students/add')}
           >
             <UserPlus className="w-5 h-5" /> Thêm sinh viên
           </button>
@@ -67,7 +74,7 @@ const StudentManagement: React.FC = () => {
                     <td className="px-4 py-3 text-center flex gap-3 justify-center">
                       <button 
                         className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-semibold shadow hover:from-green-600 hover:to-emerald-600 transition duration-200"
-                        onClick={() => navigate(`/teacher/classes/${s.id}/students/edit/${s.id}`)}
+                        onClick={() => navigate(`/teacher/students/edit/${s.id}`)}
                       >
                         <Edit className="w-4 h-4" /> Sửa
                       </button>

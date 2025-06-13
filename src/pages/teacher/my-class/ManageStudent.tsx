@@ -21,7 +21,13 @@ const ManageStudent: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setStudents(students.filter((s) => s.id !== id));
+    const student = students.find(s => s.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" khỏi lớp học này không?\n\nHành động này không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setStudents(students.filter((s) => s.id !== id));
+      alert("Đã xóa sinh viên khỏi lớp học thành công!");
+    }
   };
 
   const filteredStudents = students.filter(student => 
@@ -102,7 +108,7 @@ const ManageStudent: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-3">
                           <button 
-                            onClick={() => navigate(`/teacher/classes/${s.id}/students/edit/${s.id}`)}
+                            onClick={() => navigate(`/teacher/students/edit/${s.id}`)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 hover:scale-110"
                           >
                             <Edit className="w-5 h-5" />

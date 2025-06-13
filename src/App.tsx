@@ -80,8 +80,8 @@ export function App() {
                   {/* <Route path="classes/add" element={<TeacherClassAdd />} />
                   <Route path="classes/edit/:id" element={<TeacherClassEdit />} /> */}
                   <Route path="classes/:id/students" element={<TeacherManageStudents />} />
-                  <Route path="classes/students/add" element={<TeacherStudentAdd />} />
-                  <Route path="classes/:id/students/edit/:studentId" element={<TeacherStudentEdit />} />
+                  <Route path="students/add" element={<TeacherStudentAdd />} />
+                  <Route path="students/edit/:studentId" element={<TeacherStudentEdit />} />
                   <Route path="gradebook" element={<TeacherGradebook />} />
                   <Route path="courses" element={<TeacherCourses />} />
                   <Route path="courses/:id" element={<CourseDetail />} />

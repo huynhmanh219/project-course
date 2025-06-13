@@ -11,7 +11,13 @@ const DepartmentManagement: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setDepartments(departments.filter((dep) => dep.id !== id));
+    const department = departments.find(d => d.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa khoa "${department?.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setDepartments(departments.filter((d) => d.id !== id));
+      alert("Đã xóa khoa thành công!");
+    }
   };
 
   return (

@@ -19,7 +19,13 @@ const TeacherCourses: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setCourses(courses.filter((c) => c.id !== id));
+    const course = courses.find(c => c.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa khóa học "${course?.tenKhoaHoc}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setCourses(courses.filter((c) => c.id !== id));
+      alert("Đã xóa khóa học thành công!");
+    }
   };
 
   return (

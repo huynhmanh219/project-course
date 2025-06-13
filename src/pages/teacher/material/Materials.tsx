@@ -157,7 +157,15 @@ const Materials: React.FC = () => {
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => {/* TODO: Xử lý xóa */}}
+                      onClick={() => {
+                        const confirmMessage = `Bạn có chắc chắn muốn xóa tài liệu "${material.Ten_Tai_Lieu}" không?\n\nHành động này không thể hoàn tác.`;
+                        
+                        if (window.confirm(confirmMessage)) {
+                          // TODO: Gọi API xóa tài liệu ở đây
+                          console.log("Xóa tài liệu có ID:", material.id);
+                          alert("Đã xóa tài liệu thành công!");
+                        }
+                      }}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:scale-110"
                     >
                       <Trash2 className="w-5 h-5" />

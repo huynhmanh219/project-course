@@ -27,7 +27,13 @@ const ClassManagement: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setClasses(classes.filter((cls) => cls.id !== id));
+    const classItem = classes.find(c => c.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học "${classItem?.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setClasses(classes.filter((c) => c.id !== id));
+      alert("Đã xóa lớp học thành công!");
+    }
   };
 
   return (

@@ -54,7 +54,7 @@ const ClassEdit: React.FC = () => {
             <input name="name" value={form.name} onChange={handleChange} required className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base" placeholder="Nhập tên lớp học" />
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">Khóa học</label>
+            <label className="block text-gray-700 mb-2 font-semibold">Môn học</label>
             <select name="courseId" value={form.courseId} onChange={handleChange} className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base">
               {courseOptions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>

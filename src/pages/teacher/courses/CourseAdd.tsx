@@ -67,7 +67,7 @@ const CourseAdd: React.FC = () => {
           </div>
         </div>
         <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>
-          <div>
+          {/* <div>
             <label className="block text-gray-700 mb-2 font-semibold">Mã môn học</label>
             <input
               name="maMonHoc"
@@ -77,7 +77,7 @@ const CourseAdd: React.FC = () => {
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
               placeholder="Nhập mã môn học"
             />
-          </div>
+          </div> */}
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Tên môn học</label>
             <input

@@ -69,8 +69,12 @@ const ChapterManagement: React.FC = () => {
   };
 
   const handleDeleteChapter = (id: number) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa chương này?')) {
-      setChapters(chapters.filter(chapter => chapter.ID !== id));
+    const chapter = chapters.find(c => c.ID === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa chương "${chapter?.Ten_Chuong}" không?\n\nHành động này sẽ xóa tất cả bài giảng trong chương và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setChapters(chapters.filter(c => c.ID !== id));
+      alert("Đã xóa chương thành công!");
     }
   };
 

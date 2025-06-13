@@ -85,7 +85,7 @@ const TeacherStudentAdd: React.FC = () => {
           <div className="flex justify-end gap-4 mt-4">
             <button
               type="button"
-              onClick={() => navigate('/teacher/chapters')}
+              onClick={() => navigate('/teacher/students')}
               className="px-6 py-2 bg-gradient-to-r from-gray-300 to-gray-500 text-white rounded-xl font-bold shadow hover:from-gray-500 hover:to-gray-700 transition duration-200"
             >
               Hủy

@@ -17,7 +17,13 @@ const UserManagement: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDelete = (id: number) => {
-    setTeachers(teachers.filter(t => t.id !== id));
+    const user = teachers.find(t => t.id === id);
+    const confirmMessage = `Bạn có chắc chắn muốn xóa người dùng "${user?.hoTen}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      setTeachers(teachers.filter((t) => t.id !== id));
+      alert("Đã xóa người dùng thành công!");
+    }
   };
 
   return (
