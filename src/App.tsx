@@ -50,6 +50,21 @@ import LectureAdd from "./pages/teacher/lecture/LectureAdd"
 import LectureDetail from "./pages/teacher/lecture/LectureDetail"
 import LectureEdit from "./pages/teacher/lecture/LectureEdit"
 
+// Quiz components - Teacher
+import QuizManagement from "./pages/teacher/quiz/QuizManagement"
+import QuizAdd from "./pages/teacher/quiz/QuizAdd"
+import QuizEdit from "./pages/teacher/quiz/QuizEdit"
+import QuizDetail from "./pages/teacher/quiz/QuizDetail"
+import QuizResults from "./pages/teacher/quiz/QuizResults"
+import QuestionAdd from "./pages/teacher/quiz/QuestionAdd"
+import QuestionEdit from "./pages/teacher/quiz/QuestionEdit"
+
+// Quiz components - Student  
+import QuizList from "./pages/student/quiz/QuizList"
+import QuizTaking from "./pages/student/quiz/QuizTaking"
+import QuizResult from "./pages/student/quiz/QuizResult"
+import QuizHistory from "./pages/student/quiz/QuizHistory"
+
 export function App() {
   return (
     <Router>
@@ -74,6 +89,13 @@ export function App() {
                 <Route path="/student/classes/:id" element={<ClassDetail />} />
                 <Route path="/student/profile" element={<Profile />} />
                 <Route path="/student/change-password" element={<ChangePassword />} />
+                
+                {/* Student Quiz routes */}
+                <Route path="/student/quiz" element={<QuizList />} />
+                <Route path="/student/quiz/:id/take" element={<QuizTaking />} />
+                <Route path="/student/quiz/:id/result" element={<QuizResult />} />
+                <Route path="/student/quiz/history" element={<QuizHistory />} />
+                
                 {/* Teacher routes group */}
                 <Route path="/teacher">
                   <Route path="my-classes" element={<ClassManagement />} />
@@ -105,6 +127,16 @@ export function App() {
                   <Route path="lectures/add" element={<LectureAdd />} />
                   <Route path="lectures/:id" element={<LectureDetail />} />
                   <Route path="lectures/edit/:id" element={<LectureEdit />} />
+                  
+                  {/* Quiz management */}
+                  <Route path="quiz" element={<QuizManagement />} />
+                  <Route path="quiz/add" element={<QuizAdd />} />
+                  <Route path="quiz/:id" element={<QuizDetail />} />
+                  <Route path="quiz/:id/edit" element={<QuizEdit />} />
+                  <Route path="quiz/:id/results" element={<QuizResults />} />
+                  <Route path="quiz/:id/questions/add" element={<QuestionAdd />} />
+                  <Route path="quiz/:quizId/questions/:questionId/edit" element={<QuestionEdit />} />
+                  
                   {/* Profile */}
                   <Route path="profile" element={<Profile />} />
                   <Route path="change-password" element={<ChangePassword />} />
@@ -122,6 +154,16 @@ export function App() {
                   <Route path="departments" element={<DepartmentManagement />} />
                   <Route path="departments/add" element={<DepartmentAdd />} />
                   <Route path="departments/edit/:id" element={<DepartmentEdit />} />
+                  
+                  {/* Admin Quiz routes (same as teacher) */}
+                  <Route path="quiz" element={<QuizManagement />} />
+                  <Route path="quiz/add" element={<QuizAdd />} />
+                  <Route path="quiz/:id" element={<QuizDetail />} />
+                  <Route path="quiz/:id/edit" element={<QuizEdit />} />
+                  <Route path="quiz/:id/results" element={<QuizResults />} />
+                  <Route path="quiz/:id/questions/add" element={<QuestionAdd />} />
+                  <Route path="quiz/:quizId/questions/:questionId/edit" element={<QuestionEdit />} />
+                  
                   {/* Profile */}
                   <Route path="profile" element={<Profile />} />
                   <Route path="change-password" element={<ChangePassword />} />

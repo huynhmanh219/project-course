@@ -36,10 +36,10 @@ type UserData = Student | Teacher | Admin;
 // Mock data cho 3 role
 const mockData: Record<UserRole, UserData> = {
   student: {
-  hoTen: "Nguyễn Văn Sinh Viên",
-  mssv: "SV001234",
-  email: "sinhvien@email.com",
-  hinhAnh: "https://ui-avatars.com/api/?name=Nguyen+Van+Sinh+Vien&background=0D8ABC&color=fff",
+    hoTen: "Nguyễn Văn Sinh Viên",
+    mssv: "SV001234",
+    email: "sinhvien@email.com",
+    hinhAnh: "https://ui-avatars.com/api/?name=Nguyen+Van+Sinh+Vien&background=0D8ABC&color=fff",
     role: "student",
     khoa: "Công nghệ thông tin",
     lop: "CNTT1",
@@ -59,15 +59,15 @@ const mockData: Record<UserRole, UserData> = {
     email: "admin@email.com",
     hinhAnh: "https://ui-avatars.com/api/?name=Le+Van+Quan+Tri&background=0D8ABC&color=fff",
     role: "admin",
-    khoa: "Công nghệ thông tin",
-    chucVu: "Quản trị viên",
+    khoa: "Ban Quản Trị Hệ Thống",
+    chucVu: "Quản trị viên cao cấp",
   }
 }
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
-  // Giả lập role, sau này lấy từ context hoặc API
-  const currentRole: UserRole = "teacher"
+  // Giả lập role, sau này lấy từ context hoặc API - đảm bảo đồng bộ với Sidebar
+  const currentRole: UserRole = "admin"
   const userData = mockData[currentRole]
   
   const [hoTen, setHoTen] = useState(userData.hoTen)
@@ -346,7 +346,7 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Department Card */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 hover:shadow-lg transition-all duration-200">
+            {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 hover:shadow-lg transition-all duration-200">
               <div className="flex items-center justify-between mb-4">
                 <label className="flex items-center text-green-700 font-bold text-lg">
                   <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
@@ -359,7 +359,7 @@ const Profile: React.FC = () => {
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <div className="text-gray-900 font-bold text-xl">{userData.khoa}</div>
             </div>
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
             <div className="bg-white rounded-2xl shadow-xl p-6">

@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, BookOpen, Hash, FileText, Layers } from 'lucide-react';
+import { ArrowLeft, Save, BookOpen, Hash, FileText, Layers, Plus, GraduationCap } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 
-// Giả lập danh sách bài giảng
-const baiGiangList = [
-  { id: 1, ten: 'Giới thiệu về Toán cao cấp', monHoc: 'Toán cao cấp' },
-  { id: 2, ten: 'Các khái niệm cơ bản về Web', monHoc: 'Lập trình Web' },
-  { id: 3, ten: 'Tổng quan về CSDL', monHoc: 'Cơ sở dữ liệu' },
+// Giả lập danh sách môn học
+const monHocList = [
+  { id: 1, ten: 'Toán cao cấp' },
+  { id: 2, ten: 'Lập trình Web' },
+  { id: 3, ten: 'Cơ sở dữ liệu' },
 ];
 
 interface Chapter {
   Ten_Chuong: string;
   Mo_Ta: string;
   Thu_Tu: number;
-  Bai_Giang_ID: number;
+  Mon_Hoc_ID: number;
 }
 
 const ChapterAdd: React.FC = () => {
@@ -24,7 +24,7 @@ const ChapterAdd: React.FC = () => {
     Ten_Chuong: '',
     Mo_Ta: '',
     Thu_Tu: 1,
-    Bai_Giang_ID: baiGiangList[0].id,
+    Mon_Hoc_ID: monHocList[0].id,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,7 +54,7 @@ const ChapterAdd: React.FC = () => {
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold tracking-tight">Thêm chương mới</h1>
-                  <p className="text-blue-100 text-lg mt-1">Tạo chương mới cho bài giảng</p>
+                  <p className="text-blue-100 text-lg mt-1">Tạo chương mới cho môn học</p>
                 </div>
               </div>
             </div>
@@ -67,18 +67,18 @@ const ChapterAdd: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-indigo-500" />
-                    Bài giảng <span className="text-red-500">*</span>
+                    <GraduationCap className="w-4 h-4 text-indigo-500" />
+                    Môn học <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={chapter.Bai_Giang_ID}
-                    onChange={e => setChapter({ ...chapter, Bai_Giang_ID: Number(e.target.value) })}
+                    value={chapter.Mon_Hoc_ID}
+                    onChange={e => setChapter({ ...chapter, Mon_Hoc_ID: Number(e.target.value) })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white"
                     required
                   >
-                    {baiGiangList.map(bg => (
-                      <option key={bg.id} value={bg.id}>
-                        {bg.ten} ({bg.monHoc})
+                    {monHocList.map(mh => (
+                      <option key={mh.id} value={mh.id}>
+                        {mh.ten}
                       </option>
                     ))}
                   </select>
@@ -130,22 +130,20 @@ const ChapterAdd: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                <Button
+              <div className="flex gap-3 justify-end pt-6 border-t border-gray-200">
+                <button
                   type="button"
-                  variant="outline"
+                  className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold hover:bg-gray-500 text-base transition-all duration-200"
                   onClick={() => navigate('/teacher/chapters')}
-                  className="px-8 py-3 bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold"
                 >
                   Hủy
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-lg text-base transition-all duration-200"
                 >
-                  <Save className="w-5 h-5 mr-2" />
-                  Lưu chương
-                </Button>
+                  <Plus className="w-5 h-5" /> Lưu
+                </button>
               </div>
             </form>
           </CardContent>

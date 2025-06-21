@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, BookOpen, Hash, FileText, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Save, BookOpen, Hash, FileText, Layers } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 
-// Giả lập danh sách môn học
-const monHocList = [
-  { id: 1, ten: 'Toán cao cấp' },
-  { id: 2, ten: 'Lập trình Web' },
-  { id: 3, ten: 'Cơ sở dữ liệu' },
+// Giả lập danh sách chương
+const chuongList = [
+  { id: 1, ten: 'Chương 1: Giới thiệu Toán cao cấp' },
+  { id: 2, ten: 'Chương 2: Vi phân' },
+  { id: 3, ten: 'Chương 3: Tích phân' },
 ];
 
 interface Lecture {
@@ -16,7 +16,7 @@ interface Lecture {
   Mo_Ta: string;
   Thu_Tu: number;
   Noi_Dung: string;
-  Mon_Hoc_ID: number;
+  Chuong_ID: number;
 }
 
 const LectureEdit: React.FC = () => {
@@ -27,7 +27,7 @@ const LectureEdit: React.FC = () => {
     Mo_Ta: '',
     Thu_Tu: 1,
     Noi_Dung: '',
-    Mon_Hoc_ID: monHocList[0].id,
+    Chuong_ID: chuongList[0].id,
   });
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const LectureEdit: React.FC = () => {
       Mo_Ta: "Bài giảng đầu tiên về Toán cao cấp",
       Thu_Tu: 1,
       Noi_Dung: "Nội dung chi tiết của bài giảng...",
-      Mon_Hoc_ID: 1,
+      Chuong_ID: 1,
     });
   }, [id]);
 
@@ -82,17 +82,17 @@ const LectureEdit: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4 text-indigo-500" />
-                    Môn học <span className="text-red-500">*</span>
+                    <Layers className="w-4 h-4 text-indigo-500" />
+                    Chương <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={lecture.Mon_Hoc_ID}
-                    onChange={e => setLecture({ ...lecture, Mon_Hoc_ID: Number(e.target.value) })}
+                    value={lecture.Chuong_ID}
+                    onChange={e => setLecture({ ...lecture, Chuong_ID: Number(e.target.value) })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white"
                     required
                   >
-                    {monHocList.map(mh => (
-                      <option key={mh.id} value={mh.id}>{mh.ten}</option>
+                    {chuongList.map(ch => (
+                      <option key={ch.id} value={ch.id}>{ch.ten}</option>
                     ))}
                   </select>
                 </div>
@@ -158,22 +158,20 @@ const LectureEdit: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                <Button
+              <div className="flex gap-3 justify-end pt-6 border-t border-gray-200">
+                <button
                   type="button"
-                  variant="outline"
+                  className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold hover:bg-gray-500 text-base transition-all duration-200"
                   onClick={() => navigate('/teacher/lectures')}
-                  className="px-8 py-3 bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold"
                 >
                   Hủy
-                </Button>
-                <Button
+                </button>
+                <button
                   type="submit"
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-lg text-base transition-all duration-200"
                 >
-                  <Save className="w-5 h-5 mr-2" />
-                  Lưu thay đổi
-                </Button>
+                  <Save className="w-5 h-5" /> Lưu
+                </button>
               </div>
             </form>
           </CardContent>

@@ -172,27 +172,27 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
                 {/* Quick Actions */}
                 <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200">
                   <Button
-                    variant="outline"
+                    // variant="outline"
                     size="sm"
                     onClick={() => setIsBookmarked(!isBookmarked)}
                     className={`${
                       isBookmarked 
                         ? 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' 
-                        : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                        : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                     }`}
                   >
                     <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
                     {isBookmarked ? 'Đã lưu' : 'Lưu'}
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
+                  <Button variant="default" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
                     <Eye className="w-4 h-4 mr-2" />
                     Xem trước
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
+                  <Button variant="default" size="sm" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
                     <Download className="w-4 h-4 mr-2" />
                     Tải PDF
                   </Button>
-                  <Button variant="outline" size="sm" className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100">
+                  <Button variant="default" size="sm" className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100">
                     <Share2 className="w-4 h-4 mr-2" />
                     Chia sẻ
                   </Button>

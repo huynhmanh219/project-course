@@ -140,7 +140,7 @@ const ClassManagement: React.FC = () => {
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý lớp học</h1>
+                <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý lớp học phần</h1>
                 <p className="text-blue-100 text-lg">Tạo, chỉnh sửa, xóa và quản lý các lớp học</p>
               </div>
               <div className="flex items-center gap-6">
