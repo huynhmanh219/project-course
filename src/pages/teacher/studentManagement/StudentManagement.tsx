@@ -1,55 +1,130 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, Edit, Trash2, Search, GraduationCap, UserCheck, UserX } from "lucide-react";
+import { Users, UserPlus, Edit, Trash2, Search, GraduationCap, UserCheck, UserX, Loader2 } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
+import { simpleUserService } from '../../../services';
 
 interface Student {
   id: number;
-  name: string;
-  mssv: string;
-  class: string;
-  status: boolean;
+  email: string;
+  is_active: boolean;
+  created_at: string;
+  profile: {
+    id: number;
+    student_id: string;
+    first_name: string;
+    last_name: string;
+    phone?: string;
+    date_of_birth?: string;
+    address?: string;
+    avatar?: string;
+  };
 }
 
-const initialStudents: Student[] = [
-  { id: 1, name: "Nguyễn Văn A", mssv: "SV001", class: "Lớp 10A1", status: true },
-  { id: 2, name: "Trần Thị B", mssv: "SV002", class: "Lớp 11B2", status: true },
-  { id: 3, name: "Lê Văn C", mssv: "SV003", class: "Lớp 10A1", status: false },
-  { id: 4, name: "Phạm Thị D", mssv: "SV004", class: "Lớp 11B2", status: true },
-  { id: 5, name: "Hoàng Văn E", mssv: "SV005", class: "Lớp 10A1", status: false },
-];
-
 const StudentManagement: React.FC = () => {
-  const [students, setStudents] = useState(initialStudents);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0
+  });
   const navigate = useNavigate();
 
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.mssv.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.class.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load students from API
+  const loadStudents = async (page = 1, search = '') => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const params: any = {
+        page: page.toString(),
+        limit: pagination.limit.toString()
+      };
+      
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+      
+      console.log('Loading students with params:', params);
+      const response = await simpleUserService.getStudents(params);
+      
+      console.log('Students API response:', response);
+      
+      if (response.students) {
+        setStudents(response.students);
+        if (response.pagination) {
+          setPagination({
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.pagination.total,
+            totalPages: response.pagination.totalPages
+          });
+        }
+      } else {
+        setError('Không thể tải danh sách sinh viên');
+      }
+    } catch (error: any) {
+      console.error('Error loading students:', error);
+      setError(error.message || 'Lỗi khi tải danh sách sinh viên');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const activeStudents = students.filter(s => s.status).length;
-  const inactiveStudents = students.filter(s => !s.status).length;
+  useEffect(() => {
+    loadStudents();
+  }, []);
 
-  const handleDelete = (id: number) => {
+  // Search handler
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadStudents(1, searchTerm);
+  };
+
+  const filteredStudents = students.filter(student => {
+    if (!searchTerm.trim()) return true;
+    const fullName = `${student.profile?.first_name || ''} ${student.profile?.last_name || ''}`.toLowerCase();
+    const studentId = student.profile?.student_id?.toLowerCase() || '';
+    const email = student.email.toLowerCase();
+    const search = searchTerm.toLowerCase();
+    
+    return fullName.includes(search) || studentId.includes(search) || email.includes(search);
+  });
+
+  const activeStudents = students.filter(s => s.is_active).length;
+  const inactiveStudents = students.filter(s => !s.is_active).length;
+
+  const handleDelete = async (id: number) => {
     const student = students.find(s => s.id === id);
-    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student?.name}" không?\n\nHành động này không thể hoàn tác.`;
+    const fullName = student?.profile ? `${student.profile.first_name} ${student.profile.last_name}` : student?.email;
+    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${fullName}" không?\n\nHành động này không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
-      setStudents(students.filter(s => s.id !== id));
-      alert("Đã xóa sinh viên thành công!");
+      try {
+        // TODO: Implement delete API call
+        // await simpleUserService.deleteStudent(id);
+        alert("Chức năng xóa sinh viên sẽ được triển khai sau!");
+        // loadStudents(pagination.page, searchTerm);
+      } catch (error: any) {
+        alert(`Lỗi khi xóa sinh viên: ${error.message}`);
+      }
     }
   };
 
   const StudentCard: React.FC<{ student: Student }> = ({ student }) => {
+    const fullName = student.profile ? `${student.profile.first_name} ${student.profile.last_name}` : 'Chưa cập nhật tên';
+    const studentId = student.profile?.student_id || 'N/A';
+    
     return (
       <div className="group h-full">
         <Card 
           className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
-       
+          onClick={() => navigate(`/teacher/students/${student.id}`)}
         >
           {/* Header gradient bar */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
@@ -62,18 +137,18 @@ const StudentManagement: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
-                  {student.name}
+                  {fullName}
                 </h3>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                    {student.mssv}
+                    {studentId}
                   </span>
-                  {/* <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                    student.status 
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                    student.is_active 
                       ? "bg-green-100 text-green-700" 
                       : "bg-red-100 text-red-700"
                   }`}>
-                    {student.status ? (
+                    {student.is_active ? (
                       <>
                         <UserCheck className="w-3 h-3 mr-1" />
                         Hoạt động
@@ -84,7 +159,7 @@ const StudentManagement: React.FC = () => {
                         Khóa
                       </>
                     )}
-                  </span> */}
+                  </span>
                 </div>
               </div>
             </div>
@@ -93,8 +168,13 @@ const StudentManagement: React.FC = () => {
             <div className="space-y-3 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                <span className="font-medium">{student.class}</span>
+                <span className="font-medium truncate">{student.email}</span>
               </div>
+              {student.profile?.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span className="font-medium">{student.profile.phone}</span>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -128,6 +208,17 @@ const StudentManagement: React.FC = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Đang tải danh sách sinh viên...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-[1600px] mx-auto space-y-8">
@@ -138,11 +229,11 @@ const StudentManagement: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý sinh viên</h1>
-                <p className="text-blue-100 text-lg">Quản lý thông tin sinh viên trong hệ thống</p>
+                <p className="text-blue-100 text-lg">Quản lý thông tin tất cả sinh viên trong hệ thống</p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{students.length}</div>
+                  <div className="text-2xl font-bold">{pagination.total}</div>
                   <div className="text-blue-100 text-sm">Tổng sinh viên</div>
                 </div>
                 <div className="text-center">
@@ -164,19 +255,38 @@ const StudentManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Section */}
-        {/* <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm sinh viên..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            />
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-red-700">{error}</p>
+            <Button 
+              onClick={() => loadStudents()} 
+              className="mt-2 bg-red-100 hover:bg-red-200 text-red-800"
+            >
+              Thử lại
+            </Button>
           </div>
-        </div> */}
+        )}
+
+        {/* Search Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm sinh viên theo tên, MSSV hoặc email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            <Button type="submit" className="px-6 py-3">
+              <Search className="w-4 h-4 mr-2" />
+              Tìm kiếm
+            </Button>
+          </form>
+        </div>
 
         {/* Students Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
@@ -185,17 +295,47 @@ const StudentManagement: React.FC = () => {
           ))}
         </div>
 
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex justify-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => loadStudents(pagination.page - 1, searchTerm)}
+              disabled={pagination.page <= 1}
+            >
+              Trước
+            </Button>
+            <span className="px-4 py-2 bg-white rounded-lg border">
+              Trang {pagination.page} / {pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => loadStudents(pagination.page + 1, searchTerm)}
+              disabled={pagination.page >= pagination.totalPages}
+            >
+              Sau
+            </Button>
+          </div>
+        )}
+
         {/* Empty State */}
-        {filteredStudents.length === 0 && (
+        {!loading && students.length === 0 && (
           <div className="text-center py-16">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
               <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                {searchTerm ? "Không tìm thấy sinh viên nào" : "Chưa có sinh viên nào"}
-              </h3>
-              <p className="text-gray-500">
-                {searchTerm ? "Thử thay đổi từ khóa tìm kiếm" : "Các sinh viên sẽ xuất hiện ở đây"}
-              </p>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Chưa có sinh viên nào</h3>
+              <p className="text-gray-500">Các sinh viên sẽ xuất hiện ở đây</p>
+            </div>
+          </div>
+        )}
+
+        {/* No Search Results */}
+        {!loading && students.length > 0 && filteredStudents.length === 0 && (
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
+              <Search className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Không tìm thấy sinh viên nào</h3>
+              <p className="text-gray-500">Thử thay đổi từ khóa tìm kiếm</p>
             </div>
           </div>
         )}

@@ -1,70 +1,193 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BookOpen, Edit2, Layers, FileText, X } from "lucide-react";
+import { BookOpen, Edit2, Layers, FileText, X, Loader2, Trash2 } from "lucide-react";
+import { simpleCourseService } from "../../../services/course.service.simple";
 
-const giangVienOptions = [
-  { id: 1, name: "Nguyễn Văn A" },
-  { id: 2, name: "Trần Thị B" },
-];
-const chuongOptions = [
-  { id: 1, name: "Chương 1: Số học" },
-  { id: 2, name: "Chương 2: Đại số" },
-  { id: 3, name: "Chương 3: Hình học" },
-];
-const taiLieuOptions = [
-  { id: 1, name: "Tài liệu chương 1.pdf" },
-  { id: 2, name: "Slide bài giảng.pptx" },
-  { id: 3, name: "Video bài giảng.mp4" },
-];
+interface Lecturer {
+  id: number;
+  profile: {
+    first_name: string;
+    last_name: string;
+  };
+  email: string;
+}
 
-// Thêm danh sách khoa từ DepartmentManagement
-const khoaOptions = [
-  { id: 1, name: "Công nghệ thông tin", desc: "CNTT" },
-  { id: 2, name: "Toán học", desc: "Bộ môn Toán" },
-];
-
-const fakeCourse = {
-  maMonHoc: "MATH10",
-  tenMonHoc: "Toán 10",
-  moTa: "Khóa học Toán nâng cao",
-  giangVienId: 1,
-  khoaId: 2,
-  ngayTao: "2024-06-01",
-  trangThai: true,
-  chuong: [1, 2],
-  taiLieu: [1],
-};
+interface Course {
+  id: number;
+  subject_name: string;
+  description: string;
+  subject_code: string;
+  lecturer_id: number;
+  credits: number;
+  semester: string;
+  academic_year: string;
+  lecturer?: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    title: string;
+    department: string;
+    account: {
+      email: string;
+    };
+  };
+}
 
 const CourseEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [form, setForm] = useState(fakeCourse);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lecturers, setLecturers] = useState<Lecturer[]>([]);
+  const [course, setCourse] = useState<Course | null>(null);
+  
+  const [form, setForm] = useState({
+    subject_name: '',
+    description: '',
+    subject_code: '',
+    lecturer_id: 0,
+    credits: 3,
+    semester: 'fall',
+    academic_year: '2024-2025'
+  });
+
+  // Load course data and lecturers
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Load course details and lecturers in parallel
+        const [courseResponse, lecturersResponse] = await Promise.all([
+          simpleCourseService.getCourse(Number(id)),
+          simpleCourseService.getLecturers()
+        ]);
+        
+        console.log('Course data:', courseResponse);
+        console.log('Lecturers data:', lecturersResponse);
+        
+        // Set course data - backend returns { data: { course: {...} } }
+        const courseData = courseResponse.course || courseResponse;
+        setCourse(courseData);
+        setForm({
+          subject_name: courseData.subject_name || '',
+          description: courseData.description || '',
+          subject_code: courseData.subject_code || '',
+          lecturer_id: courseData.lecturer_id || 0,
+          credits: courseData.credits || 3,
+          semester: courseData.semester || 'fall',
+          academic_year: courseData.academic_year || '2024-2025'
+        });
+        
+        // Set lecturers - backend returns array of teacher objects
+        setLecturers(lecturersResponse || []);
+        
+      } catch (error: any) {
+        console.error('Error loading data:', error);
+        setError(error.message || 'Không thể tải dữ liệu');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      loadData();
+    }
+  }, [id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type } = e.target;
-    if (name === "chuong" || name === "taiLieu") {
-      const select = e.target as HTMLSelectElement;
-      const selected = Array.from(select.selectedOptions).map((o) => Number(o.value));
-      setForm({ ...form, [name]: selected });
-    } else {
       setForm({
         ...form,
-        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: type === "number" ? Number(value) : value,
       });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setSaving(true);
+      setError(null);
+      
+      console.log('Updating course:', form);
+      
+      await simpleCourseService.updateCourse(Number(id), form);
+      
+      alert("Đã cập nhật môn học thành công!");
+    navigate("/teacher/courses");
+      
+    } catch (error: any) {
+      console.error('Error updating course:', error);
+      setError(error.message || 'Không thể cập nhật môn học');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleRemove = (name: "chuong" | "taiLieu", id: number) => {
-    setForm({ ...form, [name]: form[name].filter((v) => v !== id) });
+  const handleDelete = async () => {
+    if (!course) return;
+
+    try {
+      // First, check if course has active classes
+      console.log('Checking classes for course:', id);
+      const classes = await simpleCourseService.getClassesBySubject(Number(id));
+      
+      if (classes && classes.length > 0) {
+        const classNames = classes.map((cls: any) => cls.section_name).join(', ');
+        const confirmMessage = `Môn học "${course.subject_name}" có ${classes.length} lớp học đang hoạt động:\n\n${classNames}\n\nBạn cần xóa tất cả các lớp học này trước khi có thể xóa môn học.\n\nBạn có muốn chuyển đến trang "Quản lý lớp học" để xóa các lớp này không?`;
+        
+        if (window.confirm(confirmMessage)) {
+          navigate('/teacher/classes');
+        }
+        return;
+      }
+
+      // If no classes, proceed with normal delete confirmation
+      const confirmMessage = `Bạn có chắc chắn muốn xóa môn học "${course.subject_name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+      
+      if (window.confirm(confirmMessage)) {
+        setDeleting(true);
+        setError(null);
+        
+        console.log('Deleting course:', id);
+        
+        await simpleCourseService.deleteCourse(Number(id));
+        
+        alert("Đã xóa môn học thành công!");
+        navigate("/teacher/courses");
+      }
+    } catch (error: any) {
+      console.error('Error deleting course:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Không thể xóa môn học';
+      if (error.message.includes('Cannot delete course with active sections')) {
+        errorMessage = `Không thể xóa môn học "${course.subject_name}"!\n\nMôn học này vẫn còn có lớp học đang hoạt động. Vui lòng xóa tất cả các lớp học trước khi xóa môn học.\n\nBạn có thể vào mục "Quản lý lớp học" để xóa các lớp học liên quan.`;
+        alert(errorMessage);
+      } else {
+        setError(error.message || errorMessage);
+      }
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Đã cập nhật khoá học: " + JSON.stringify(form, null, 2));
-    navigate("/teacher/courses");
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Đang tải thông tin môn học...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4 flex items-center justify-center">
@@ -76,91 +199,164 @@ const CourseEdit: React.FC = () => {
             <p className="text-blue-100 text-base">Cập nhật thông tin môn học.</p>
           </div>
         </div>
-        <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Tên môn học</label>
             <input
-              name="tenMonHoc"
-              value={form.tenMonHoc}
+              name="subject_name"
+              value={form.subject_name}
               onChange={handleChange}
               required
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
               placeholder="Nhập tên môn học"
             />
           </div>
+
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">Mã môn học</label>
+            <input
+              name="subject_code"
+              value={form.subject_code}
+              onChange={handleChange}
+              required
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              placeholder="Nhập mã môn học (VD: CS101)"
+            />
+          </div>
+
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Mô tả</label>
             <textarea
-              name="moTa"
-              value={form.moTa}
+              name="description"
+              value={form.description}
               onChange={handleChange}
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
               placeholder="Nhập mô tả môn học"
+              rows={3}
             />
           </div>
+
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Giảng viên phụ trách</label>
             <select
-              name="giangVienId"
-              value={form.giangVienId}
+              name="lecturer_id"
+              value={form.lecturer_id}
               onChange={handleChange}
+              required
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
             >
-              {giangVienOptions.map((gv) => (
-                <option key={gv.id} value={gv.id}>{gv.name}</option>
+              <option value={0}>Chọn giảng viên</option>
+              {lecturers.map((lecturer) => (
+                <option key={lecturer.id} value={lecturer.id}>
+                  {lecturer.profile?.first_name} {lecturer.profile?.last_name} ({lecturer.email})
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">Khoa</label>
+            <label className="block text-gray-700 mb-2 font-semibold">Học kỳ</label>
             <select
-              name="khoaId"
-              value={form.khoaId}
+              name="semester"
+              value={form.semester}
               onChange={handleChange}
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
             >
-              {khoaOptions.map((khoa) => (
-                <option key={khoa.id} value={khoa.id}>{khoa.name}</option>
-              ))}
+              <option value="fall">Học kỳ 1</option>
+              <option value="spring">Học kỳ 2</option>
+              <option value="summer">Học kỳ hè</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-semibold">Ngày tạo</label>
+            <label className="block text-gray-700 mb-2 font-semibold">Năm học</label>
             <input
-              name="ngayTao"
-              value={form.ngayTao}
+              name="academic_year"
+              value={form.academic_year}
               onChange={handleChange}
-              type="date"
+              required
               className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              placeholder="2024-2025"
             />
           </div>
-          <div className="flex items-center gap-2">
+
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">Số tín chỉ</label>
             <input
-              name="trangThai"
-              type="checkbox"
-              checked={form.trangThai}
+              name="credits"
+              type="number"
+              value={form.credits}
               onChange={handleChange}
-              className="w-4 h-4 rounded border-gray-300 focus:ring-blue-500"
+              min={1}
+              max={10}
+              required
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              placeholder="3"
             />
-            <label className="text-gray-700 font-semibold">Hoạt động</label>
           </div>
-          <div className="flex gap-3 justify-end">
+
+          <div className="flex gap-3 justify-between">
             <button
-              type="submit"
-              className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-lg text-base"
+              type="button"
+              disabled={saving || deleting}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl font-semibold shadow-lg text-base
+                ${saving || deleting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
+                }`}
+              onClick={handleDelete}
             >
-              <Edit2 className="w-5 h-5" /> Lưu
+              {deleting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-5 h-5" />
+                  Xóa môn học
+                </>
+              )}
+            </button>
+            
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={saving || deleting}
+                className={`flex items-center gap-2 px-6 py-2 rounded-xl font-semibold shadow-lg text-base
+                  ${saving || deleting 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'
+                  }`}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="w-5 h-5" />
+                    Cập nhật
+                  </>
+                )}
             </button>
             <button
               type="button"
               className="bg-gray-400 text-white px-6 py-2 rounded-xl font-semibold hover:bg-gray-500 text-base"
               onClick={() => navigate("/teacher/courses")}
+                disabled={saving || deleting}
             >
               Hủy
             </button>
+            </div>
           </div>
         </form>
       </div>

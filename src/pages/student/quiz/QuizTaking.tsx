@@ -9,101 +9,173 @@ import {
   ArrowRight,
   Flag,
   Eye,
-  EyeOff
+  EyeOff,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
-
-// Mock data cho bài thi
-const mockQuiz = {
-  id: 1,
-  tenBaiKiemTra: 'Kiểm tra Chương 1 - Giới thiệu Toán cao cấp',
-  moTa: 'Bài kiểm tra 15 phút về kiến thức cơ bản',
-  thoiGianLamBai: 15, // minutes
-  soCauHoi: 10,
-  diemToiDa: 10,
-  ngayBatDau: '2024-01-15T08:00:00',
-  ngayKetThuc: '2024-01-15T23:59:59'
-};
-
-const mockQuestions = [
-  {
-    id: 1,
-    noiDungCauHoi: 'Định nghĩa nào sau đây đúng về giới hạn của hàm số?',
-    loaiCauHoi: 'single_choice' as const,
-    diemSo: 1,
-    thuTu: 1,
-    answers: [
-      { id: 1, noiDungDapAn: 'Giá trị mà hàm số tiến tới khi biến độc lập tiến tới một giá trị nào đó', laDapAnDung: true, thuTu: 1 },
-      { id: 2, noiDungDapAn: 'Giá trị lớn nhất của hàm số', laDapAnDung: false, thuTu: 2 },
-      { id: 3, noiDungDapAn: 'Giá trị nhỏ nhất của hàm số', laDapAnDung: false, thuTu: 3 },
-      { id: 4, noiDungDapAn: 'Đạo hàm của hàm số tại một điểm', laDapAnDung: false, thuTu: 4 }
-    ]
-  },
-  {
-    id: 2,
-    noiDungCauHoi: 'Phép tính đạo hàm của hàm số f(x) = x² + 3x + 2 là:',
-    loaiCauHoi: 'single_choice' as const,
-    diemSo: 1,
-    thuTu: 2,
-    answers: [
-      { id: 5, noiDungDapAn: 'f\'(x) = x + 3', laDapAnDung: false, thuTu: 1 },
-      { id: 6, noiDungDapAn: 'f\'(x) = 2x + 3', laDapAnDung: true, thuTu: 2 },
-      { id: 7, noiDungDapAn: 'f\'(x) = 2x + 6', laDapAnDung: false, thuTu: 3 },
-      { id: 8, noiDungDapAn: 'f\'(x) = x² + 3', laDapAnDung: false, thuTu: 4 }
-    ]
-  },
-  {
-    id: 3,
-    noiDungCauHoi: 'Tích phân ∫x dx bằng:',
-    loaiCauHoi: 'single_choice' as const,
-    diemSo: 1,
-    thuTu: 3,
-    answers: [
-      { id: 9, noiDungDapAn: 'x²/2 + C', laDapAnDung: true, thuTu: 1 },
-      { id: 10, noiDungDapAn: 'x² + C', laDapAnDung: false, thuTu: 2 },
-      { id: 11, noiDungDapAn: 'x + C', laDapAnDung: false, thuTu: 3 },
-      { id: 12, noiDungDapAn: '2x + C', laDapAnDung: false, thuTu: 4 }
-    ]
-  }
-];
+import { authService } from '../../../services/auth.service';
+import SimpleQuizService from '../../../services/quiz.service.simple';
 
 const QuizTaking: React.FC = () => {
   const navigate = useNavigate();
   const { quizId } = useParams();
   
+  // State management
+  const [quiz, setQuiz] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [timeRemaining, setTimeRemaining] = useState(mockQuiz.thoiGianLamBai * 60); // seconds
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [flaggedQuestions, setFlaggedQuestions] = useState<Set<number>>(new Set());
   const [showNavigator, setShowNavigator] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    if (quizId) {
+      loadQuizData();
+    }
+  }, [quizId]);
 
   // Timer effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          handleSubmitQuiz();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            handleSubmitQuiz();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+      return () => clearInterval(timer);
+    }
+  }, [timeRemaining]);
 
   // Auto-save progress every 30 seconds
   useEffect(() => {
-    const autoSave = setInterval(() => {
-      // Save progress to server
-      console.log('Auto-saving progress:', answers);
-    }, 30000);
+    if (quiz && Object.keys(answers).length > 0) {
+      const autoSave = setInterval(() => {
+        saveProgress();
+      }, 30000);
 
-    return () => clearInterval(autoSave);
-  }, [answers]);
+      return () => clearInterval(autoSave);
+    }
+  }, [answers, quiz]);
+
+  const loadQuizData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get current user
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+      
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Loading quiz data for ID:', quizId);
+      
+      // Fetch quiz details
+      const quizResponse = await SimpleQuizService.getQuizById(parseInt(quizId!));
+      console.log('Quiz response:', quizResponse);
+      
+      if (quizResponse && quizResponse.data) {
+        const quizData = quizResponse.data;
+        
+        // Check if quiz is available for taking
+        const now = new Date();
+        const startDate = quizData.start_time ? new Date(quizData.start_time) : null;
+        const endDate = quizData.end_time ? new Date(quizData.end_time) : null;
+        
+        if (startDate && now < startDate) {
+          setError('Bài kiểm tra chưa đến thời gian làm bài');
+          return;
+        }
+        
+        if (endDate && now > endDate) {
+          setError('Bài kiểm tra đã hết thời gian làm bài');
+          return;
+        }
+
+        if (quizData.status !== 'published') {
+          setError('Bài kiểm tra chưa được xuất bản');
+          return;
+        }
+
+        setQuiz({
+          id: quizData.quiz_id || quizData.id,
+          tenBaiKiemTra: quizData.title || quizData.quiz_title || 'Bài kiểm tra',
+          moTa: quizData.description || quizData.instructions || '',
+          thoiGianLamBai: quizData.duration || quizData.time_limit || 60,
+          soCauHoi: quizData.question_count || quizData.total_questions || 0,
+          diemToiDa: quizData.max_score || quizData.total_marks || 10,
+          ngayBatDau: quizData.start_time,
+          ngayKetThuc: quizData.end_time
+        });
+        
+        // Set initial timer
+        const duration = (quizData.duration || quizData.time_limit || 60) * 60; // Convert to seconds
+        setTimeRemaining(duration);
+        
+        // Fetch quiz questions
+        try {
+          const questionsResponse = await SimpleQuizService.getQuizQuestions(parseInt(quizId!));
+          console.log('Questions response:', questionsResponse);
+          
+          if (questionsResponse && questionsResponse.data) {
+            const processedQuestions = questionsResponse.data.map((q: any) => ({
+              id: q.question_id || q.id,
+              noiDungCauHoi: q.question_text || q.content || q.question,
+              loaiCauHoi: q.question_type || 'single_choice',
+              diemSo: q.marks || q.points || 1,
+              thuTu: q.order || q.question_number || q.sort_order || 1,
+              answers: q.answers ? q.answers.map((a: any) => ({
+                id: a.answer_id || a.id,
+                noiDungDapAn: a.answer_text || a.content || a.text,
+                laDapAnDung: a.is_correct || false,
+                thuTu: a.order || a.option_number || 1
+              })) : []
+            }));
+            
+            // Sort questions by order
+            processedQuestions.sort((a: any, b: any) => a.thuTu - b.thuTu);
+            setQuestions(processedQuestions);
+          } else {
+            setError('Không thể tải câu hỏi của bài kiểm tra');
+          }
+        } catch (questionsError) {
+          console.error('Error loading questions:', questionsError);
+          setError('Lỗi khi tải câu hỏi');
+        }
+      } else {
+        setError('Không tìm thấy bài kiểm tra');
+      }
+    } catch (error: any) {
+      console.error('Error loading quiz:', error);
+      setError('Không thể tải dữ liệu bài kiểm tra');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveProgress = async () => {
+    try {
+      console.log('Auto-saving progress:', answers);
+      // TODO: Implement auto-save API call
+      // await SimpleQuizService.saveProgress(quizId, answers);
+    } catch (error) {
+      console.error('Auto-save failed:', error);
+    }
+  };
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -136,14 +208,46 @@ const QuizTaking: React.FC = () => {
   const handleSubmitQuiz = async () => {
     if (isSubmitting) return;
     
+    // Confirmation dialog
+    const unansweredCount = questions.length - Object.keys(answers).length;
+    if (unansweredCount > 0) {
+      const confirmed = window.confirm(
+        `Bạn còn ${unansweredCount} câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?`
+      );
+      if (!confirmed) return;
+    }
+    
     setIsSubmitting(true);
     try {
-      // Submit quiz logic here
       console.log('Submitting quiz with answers:', answers);
-      // Redirect to results page
-      navigate(`/student/quiz/${quizId}/result`);
-    } catch (error) {
+      
+      // Prepare submission data
+      const submissionData = {
+        quiz_id: quiz.id,
+        student_id: user?.id || user?.student_id,
+        answers: Object.entries(answers).map(([questionId, answerId]) => ({
+          question_id: parseInt(questionId),
+          answer_id: answerId,
+          selected_answer: answerId
+        })),
+        time_taken: (quiz.thoiGianLamBai * 60) - timeRemaining,
+        submitted_at: new Date().toISOString()
+      };
+
+      // Submit quiz
+      const submitResponse = await SimpleQuizService.submitQuiz(quiz.id, submissionData);
+      console.log('Submit response:', submitResponse);
+
+      if (submitResponse && submitResponse.data) {
+        // Redirect to results page with submission ID
+        const submissionId = submitResponse.data.submission_id || submitResponse.data.id;
+        navigate(`/student/quiz/${quizId}/result?submission=${submissionId}`);
+      } else {
+        throw new Error('Không nhận được phản hồi từ server');
+      }
+    } catch (error: any) {
       console.error('Error submitting quiz:', error);
+      alert('Lỗi khi nộp bài: ' + (error.message || 'Vui lòng thử lại'));
       setIsSubmitting(false);
     }
   };
@@ -154,9 +258,59 @@ const QuizTaking: React.FC = () => {
     return 'unanswered';
   };
 
-  const currentQuestion = mockQuestions[currentQuestionIndex];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải bài kiểm tra...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Không thể tải bài kiểm tra</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <div className="space-y-2">
+              <Button onClick={() => navigate('/student/quiz')} className="w-full">
+                Quay lại danh sách
+              </Button>
+              <Button onClick={loadQuizData} variant="outline" className="w-full">
+                Thử lại
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!quiz || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Bài kiểm tra trống</h3>
+            <p className="text-gray-600 mb-4">Bài kiểm tra này chưa có câu hỏi nào.</p>
+            <Button onClick={() => navigate('/student/quiz')} className="w-full">
+              Quay lại danh sách
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentQuestionIndex];
   const answeredCount = Object.keys(answers).length;
-  const progress = (answeredCount / mockQuestions.length) * 100;
+  const progress = (answeredCount / questions.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -166,8 +320,8 @@ const QuizTaking: React.FC = () => {
           <div className="flex items-center gap-4">
             <BookOpen className="w-6 h-6" />
             <div>
-              <h1 className="text-xl font-bold">{mockQuiz.tenBaiKiemTra}</h1>
-              <p className="text-blue-100 text-sm">{mockQuiz.soCauHoi} câu hỏi • {mockQuiz.diemToiDa} điểm</p>
+              <h1 className="text-xl font-bold">{quiz.tenBaiKiemTra}</h1>
+              <p className="text-blue-100 text-sm">{questions.length} câu hỏi • {quiz.diemToiDa} điểm</p>
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -198,7 +352,7 @@ const QuizTaking: React.FC = () => {
               {/* Progress */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Đã trả lời: {answeredCount}/{mockQuestions.length}</span>
+                  <span>Đã trả lời: {answeredCount}/{questions.length}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -227,14 +381,14 @@ const QuizTaking: React.FC = () => {
 
               {/* Question Grid */}
               <div className="grid grid-cols-5 gap-2">
-                {mockQuestions.map((question, index) => {
+                {questions.map((question, index) => {
                   const status = getQuestionStatus(question.id);
                   return (
                     <button
                       key={question.id}
                       onClick={() => setCurrentQuestionIndex(index)}
                       className={`
-                        w-10 h-10 rounded-lg text-sm font-medium border-2 transition-all
+                        relative w-10 h-10 rounded-lg text-sm font-medium border-2 transition-all
                         ${currentQuestionIndex === index ? 'border-blue-600' : 'border-transparent'}
                         ${status === 'answered' ? 'bg-green-500 text-white' :
                           status === 'flagged' ? 'bg-yellow-500 text-white' :
@@ -265,7 +419,7 @@ const QuizTaking: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <Badge variant="outline" className="text-blue-600 border-blue-600">
-                        Câu {currentQuestionIndex + 1}/{mockQuestions.length}
+                        Câu {currentQuestionIndex + 1}/{questions.length}
                       </Badge>
                       <Badge variant="secondary">
                         {currentQuestion.diemSo} điểm
@@ -287,30 +441,37 @@ const QuizTaking: React.FC = () => {
 
                 {/* Answer Options */}
                 <div className="space-y-3">
-                  {currentQuestion.answers.map((answer) => (
-                    <label
-                      key={answer.id}
-                      className={`
-                        flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-blue-50
-                        ${answers[currentQuestion.id] === answer.id 
-                          ? 'border-blue-600 bg-blue-50' 
-                          : 'border-gray-200 hover:border-blue-300'
-                        }
-                      `}
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${currentQuestion.id}`}
-                        value={answer.id}
-                        checked={answers[currentQuestion.id] === answer.id}
-                        onChange={() => handleAnswerSelect(currentQuestion.id, answer.id)}
-                        className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="text-gray-900 leading-relaxed">
-                        {answer.noiDungDapAn}
-                      </span>
-                    </label>
-                  ))}
+                  {currentQuestion.answers && currentQuestion.answers.length > 0 ? (
+                    currentQuestion.answers.map((answer: any) => (
+                      <label
+                        key={answer.id}
+                        className={`
+                          flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-blue-50
+                          ${answers[currentQuestion.id] === answer.id 
+                            ? 'border-blue-600 bg-blue-50' 
+                            : 'border-gray-200 hover:border-blue-300'
+                          }
+                        `}
+                      >
+                        <input
+                          type="radio"
+                          name={`question-${currentQuestion.id}`}
+                          value={answer.id}
+                          checked={answers[currentQuestion.id] === answer.id}
+                          onChange={() => handleAnswerSelect(currentQuestion.id, answer.id)}
+                          className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        />
+                        <span className="text-gray-900 leading-relaxed">
+                          {answer.noiDungDapAn}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+                      <p>Câu hỏi này chưa có lựa chọn nào</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -333,10 +494,10 @@ const QuizTaking: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                {answeredCount}/{mockQuestions.length} câu đã trả lời
+                {answeredCount}/{questions.length} câu đã trả lời
               </span>
               
-              {currentQuestionIndex === mockQuestions.length - 1 ? (
+              {currentQuestionIndex === questions.length - 1 ? (
                 <Button
                   onClick={handleSubmitQuiz}
                   disabled={isSubmitting}
@@ -356,7 +517,7 @@ const QuizTaking: React.FC = () => {
                 </Button>
               ) : (
                 <Button
-                  onClick={() => setCurrentQuestionIndex(Math.min(mockQuestions.length - 1, currentQuestionIndex + 1))}
+                  onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3"
                 >
                   Câu tiếp theo

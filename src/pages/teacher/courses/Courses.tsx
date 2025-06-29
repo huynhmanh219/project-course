@@ -1,25 +1,162 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Edit, Trash2, CheckCircle, XCircle, Plus, Info, Calendar, GraduationCap } from "lucide-react";
+import { BookOpen, Edit, Trash2, CheckCircle, XCircle, Plus, Info, Calendar, GraduationCap, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
-
-const initialCourses = [
-  { id: 1, tenKhoaHoc: "Toán 10", moTa: "Khóa học Toán nâng cao", ngayBatDau: "2024-06-01", ngayKetThuc: "2024-07-01", trangThai: true },
-  { id: 2, tenKhoaHoc: "Văn 11", moTa: "Khóa học Văn cơ bản", ngayBatDau: "2024-06-10", ngayKetThuc: "2024-07-10", trangThai: false },
-];
+import { authService } from "../../../services/auth.service";
+import { simpleCourseService as SimpleCourseService } from "../../../services/course.service.simple";
 
 const TeacherCourses: React.FC = () => {
-  const [courses, setCourses] = useState(initialCourses);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingCourseId, setDeletingCourseId] = useState<number | null>(null);
+  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  const handleDelete = (id: number) => {
-    const course = courses.find(c => c.id === id);
-    const confirmMessage = `Bạn có chắc chắn muốn xóa khóa học "${course?.tenKhoaHoc}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get current user
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+      
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Fetching courses...');
+      const response = await SimpleCourseService.getCourses();
+      console.log('Courses response:', response);
+      
+      // Backend returns: { status: 'success', data: { courses: [...], pagination: {...} } }
+      // Check multiple possible response formats
+      let coursesData = [];
+      
+      if (response && response.data && response.data.courses) {
+        // Backend format: response.data.courses
+        coursesData = response.data.courses;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Already processed format: response.data
+        coursesData = response.data;
+      } else if (response && Array.isArray(response)) {
+        // Direct array format
+        coursesData = response;
+      } else {
+        console.warn('Unexpected response format:', response);
+        coursesData = [];
+      }
+      
+      console.log('Courses data to process:', coursesData);
+      
+      if (coursesData && coursesData.length > 0) {
+        // Process course data
+        const processedCourses = coursesData.map((course: any) => ({
+          id: course.id || course.subject_id,
+          tenKhoaHoc: course.subject_name || course.name || 'Chưa có tên',
+          moTa: course.description || course.subject_description || 'Chưa có mô tả',
+          maKhoaHoc: course.subject_code || course.code || '',
+          ngayBatDau: course.start_date || course.created_at || new Date().toISOString().split('T')[0],
+          ngayKetThuc: course.end_date || '',
+          trangThai: course.status === 'active' || course.is_active !== false,
+          giangVien: course.lecturer?.first_name + ' ' + course.lecturer?.last_name || course.lecturer_name || course.teacher_name || 'Chưa phân công',
+          soSinhVien: course.student_count || 0,
+          soTinChi: course.credits || course.credit_hours || 3,
+          hocKy: course.semester || 'Chưa xác định',
+          namHoc: course.academic_year || new Date().getFullYear()
+        }));
+        
+        console.log('Processed courses:', processedCourses);
+        setCourses(processedCourses);
+      } else {
+        console.log('No courses found');
+        setCourses([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching courses:', error);
+      setError('Không thể tải danh sách môn học');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (courseId: number) => {
+    const course = courses.find(c => c.id === courseId);
+    if (!course) return;
+
+    // Prevent deleting if already deleting another course
+    if (deletingCourseId !== null) {
+      alert('Vui lòng đợi quá trình xóa hiện tại hoàn thành');
+      return;
+    }
+
+    try {
+      setDeletingCourseId(courseId);
+      
+      // Try to check classes first, but proceed with delete if check fails
+      let hasClasses = false;
+      let classNames = '';
+      
+      try {
+        console.log('Checking classes for course:', courseId);
+        const classes = await SimpleCourseService.getClassesBySubject(courseId);
+        
+        if (classes && Array.isArray(classes) && classes.length > 0) {
+          hasClasses = true;
+          classNames = classes.map((cls: any) => cls.section_name || cls.name || 'Chưa có tên').join(', ');
+          console.log('Found classes:', classes);
+        }
+      } catch (checkError: any) {
+        console.warn('Error checking classes, proceeding with delete attempt:', checkError);
+        // Continue with delete attempt even if class check fails
+      }
+      
+      if (hasClasses) {
+        const confirmMessage = `Môn học "${course.tenKhoaHoc}" có lớp học đang hoạt động:\n\n${classNames}\n\nBạn cần xóa tất cả các lớp học này trước khi có thể xóa môn học.\n\nBạn có muốn chuyển đến trang "Quản lý lớp học" để xóa các lớp này không?`;
+        
+        if (window.confirm(confirmMessage)) {
+          navigate('/teacher/classes');
+        }
+        return;
+      }
+
+      // If no classes detected, proceed with delete confirmation
+      const confirmMessage = `Bạn có chắc chắn muốn xóa môn học "${course.tenKhoaHoc}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
-      setCourses(courses.filter((c) => c.id !== id));
-      alert("Đã xóa khóa học thành công!");
+        console.log('Deleting course:', courseId);
+        
+        // Call delete API
+        await SimpleCourseService.deleteCourse(courseId);
+        
+        // Remove from local state
+        setCourses(courses.filter((c) => c.id !== courseId));
+        alert("Đã xóa môn học thành công!");
+        
+        // Refresh the list to ensure consistency
+        fetchCourses();
+      }
+    } catch (error: any) {
+      console.error('Error deleting course:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Lỗi khi xóa môn học: ';
+      if (error.message.includes('Cannot delete course with active sections')) {
+        errorMessage = `Không thể xóa môn học "${course.tenKhoaHoc}"!\n\nMôn học này vẫn còn có lớp học đang hoạt động. Vui lòng xóa tất cả các lớp học trước khi xóa môn học.\n\nBạn có thể vào mục "Quản lý lớp học" để xóa các lớp học liên quan.`;
+      } else {
+        errorMessage += (error.message || 'Vui lòng thử lại');
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setDeletingCourseId(null);
     }
   };
 
@@ -43,6 +180,11 @@ const TeacherCourses: React.FC = () => {
                 <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
                   {course.tenKhoaHoc}
                 </h3>
+                {course.maKhoaHoc && (
+                  <div className="text-sm text-blue-600 font-medium mb-2">
+                    {course.maKhoaHoc}
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                     course.trangThai 
@@ -70,8 +212,16 @@ const TeacherCourses: React.FC = () => {
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="w-4 h-4 text-indigo-500 flex-shrink-0" />
                 <span>
-                  {course.ngayBatDau} - {course.ngayKetThuc}
+                  {course.hocKy} - {course.namHoc}
                 </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <GraduationCap className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span>{course.soSinhVien} sinh viên</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <BookOpen className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                <span>{course.soTinChi} tín chỉ</span>
               </div>
             </div>
 
@@ -99,12 +249,21 @@ const TeacherCourses: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                disabled={deletingCourseId === course.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(course.id);
                 }}
               >
+                {deletingCourseId === course.id ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
+                  </>
+                ) : (
+                  <>
                 <Trash2 className="w-3 h-3 mr-1" /> Xóa
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -112,6 +271,21 @@ const TeacherCourses: React.FC = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">Đang tải danh sách môn học...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const activeCount = courses.filter(course => course.trangThai).length;
   const inactiveCount = courses.length - activeCount;
@@ -126,7 +300,9 @@ const TeacherCourses: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý môn học</h1>
-                <p className="text-blue-100 text-lg">Tạo, chỉnh sửa, xóa và quản lý các môn học</p>
+                <p className="text-blue-100 text-lg">
+                  Chào mừng {user?.userName || user?.email}, quản lý các môn học của bạn
+                </p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-center">
@@ -152,24 +328,52 @@ const TeacherCourses: React.FC = () => {
           </div>
         </div>
 
+        {/* Error display */}
+        {error && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 text-red-800">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">{error}</span>
+                <Button 
+                  onClick={fetchCourses}
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  <RefreshCw className="w-4 h-4 mr-1" />
+                  Thử lại
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Course Grid */}
+        {courses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {courses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
         </div>
-
-        {/* Empty State */}
-        {courses.length === 0 && (
+        ) : (
+          /* Empty State */
           <div className="text-center py-16">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
               <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
                 Chưa có môn học nào
               </h3>
-              <p className="text-gray-500">
-                Các môn học sẽ xuất hiện ở đây
+              <p className="text-gray-500 mb-4">
+                Bắt đầu bằng cách tạo môn học đầu tiên của bạn
               </p>
+              <Button 
+                onClick={() => navigate('/teacher/courses/add')}
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm môn học đầu tiên
+              </Button>
             </div>
           </div>
         )}

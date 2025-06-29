@@ -1,34 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Edit, Trash2, CheckCircle, XCircle, Plus, Info, Calendar, GraduationCap, User2 } from 'lucide-react';
+import { BookOpen, Users, Edit, Trash2, CheckCircle, XCircle, Plus, Info, Calendar, GraduationCap, User2, Loader2, AlertCircle, RefreshCw, UserPlus } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
-
-const courseOptions = [
-  { id: 1, name: 'Toán 10' },
-  { id: 2, name: 'Văn 11' },
-];
-const teacherOptions = [
-  { id: 1, name: 'Nguyễn Văn A' },
-  { id: 2, name: 'Trần Thị B' },
-];
-
-const initialClasses = [
-  { id: 1, name: 'Lớp 10A1', courseId: 1, teacherId: 1, description: 'Lớp chuyên Toán', status: true, createdAt: '2024-06-01 10:00' },
-  { id: 2, name: 'Lớp 11B2', courseId: 2, teacherId: 2, description: 'Lớp chuyên Văn', status: false, createdAt: '2024-06-02 09:30' },
-];
+import { authService } from '../../../services/auth.service';
+import { simpleClassService } from '../../../services/class.service.simple';
 
 const ClassManagement: React.FC = () => {
-  const [classes, setClasses] = useState(initialClasses);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingClassId, setDeletingClassId] = useState<number | null>(null);
+  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  const handleDelete = (id: number) => {
-    const classItem = classes.find(c => c.id === id);
-    const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học "${classItem?.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
-    
-    if (window.confirm(confirmMessage)) {
-      setClasses(classes.filter((c) => c.id !== id));
-      alert("Đã xóa lớp học thành công!");
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Get current user
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+      
+      if (!currentUser) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Fetching classes...');
+      const response = await simpleClassService.getClasses();
+      console.log('Classes response:', response);
+      
+      // Backend returns: { data: [...], pagination: {...} }
+      let classesData = response.data || [];
+      
+      console.log('Classes data to process:', classesData);
+      
+      if (classesData && classesData.length > 0) {
+        // Process class data
+        const processedClasses = classesData.map((classItem: any) => ({
+          id: classItem.id,
+          name: classItem.section_name || 'Chưa có tên',
+          description: classItem.schedule || '',
+          course: classItem.subject?.subject_name || 'Chưa có môn học',
+          courseCode: classItem.subject?.subject_code || '',
+          lecturer: classItem.lecturer ? `${classItem.lecturer.first_name} ${classItem.lecturer.last_name}` : 'Chưa phân công',
+          room: classItem.room || '',
+          maxStudents: classItem.max_students || 0,
+          enrollmentCount: classItem.enrollmentCount || 0,
+          startDate: classItem.start_date || '',
+          endDate: classItem.end_date || '',
+          schedule: classItem.schedule || '',
+          status: true, // Default to active for now
+          createdAt: classItem.created_at || new Date().toISOString()
+        }));
+        
+        console.log('Processed classes:', processedClasses);
+        setClasses(processedClasses);
+      } else {
+        console.log('No classes found');
+        setClasses([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching classes:', error);
+      setError('Không thể tải danh sách lớp học phần');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (classId: number) => {
+    const classItem = classes.find(c => c.id === classId);
+    if (!classItem) return;
+
+    // Prevent deleting if already deleting another class
+    if (deletingClassId !== null) {
+      alert('Vui lòng đợi quá trình xóa hiện tại hoàn thành');
+      return;
+    }
+
+    try {
+      // Check if class has enrolled students
+      console.log('Checking students for class:', classId);
+      const studentsResponse = await simpleClassService.getClassStudents(classId);
+      
+      if (studentsResponse.data && studentsResponse.data.length > 0) {
+        const confirmMessage = `Lớp học phần "${classItem.name}" có ${studentsResponse.data.length} sinh viên đang học.\n\nBạn cần xóa tất cả sinh viên khỏi lớp trước khi có thể xóa lớp học phần.\n\nBạn có muốn chuyển đến trang quản lý sinh viên không?`;
+        
+        if (window.confirm(confirmMessage)) {
+          navigate(`/teacher/classes/${classId}/students`);
+        }
+        return;
+      }
+
+      // If no students, proceed with normal delete confirmation
+      const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học phần "${classItem.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
+      
+      if (window.confirm(confirmMessage)) {
+        setDeletingClassId(classId);
+        console.log('Deleting class:', classId);
+        
+        // Call delete API
+        await simpleClassService.deleteClass(classId);
+        
+        // Remove from local state
+        setClasses(classes.filter((c) => c.id !== classId));
+        alert("Đã xóa lớp học phần thành công!");
+        
+        // Refresh the list to ensure consistency
+        fetchClasses();
+      }
+    } catch (error: any) {
+      console.error('Error deleting class:', error);
+      
+      // Handle specific error messages
+      let errorMessage = 'Lỗi khi xóa lớp học phần: ';
+      if (error.message.includes('Cannot delete class with enrolled students')) {
+        errorMessage = `Không thể xóa lớp học phần "${classItem.name}"!\n\nLớp học phần này vẫn còn có sinh viên đang học. Vui lòng xóa tất cả sinh viên khỏi lớp trước khi xóa lớp học phần.`;
+      } else {
+        errorMessage += (error.message || 'Vui lòng thử lại');
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setDeletingClassId(null);
     }
   };
 
@@ -78,16 +178,23 @@ const ClassManagement: React.FC = () => {
             <div className="space-y-3 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <GraduationCap className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                <span className="font-medium">{courseOptions.find(c => c.id === cls.courseId)?.name}</span>
+                <span className="font-medium">{cls.course}</span>
+                {cls.courseCode && <span className="text-xs text-gray-400">({cls.courseCode})</span>}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                <span>{teacherOptions.find(t => t.id === cls.teacherId)?.name}</span>
+                <span>{cls.lecturer}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                <span>{cls.createdAt}</span>
+                <Users className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span>{cls.enrollmentCount}/{cls.maxStudents} sinh viên</span>
               </div>
+              {cls.room && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <span>Phòng: {cls.room}</span>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -114,12 +221,21 @@ const ClassManagement: React.FC = () => {
                 variant="outline" 
                 size="sm" 
                 className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                disabled={deletingClassId === cls.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(cls.id);
                 }}
               >
-                <Trash2 className="w-3 h-3 mr-1" /> Xóa
+                {deletingClassId === cls.id ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3 h-3 mr-1" /> Xóa
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -127,6 +243,21 @@ const ClassManagement: React.FC = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" />
+              <p className="text-gray-600">Đang tải danh sách lớp học phần...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const activeCount = classes.filter(cls => cls.status).length;
   const inactiveCount = classes.length - activeCount;
@@ -141,7 +272,9 @@ const ClassManagement: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý lớp học phần</h1>
-                <p className="text-blue-100 text-lg">Tạo, chỉnh sửa, xóa và quản lý các lớp học</p>
+                <p className="text-blue-100 text-lg">
+                  Chào mừng {user?.userName || user?.email}, quản lý các lớp học phần của bạn
+                </p>
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-center">
@@ -154,18 +287,45 @@ const ClassManagement: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">{classes.length}</div>
-                  <div className="text-blue-100 text-sm">Tổng lớp học</div>
+                  <div className="text-blue-100 text-sm">Tổng lớp học phần</div>
                 </div>
                 <Button
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
                   onClick={() => navigate('/teacher/my-classes/add')}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Thêm lớp học
+                  <Plus className="w-4 h-4 mr-2" /> Thêm lớp học phần
                 </Button>
+                <Button
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-4 py-2 rounded-xl transition-all duration-200"
+                    onClick={() => navigate('/teacher/classes/add')}
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" /> Thêm sinh viên
+                  </Button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Error display */}
+        {error && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 text-red-800">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">{error}</span>
+                <Button 
+                  onClick={fetchClasses}
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  <RefreshCw className="w-4 h-4 mr-1" />
+                  Thử lại
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Class Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
@@ -180,10 +340,10 @@ const ClassManagement: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
               <Users className="mx-auto h-16 w-16 text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                Chưa có lớp học nào
+                Chưa có lớp học phần nào
               </h3>
               <p className="text-gray-500">
-                Các lớp học sẽ xuất hiện ở đây
+                Các lớp học phần sẽ xuất hiện ở đây
               </p>
             </div>
           </div>

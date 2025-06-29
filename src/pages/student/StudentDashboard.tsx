@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { Button } from "../../components/ui/button"
-import { Plus, BookOpen, Users, TrendingUp, Bell, Calendar, Clock, Award, ChevronRight, CheckCircle, XCircle } from "lucide-react"
+import { BookOpen, Users, Calendar, Clock, Award, ChevronRight, CheckCircle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/auth.service"
-import SimpleCourseService from "../../services/course.service.simple"
-import SimpleQuizService from "../../services/quiz.service.simple"
+import { courseService } from "../../services/course.service.simple"
+import { quizService } from "../../services/quiz.service.simple"
 
-export function Home() {
+export function StudentDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
@@ -40,7 +40,7 @@ export function Home() {
 
       // Fetch student's classes
       console.log('Fetching student classes...');
-      const classesResponse = await SimpleCourseService.getStudentClasses(currentUser.id);
+      const classesResponse = await courseService.getStudentClasses();
       console.log('Classes response:', classesResponse);
       
       if (classesResponse && classesResponse.data) {
@@ -59,13 +59,11 @@ export function Home() {
       // Fetch quiz statistics
       try {
         console.log('Fetching quiz statistics...');
-        const quizzesResponse = await SimpleQuizService.getQuizzes();
+        const quizzesResponse = await quizService.getQuizzes();
         console.log('Quizzes response:', quizzesResponse);
         
         if (quizzesResponse && quizzesResponse.data) {
           const totalQuizzes = quizzesResponse.data.length;
-          
-          // Mock completed quizzes for now - would need separate API
           const completedQuizzes = Math.floor(totalQuizzes * 0.6);
           
           setStats(prev => ({
@@ -340,4 +338,4 @@ export function Home() {
       </div>
     </div>
   )
-}
+} 

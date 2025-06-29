@@ -1,95 +1,143 @@
-import axios, { type AxiosResponse, type AxiosError } from 'axios';
+// Simple API configuration - No complex types, use 'any' for simplicity
+export const API_BASE_URL = 'http://localhost:5000/api'; // Backend port
 
-// Base API configuration
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-
-// Create axios instance
-export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
+// Simple auth helper
+const getAuthHeaders = (): any => {
+  const token = localStorage.getItem('token');
+  return {
     'Content-Type': 'application/json',
-  },
-});
-
-// Request interceptor to add auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    
-    if (error.response?.status === 403) {
-      console.error('Access denied. Insufficient permissions.');
-    }
-    
-    if (error.response?.status && error.response.status >= 500) {
-      console.error('Server error. Please try again later.');
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message: string;
-  errors?: any;
-}
-  
-export interface ApiError {
-  message: string;
-  status: number;
-  errors?: any;
-}
-
-// Helper function to handle API responses
-export const handleApiResponse = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-  if (response.data.success) {
-    return response.data.data;
-  }
-  throw new Error(response.data.message || 'API request failed');
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
 };
 
-// Helper function to handle API errors
-export const handleApiError = (error: AxiosError): ApiError => {
+// Handle API response - for compatibility with complex services
+export const handleApiResponse = <T>(response: any): T => {
+  if (response && response.status === 'success') {
+    return response.data;
+  }
+  return response;
+};
+
+// Handle API error - for compatibility with complex services
+export const handleApiError = (error: any): Error => {
+  console.error('API Error:', error);
+  
   if (error.response) {
-    return {
-      message: (error.response.data as any)?.message || 'An error occurred',
-      status: error.response.status,
-      errors: (error.response.data as any)?.errors,
-    };
+    // Server responded with error status
+    const message = error.response.data?.message || error.response.statusText || 'Server error';
+    return new Error(message);
+  } else if (error.request) {
+    // Request was made but no response received
+    return new Error('No response from server');
+  } else {
+    // Something else happened
+    return new Error(error.message || 'Unknown error');
   }
-  
-  if (error.request) {
-    return {
-      message: 'Network error. Please check your connection.',
-      status: 0,
-    };
+};
+
+// Simple API client using fetch
+export const apiClient = {
+  // GET request
+  get: async (url: string): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('GET Error:', error);
+      throw error;
+    }
+  },
+
+  // POST request  
+  post: async (url: string, data: any): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data)
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('POST Error:', error);
+      throw error;
+    }
+  },
+
+  // PUT request
+  put: async (url: string, data: any): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data)
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('PUT Error:', error);
+      throw error;
+    }
+  },
+
+  // DELETE request
+  delete: async (url: string): Promise<any> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      console.error('DELETE Error:', error);
+      throw error;
+    }
   }
-  
-  return {
-    message: error.message || 'An unexpected error occurred',
-    status: 0,
-  };
-}; 
+};
+
+// Simple health check function
+export const testConnection = async (): Promise<any> => {
+  try {
+    const response = await fetch('http://localhost:5000/health');
+    return await response.json();
+  } catch (error: any) {
+    console.error('Connection test failed:', error);
+    throw error;
+  }
+};
+
+// Export for backward compatibility (if needed)
+export default apiClient; 

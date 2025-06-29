@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { Layout } from "./components/Layout"
+import { ProtectedRoute } from "./components/ProtectedRoute"
 
 // Pages
 import { Home } from "./pages/student/Home"
@@ -10,7 +11,7 @@ import { Login } from "./pages/Login"
 import { ChangePassword } from "./pages/ChangePassword"
 import TeacherClasses from "./pages/teacher/my-class/Classes"
 // import TeacherCreateAssignment from "./pages/teacher/CreateAssignment"
-import TeacherManageStudents from "./pages/teacher/my-class/ManageStudent"
+import ManageStudent from "./pages/teacher/my-class/ManageStudent"
 import TeacherGradebook from "./pages/teacher/Gradebook"
 // import { Settings } from "./pages/settings"
 // Admin Pages
@@ -65,6 +66,9 @@ import QuizTaking from "./pages/student/quiz/QuizTaking"
 import QuizResult from "./pages/student/quiz/QuizResult"
 import QuizHistory from "./pages/student/quiz/QuizHistory"
 
+// Test API page
+import TestAPI from "./pages/TestAPI"
+
 export function App() {
   return (
     <Router>
@@ -72,80 +76,263 @@ export function App() {
         {/* Các trang không cần layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/test-api" element={<TestAPI />} />
 
-        {/* Các trang cần layout */}
+        {/* Các trang cần layout và authentication */}
         <Route
           path="/*"
           element={
+            <ProtectedRoute>
             <Layout>
               <Routes>
                 <Route path="/" element={<Home />} />
                 {/* Student routes */}
-                <Route path="/courses" element={<Courses />} />
-                <Route path="/course/:id" element={<Course />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/people" element={<People />} />
-                <Route path="/student/classes" element={<StudentJoinClasses />} />
-                <Route path="/student/classes/:id" element={<ClassDetail />} />
-                <Route path="/student/profile" element={<Profile />} />
-                <Route path="/student/change-password" element={<ChangePassword />} />
+                  <Route path="/courses" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <Courses />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/course/:id" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <Course />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/people" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <People />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/classes" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <StudentJoinClasses />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/classes/:id" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <ClassDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/profile" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/change-password" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <ChangePassword />
+                    </ProtectedRoute>
+                  } />
                 
                 {/* Student Quiz routes */}
-                <Route path="/student/quiz" element={<QuizList />} />
-                <Route path="/student/quiz/:id/take" element={<QuizTaking />} />
-                <Route path="/student/quiz/:id/result" element={<QuizResult />} />
-                <Route path="/student/quiz/history" element={<QuizHistory />} />
+                  <Route path="/student/quiz" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <QuizList />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/quiz/:id/take" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <QuizTaking />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/quiz/:id/result" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <QuizResult />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/quiz/history" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <QuizHistory />
+                    </ProtectedRoute>
+                  } />
                 
                 {/* Teacher routes group */}
                 <Route path="/teacher">
-                  <Route path="my-classes" element={<ClassManagement />} />
-                  {/* <Route path="classes/add" element={<TeacherClassAdd />} />
-                  <Route path="classes/edit/:id" element={<TeacherClassEdit />} /> */}
-                  <Route path="classes/:id/students" element={<TeacherManageStudents />} />
-                  <Route path="students/add" element={<TeacherStudentAdd />} />
-                  <Route path="students/edit/:studentId" element={<TeacherStudentEdit />} />
-                  <Route path="gradebook" element={<TeacherGradebook />} />
-                  <Route path="courses" element={<TeacherCourses />} />
-                  <Route path="courses/:id" element={<CourseDetail />} />
-                  <Route path="courses/add" element={<CourseAdd />} />
-                  <Route path="courses/edit/:id" element={<CourseEdit />} />
-                  <Route path="classes" element={<TeacherClasses />} />
-                  <Route path="classes/add" element={<StudentAddClass />} />
-                  <Route path="my-classes/edit/:id" element={<ClassEdit />} />
-                  <Route path="my-classes/add" element={<ClassAdd />} />
+                    <Route path="my-classes" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ClassManagement />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="classes/:classId/students" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ManageStudent />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherStudentAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students/edit/:studentId" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherStudentEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="gradebook" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherGradebook />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherCourses />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <CourseDetail />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <CourseAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/edit/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <CourseEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="classes" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherClasses />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="classes/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <StudentAddClass />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="my-classes/edit/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ClassEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="my-classes/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ClassAdd />
+                      </ProtectedRoute>
+                    } />
                   {/* Materials management */}
-                  <Route path="materials" element={<TeacherMaterials />} />
-                  <Route path="materials/add" element={<MaterialAdd />} />
-                  <Route path="materials/edit/:id" element={<MaterialEdit />} />
-                  <Route path="students" element={<StudentManagement />} />
+                    <Route path="materials" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherMaterials />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="materials/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <MaterialAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="materials/edit/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <MaterialEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <StudentManagement />
+                      </ProtectedRoute>
+                    } />
                   {/* Chapter management */}
-                  <Route path="chapters" element={<ChapterManagement />} />
-                  <Route path="chapters/add" element={<ChapterAdd />} />
-                  <Route path="chapters/edit/:id" element={<ChapterEdit />} />
+                    <Route path="chapters" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterManagement />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="chapters/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="chapters/edit/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterEdit />
+                      </ProtectedRoute>
+                    } />
                   {/* Lecture management */}
-                  <Route path="lectures" element={<Lectures />} />
-                  <Route path="lectures/add" element={<LectureAdd />} />
-                  <Route path="lectures/:id" element={<LectureDetail />} />
-                  <Route path="lectures/edit/:id" element={<LectureEdit />} />
+                    <Route path="lectures" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <Lectures />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="lectures/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="lectures/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureDetail />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="lectures/edit/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureEdit />
+                      </ProtectedRoute>
+                    } />
                   
                   {/* Quiz management */}
-                  <Route path="quiz" element={<QuizManagement />} />
-                  <Route path="quiz/add" element={<QuizAdd />} />
-                  <Route path="quiz/:id" element={<QuizDetail />} />
-                  <Route path="quiz/:id/edit" element={<QuizEdit />} />
-                  <Route path="quiz/:id/results" element={<QuizResults />} />
-                  <Route path="quiz/:id/questions/add" element={<QuestionAdd />} />
-                  <Route path="quiz/:quizId/questions/:questionId/edit" element={<QuestionEdit />} />
+                    <Route path="quiz" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuizManagement />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuizAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/:id" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuizDetail />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/:id/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuizEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/:id/results" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuizResults />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/:id/questions/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuestionAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="quiz/:quizId/questions/:questionId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <QuestionEdit />
+                      </ProtectedRoute>
+                    } />
                   
                   {/* Profile */}
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="change-password" element={<ChangePassword />} />
+                    <Route path="profile" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="change-password" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChangePassword />
+                      </ProtectedRoute>
+                    } />
                 </Route>
                 {/* Admin routes */}
-                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="/admin" element={
+                    <ProtectedRoute requiredRole={['admin']}>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }>
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="users" element={<UserManagement />} />
-
                   <Route path="courses" element={<TeacherCourses />} />
                   <Route path="statistics" element={<Statistics />} />
                   <Route path="teachers/add" element={<TeacherAdd />} />
@@ -170,6 +357,7 @@ export function App() {
                 </Route>
               </Routes>
             </Layout>
+            </ProtectedRoute>
           }
         />
       </Routes>

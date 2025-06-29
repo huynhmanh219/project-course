@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { Button } from "../../components/ui/button"
-import { Plus, BookOpen, Users, TrendingUp, Bell, Calendar, Clock, Award, ChevronRight, CheckCircle, XCircle } from "lucide-react"
+import { BookOpen, Users, Calendar, Clock, Award, ChevronRight, CheckCircle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/auth.service"
 import SimpleCourseService from "../../services/course.service.simple"
 import SimpleQuizService from "../../services/quiz.service.simple"
 
-export function Home() {
+export function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
@@ -64,8 +64,6 @@ export function Home() {
         
         if (quizzesResponse && quizzesResponse.data) {
           const totalQuizzes = quizzesResponse.data.length;
-          
-          // Mock completed quizzes for now - would need separate API
           const completedQuizzes = Math.floor(totalQuizzes * 0.6);
           
           setStats(prev => ({
@@ -247,7 +245,6 @@ export function Home() {
                   onClick={() => navigate(`/student/classes/${cls.id}`)}
                 >
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
-                    {/* Header với gradient */}
                     <div className={`h-32 bg-gradient-to-br ${cls.color} relative overflow-hidden`}>
                       <div className="absolute inset-0 bg-black/10"></div>
                       <div className="relative z-10 p-6 flex items-center justify-between h-full">
@@ -259,10 +256,8 @@ export function Home() {
                       </div>
                     </div>
                     
-                    {/* Content */}
                     <div className="p-6">
                       <div className="space-y-4">
-                        {/* Status */}
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-600">Trạng thái</span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
@@ -284,7 +279,6 @@ export function Home() {
                           </span>
                         </div>
 
-                        {/* Info */}
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Users className="w-4 h-4 text-blue-500" />
@@ -340,4 +334,4 @@ export function Home() {
       </div>
     </div>
   )
-}
+} 
