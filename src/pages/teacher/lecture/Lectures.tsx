@@ -1,186 +1,393 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BookOpen, Edit, Trash2, Plus, Info, Calendar, GraduationCap, Hash } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  Plus, 
+  Video, 
+  Clock, 
+  Eye, 
+  EyeOff, 
+  Edit, 
+  Trash2, 
+  Play,
+  Upload,
+  RefreshCw,
+  AlertCircle,
+  ChevronRight,
+  BookOpen
+} from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
+import { simpleLectureService, simpleChapterService, simpleCourseService } from '../../../services';
 
-const initialLectures = [
-  { 
-    id: 1, 
-    Ten_Bai_Giang: "Giới thiệu về Toán cao cấp", 
-    Mon_Hoc_ID: 1,
-    Thu_Tu: 1,
-    Mo_Ta: "Bài giảng đầu tiên về Toán cao cấp",
-    Ngay_Tao: "2024-03-15"
-  },
-  { 
-    id: 2, 
-    Ten_Bai_Giang: "Các khái niệm cơ bản về Web", 
-    Mon_Hoc_ID: 2,
-    Thu_Tu: 1,
-    Mo_Ta: "Tổng quan về lập trình Web",
-    Ngay_Tao: "2024-03-16"
-  },
-];
+interface Lecture {
+  id: number;
+  chapter_id: number;
+  title: string;
+  content?: string;
+  video_url?: string;
+  duration_minutes?: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  duration_formatted?: string;
+}
 
-const monHocList = [
-  { id: 1, ten: 'Toán cao cấp' },
-  { id: 2, ten: 'Lập trình Web' },
-  { id: 3, ten: 'Cơ sở dữ liệu' },
-];
+interface Chapter {
+  id: number;
+  title: string;
+  subject_id: number;
+}
+
+interface Course {
+  id: number;
+  subject_name: string;
+  subject_code: string;
+}
 
 const Lectures: React.FC = () => {
-  const [lectures, setLectures] = useState(initialLectures);
+  const { courseId, chapterId } = useParams<{ courseId: string; chapterId: string }>();
   const navigate = useNavigate();
+  
+  // States
+  const [course, setCourse] = useState<Course | null>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deletingLectureId, setDeletingLectureId] = useState<number | null>(null);
 
-  const handleDelete = (id: number) => {
-    const lecture = lectures.find(l => l.id === id);
-    const confirmMessage = `Bạn có chắc chắn muốn xóa bài giảng "${lecture?.Ten_Bai_Giang}" không?\n\nHành động này không thể hoàn tác.`;
-    
-    if (window.confirm(confirmMessage)) {
-      console.log("Xóa bài giảng có ID:", id);
-      alert("Đã xóa bài giảng thành công!");
+  useEffect(() => {
+    if (courseId && chapterId) {
+      loadData();
+    }
+  }, [courseId, chapterId]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Load course info
+      const courseResponse = await simpleCourseService.getCourse(Number(courseId));
+      console.log('Course info response:', courseResponse);
+      
+      if (courseResponse.course) {
+        setCourse(courseResponse.course);
+      }
+
+      // Load chapter info
+      const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
+      console.log('Chapter info response:', chapterResponse);
+      
+      if (chapterResponse) {
+        setChapter(chapterResponse);
+        
+        // Load lectures for this chapter
+        await loadLectures();
+      } else {
+        setError('Không tìm thấy thông tin chương');
+      }
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      setError(error.message || 'Lỗi khi tải thông tin');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const LectureCard: React.FC<{ lecture: any }> = ({ lecture }) => {
+  const loadLectures = async () => {
+    try {
+      console.log(`Loading lectures for chapter ${chapterId}...`);
+      
+      const lecturesData = await simpleLectureService.getLecturesByChapter(Number(chapterId));
+      console.log('Lectures data:', lecturesData);
+      
+      if (Array.isArray(lecturesData)) {
+        setLectures(lecturesData.sort((a, b) => a.order_index - b.order_index));
+      } else {
+        setLectures([]);
+      }
+    } catch (error: any) {
+      console.error('Error loading lectures:', error);
+      setLectures([]);
+    }
+  };
+
+  const handleDeleteLecture = async (lectureId: number) => {
+    const lecture = lectures.find(l => l.id === lectureId);
+    if (!lecture) return;
+
+    const confirmMessage = `Bạn có chắc chắn muốn xóa bài giảng "${lecture.title}" không?\n\nHành động này sẽ xóa video và tất cả tài liệu liên quan và không thể hoàn tác.`;
+    
+    if (window.confirm(confirmMessage)) {
+      try {
+        setDeletingLectureId(lectureId);
+        
+        await simpleLectureService.deleteLecture(lectureId);
+        
+        // Remove from local state
+        setLectures(lectures.filter(l => l.id !== lectureId));
+        alert('Đã xóa bài giảng thành công!');
+      } catch (error: any) {
+        console.error('Error deleting lecture:', error);
+        alert(`Lỗi khi xóa bài giảng: ${error.message}`);
+      } finally {
+        setDeletingLectureId(null);
+      }
+    }
+  };
+
+  const handleTogglePublish = async (lectureId: number, currentStatus: boolean) => {
+    try {
+      const newStatus = !currentStatus;
+      await simpleLectureService.togglePublishStatus(lectureId, newStatus);
+      
+      // Update local state
+      setLectures(lectures.map(lecture => 
+        lecture.id === lectureId 
+          ? { ...lecture, is_published: newStatus }
+          : lecture
+      ));
+      
+      const statusText = newStatus ? 'xuất bản' : 'ẩn';
+      alert(`Đã ${statusText} bài giảng thành công!`);
+    } catch (error: any) {
+      console.error('Error toggling publish status:', error);
+      alert(`Lỗi khi thay đổi trạng thái: ${error.message}`);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="group h-full">
-        <Card 
-          className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
-          onClick={() => navigate(`/teacher/lectures/${lecture.id}`)}
-        >
-          {/* Header gradient bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-          
-          <CardContent className="flex-1 flex flex-col p-6">
-            {/* Header */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
-                <BookOpen className="text-white w-6 h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
-                  {lecture.Ten_Bai_Giang}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                    <Hash className="w-3 h-3 mr-1" />
-                    Bài {lecture.Thu_Tu}
-                  </span>
-                </div>
-              </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">Đang tải danh sách bài giảng...</p>
             </div>
-
-            {/* Lecture Info */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <GraduationCap className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                <span className="font-medium">{monHocList.find(mh => mh.id === lecture.Mon_Hoc_ID)?.ten}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                <span>{lecture.Ngay_Tao}</span>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="flex-1">
-              <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-                {lecture.Mo_Ta}
-              </p>
-            </div>
-
-            {/* Footer */}
-            <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/teacher/lectures/edit/${lecture.id}`);
-                }}
-              >
-                <Edit className="w-3 h-3 mr-1" /> Sửa
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(lecture.id);
-                }}
-              >
-                <Trash2 className="w-3 h-3 mr-1" /> Xóa
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-4" />
+              <p className="text-red-800 mb-4">{error}</p>
+              <div className="flex gap-4 justify-center">
+                <Button 
+                  onClick={() => navigate(`/teacher/courses/${courseId}`)} 
+                  variant="outline"
+                >
+                  Quay về môn học
+                </Button>
+                <Button onClick={loadData} className="bg-red-600 hover:bg-red-700">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Thử lại
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const LectureCard: React.FC<{ lecture: Lecture }> = ({ lecture }) => {
+    return (
+      <Card className="hover:shadow-lg transition-all duration-300 border border-gray-200 group">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h3 className="font-bold text-lg text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
+                {lecture.title}
+              </h3>
+              {lecture.content && (
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                  {lecture.content}
+                </p>
+              )}
+            </div>
+            <div className="ml-4 flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${lecture.is_published ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <Video className="w-6 h-6 text-blue-500" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{lecture.duration_minutes || 0} phút</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {lecture.is_published ? (
+                <>
+                  <Eye className="w-4 h-4" />
+                  <span>Đã xuất bản</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="w-4 h-4" />
+                  <span>Bản nháp</span>
+                </>
+              )}
+            </div>
+            {lecture.video_url && (
+              <div className="flex items-center gap-1">
+                <Play className="w-4 h-4 text-green-500" />
+                <span>Có video</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              className="flex-1 bg-blue-500 hover:bg-blue-600"
+              onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/${lecture.id}/edit`)}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Chỉnh sửa
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className={`${lecture.is_published ? 'text-yellow-600 border-yellow-200 hover:bg-yellow-50' : 'text-green-600 border-green-200 hover:bg-green-50'}`}
+              onClick={() => handleTogglePublish(lecture.id, lecture.is_published)}
+            >
+              {lecture.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              disabled={deletingLectureId === lecture.id}
+              onClick={() => handleDeleteLecture(lecture.id)}
+            >
+              {deletingLectureId === lecture.id ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
-  const subjectCount = (subjectId: number) => lectures.filter(l => l.Mon_Hoc_ID === subjectId).length;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
-      <div className="max-w-[1600px] mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(`/teacher/courses/${courseId}`)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Quay lại
+          </Button>
+          <div className="flex-1">
+            <nav className="text-sm text-gray-500 mb-2">
+              <span>Môn học</span> <ChevronRight className="w-4 h-4 inline mx-1" /> 
+              <span>{course?.subject_name}</span> <ChevronRight className="w-4 h-4 inline mx-1" />
+              <span className="text-gray-800 font-medium">Chương: {chapter?.title}</span>
+            </nav>
+            <h1 className="text-2xl font-bold text-gray-800">Quản lý bài giảng</h1>
+          </div>
+        </div>
+
+        {/* Chapter Info */}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div>
-                <h1 className="text-4xl font-bold tracking-tight mb-3">Quản lý bài giảng</h1>
-                <p className="text-blue-100 text-lg">Tạo, chỉnh sửa và quản lý các bài giảng</p>
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <BookOpen className="w-8 h-8" />
+                  <div>
+                    <h2 className="text-3xl font-bold">{chapter?.title}</h2>
+                    <p className="text-indigo-100 text-lg">{course?.subject_name} ({course?.subject_code})</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="bg-white/20 px-3 py-1 rounded-full">
+                    <span>{lectures.length} bài giảng</span>
+                  </div>
+                  <div className="bg-white/20 px-3 py-1 rounded-full">
+                    <span>{lectures.filter(l => l.is_published).length} đã xuất bản</span>
+                  </div>
+                  <div className="bg-white/20 px-3 py-1 rounded-full">
+                    <span>{lectures.reduce((total, l) => total + (l.duration_minutes || 0), 0)} phút</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{subjectCount(1)}</div>
-                  <div className="text-blue-100 text-sm">Toán cao cấp</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{subjectCount(2)}</div>
-                  <div className="text-blue-100 text-sm">Lập trình Web</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{lectures.length}</div>
-                  <div className="text-blue-100 text-sm">Tổng bài giảng</div>
-                </div>
+
+              <div className="flex items-center gap-4">
                 <Button
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
-                  onClick={() => navigate('/teacher/lectures/add')}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/add`)}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Thêm bài giảng
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tạo bài giảng mới
                 </Button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Lecture Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-          {lectures.map((lecture) => (
-            <LectureCard key={lecture.id} lecture={lecture} />
-          ))}
-        </div>
+        {/* Lectures Grid */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Danh sách bài giảng</h3>
+              <p className="text-gray-600">Quản lý nội dung video và tài liệu cho từng bài giảng</p>
+            </div>
+            <Button
+              onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/add`)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload bài giảng
+            </Button>
+          </div>
 
-        {/* Empty State */}
-        {lectures.length === 0 && (
-          <div className="text-center py-16">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
-              <BookOpen className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+          {lectures.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lectures.map((lecture) => (
+                <LectureCard key={lecture.id} lecture={lecture} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
                 Chưa có bài giảng nào
               </h3>
-              <p className="text-gray-500">
-                Các bài giảng sẽ xuất hiện ở đây
+              <p className="text-gray-500 mb-4">
+                Bắt đầu tạo bài giảng đầu tiên cho chương này
               </p>
+              <Button 
+                onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/add`)}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Tạo bài giảng đầu tiên
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

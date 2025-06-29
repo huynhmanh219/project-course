@@ -1,5 +1,5 @@
 // Simple API configuration - No complex types, use 'any' for simplicity
-export const API_BASE_URL = 'http://localhost:5000/api'; // Backend port
+export const API_BASE_URL = 'http://localhost:3000/api'; // Backend port
 
 // Simple auth helper
 const getAuthHeaders = (): any => {

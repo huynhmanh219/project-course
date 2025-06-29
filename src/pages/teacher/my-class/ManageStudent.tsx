@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Search, GraduationCap, Mail, Phone, UserCheck, UserX, Loader2 } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
-import { simpleClassService } from '../../../services';
+import { simpleCourseService } from '../../../services';
 
 interface Student {
   id: number;
@@ -68,12 +68,12 @@ const ManageStudent: React.FC = () => {
       }
       
       console.log(`Loading students for class ${classId} with params:`, params);
-      const response = await simpleClassService.getClassStudents(Number(classId), params);
+      const response = await simpleCourseService.getClassStudents(Number(classId), params);
       
       console.log('Class students API response:', response);
       
-      if (response.data) {
-        setStudents(response.data);
+      if (response.students) {
+        setStudents(response.students);
         setClassInfo(response.class);
         if (response.pagination) {
           setPagination({
@@ -124,7 +124,7 @@ const ManageStudent: React.FC = () => {
     
     if (window.confirm(confirmMessage)) {
       try {
-        await simpleClassService.removeStudentFromClass(Number(classId), studentId);
+        await simpleCourseService.removeStudentFromClass(Number(classId), studentId);
         alert("Đã xóa sinh viên khỏi lớp học thành công!");
         loadClassStudents(pagination.page, searchTerm);
       } catch (error: any) {
@@ -204,7 +204,7 @@ const ManageStudent: React.FC = () => {
             {/* Footer */}
             <div className="mt-auto pt-4 border-t border-gray-100 flex gap-2">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
                 className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
                 onClick={(e) => {
@@ -215,7 +215,7 @@ const ManageStudent: React.FC = () => {
                 <Edit className="w-3 h-3 mr-1" /> Sửa
               </Button>
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
                 className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
                 onClick={(e) => {
@@ -327,7 +327,7 @@ const ManageStudent: React.FC = () => {
         {pagination.totalPages > 1 && (
           <div className="flex justify-center gap-2">
             <Button
-              variant="outline"
+              variant="default"
               onClick={() => loadClassStudents(pagination.page - 1, searchTerm)}
               disabled={pagination.page <= 1}
             >
@@ -337,7 +337,7 @@ const ManageStudent: React.FC = () => {
               Trang {pagination.page} / {pagination.totalPages}
             </span>
             <Button
-              variant="outline"
+              variant="default"
               onClick={() => loadClassStudents(pagination.page + 1, searchTerm)}
               disabled={pagination.page >= pagination.totalPages}
             >
@@ -371,7 +371,7 @@ const ManageStudent: React.FC = () => {
         {/* Back to Class Management */}
         <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => navigate('/teacher/my-classes')}
             className="px-6 py-3"
           >

@@ -13,6 +13,7 @@ import TeacherClasses from "./pages/teacher/my-class/Classes"
 // import TeacherCreateAssignment from "./pages/teacher/CreateAssignment"
 import ManageStudent from "./pages/teacher/my-class/ManageStudent"
 import TeacherGradebook from "./pages/teacher/Gradebook"
+import StudentAddToClass from "./pages/teacher/my-class/StudentAddToClass"
 // import { Settings } from "./pages/settings"
 // Admin Pages
 import AdminLayout from "./pages/admin";
@@ -27,10 +28,10 @@ import RoleManagement from "./pages/admin/RoleManagement";
 import DepartmentManagement from "./pages/admin/DepartmentManagement";
 import DepartmentAdd from "./pages/admin/DepartmentAdd";
 import DepartmentEdit from "./pages/admin/DepartmentEdit";
-import StudentAddClass from "./pages/teacher/my-class/StudentAddClass";
 import ClassEdit from "./pages/teacher/class/ClassEdit";
 import TeacherStudentAdd from "./pages/teacher/studentManagement/TeacherStudentAdd";
 import TeacherStudentEdit from "./pages/teacher/studentManagement/TeacherStudentEdit";
+import TeacherStudentDetail from "./pages/teacher/studentManagement/TeacherStudentDetail";
 import CourseAdd from "./pages/teacher/courses/CourseAdd";
 import CourseEdit from "./pages/teacher/courses/CourseEdit";
 import TeacherMaterials from "./pages/teacher/material/Materials";
@@ -162,9 +163,29 @@ export function App() {
                         <ManageStudent />
                       </ProtectedRoute>
                     } />
+                    <Route path="classes/:classId/add-student" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <StudentAddToClass />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <StudentManagement />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students/:studentId" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherStudentDetail />
+                      </ProtectedRoute>
+                    } />
                     <Route path="students/add" element={
                       <ProtectedRoute requiredRole={['lecturer', 'admin']}>
                         <TeacherStudentAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="students/:studentId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherStudentEdit />
                       </ProtectedRoute>
                     } />
                     <Route path="students/edit/:studentId" element={
@@ -197,6 +218,61 @@ export function App() {
                         <CourseEdit />
                       </ProtectedRoute>
                     } />
+                    
+                    {/* Course-specific Chapter & Lecture routes */}
+                    <Route path="courses/:courseId/chapters/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <Lectures />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures/:lectureId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureEdit />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Course-specific Chapter routes */}
+                    <Route path="courses/:courseId/chapters/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <ChapterEdit />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <Lectures />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures/add" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureAdd />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="courses/:courseId/chapters/:chapterId/lectures/:lectureId/edit" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <LectureEdit />
+                      </ProtectedRoute>
+                    } />
+                    
                     <Route path="classes" element={
                       <ProtectedRoute requiredRole={['lecturer', 'admin']}>
                         <TeacherClasses />
@@ -204,7 +280,7 @@ export function App() {
                     } />
                     <Route path="classes/add" element={
                       <ProtectedRoute requiredRole={['lecturer', 'admin']}>
-                        <StudentAddClass />
+                        <StudentAddToClass />
                       </ProtectedRoute>
                     } />
                     <Route path="my-classes/edit/:id" element={
@@ -231,11 +307,6 @@ export function App() {
                     <Route path="materials/edit/:id" element={
                       <ProtectedRoute requiredRole={['lecturer', 'admin']}>
                         <MaterialEdit />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="students" element={
-                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
-                        <StudentManagement />
                       </ProtectedRoute>
                     } />
                   {/* Chapter management */}

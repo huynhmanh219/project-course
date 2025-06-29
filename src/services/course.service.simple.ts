@@ -407,7 +407,7 @@ class SimpleCourseService {
       const response = await fetch(`${API_BASE_URL}/courses/classes/${classId}/students`, {
         method: 'POST',
         headers: await this.getHeaders(),
-        body: JSON.stringify({ studentIds })
+        body: JSON.stringify({ student_ids: studentIds })
       });
 
       const result = await response.json();
@@ -420,6 +420,30 @@ class SimpleCourseService {
       }
     } catch (error: any) {
       console.error('Enroll students error:', error);
+      throw error;
+    }
+  }
+
+  // Remove student from class
+  async removeStudentFromClass(classId: number, studentId: number): Promise<any> {
+    try {
+      console.log(`Removing student ${studentId} from class ${classId}...`);
+      
+      const response = await fetch(`${API_BASE_URL}/courses/classes/${classId}/students/${studentId}`, {
+        method: 'DELETE',
+        headers: await this.getHeaders()
+      });
+
+      const result = await response.json();
+      console.log('Remove student response:', result);
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        throw new Error(result.message || 'Failed to remove student from class');
+      }
+    } catch (error: any) {
+      console.error('Remove student error:', error);
       throw error;
     }
   }

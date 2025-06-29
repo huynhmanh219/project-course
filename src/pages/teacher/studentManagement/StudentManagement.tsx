@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus, Edit, Trash2, Search, GraduationCap, UserCheck, UserX, Loader2 } from "lucide-react";
+import { Users, UserPlus, Edit, Trash2, Search, GraduationCap, UserCheck, UserX, Loader2, Eye } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleUserService } from '../../../services';
@@ -102,16 +102,22 @@ const StudentManagement: React.FC = () => {
   const handleDelete = async (id: number) => {
     const student = students.find(s => s.id === id);
     const fullName = student?.profile ? `${student.profile.first_name} ${student.profile.last_name}` : student?.email;
-    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${fullName}" không?\n\nHành động này không thể hoàn tác.`;
+    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${fullName}" không?\n\nHành động này sẽ vô hiệu hóa tài khoản và không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
       try {
-        // TODO: Implement delete API call
-        // await simpleUserService.deleteStudent(id);
-        alert("Chức năng xóa sinh viên sẽ được triển khai sau!");
-        // loadStudents(pagination.page, searchTerm);
+        setLoading(true);
+        await simpleUserService.deleteStudent(id);
+        
+        // Show success message
+        alert(`Đã xóa sinh viên "${fullName}" thành công!`);
+        
+        // Reload students list
+        loadStudents(pagination.page, searchTerm);
       } catch (error: any) {
+        console.error('Delete student error:', error);
         alert(`Lỗi khi xóa sinh viên: ${error.message}`);
+        setLoading(false);
       }
     }
   };
@@ -129,33 +135,33 @@ const StudentManagement: React.FC = () => {
           {/* Header gradient bar */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           
-          <CardContent className="flex-1 flex flex-col p-6">
+          <CardContent className="flex-1 flex flex-col p-8">
             {/* Header */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
-                <GraduationCap className="text-white w-6 h-6" />
+            <div className="flex items-start gap-4 mb-6">
+              <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg flex-shrink-0">
+                <GraduationCap className="text-white w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+                <h3 className="font-bold text-2xl text-gray-800 mb-3 line-clamp-2">
                   {fullName}
                 </h3>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">
                     {studentId}
                   </span>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${
                     student.is_active 
                       ? "bg-green-100 text-green-700" 
                       : "bg-red-100 text-red-700"
                   }`}>
                     {student.is_active ? (
                       <>
-                        <UserCheck className="w-3 h-3 mr-1" />
+                        <UserCheck className="w-4 h-4 mr-1.5" />
                         Hoạt động
                       </>
                     ) : (
                       <>
-                        <UserX className="w-3 h-3 mr-1" />
+                        <UserX className="w-4 h-4 mr-1.5" />
                         Khóa
                       </>
                     )}
@@ -165,35 +171,80 @@ const StudentManagement: React.FC = () => {
             </div>
 
             {/* Student Info */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Users className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+            {/* <div className="space-y-4 mb-6 flex-1">
+              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <Users className="w-5 h-5 text-indigo-500 flex-shrink-0" />
                 <span className="font-medium truncate">{student.email}</span>
               </div>
+              
               {student.profile?.phone && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <span className="w-5 h-5 text-indigo-500 flex-shrink-0">📞</span>
                   <span className="font-medium">{student.profile.phone}</span>
                 </div>
               )}
-            </div>
+              
+              {student.profile?.date_of_birth && (
+                <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <span className="w-5 h-5 text-indigo-500 flex-shrink-0">🎂</span>
+                  <span className="font-medium">
+                    {new Date(student.profile.date_of_birth).toLocaleDateString('vi-VN')}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <span className="w-5 h-5 text-indigo-500 flex-shrink-0">📅</span>
+                <span className="font-medium">
+                  Tham gia: {new Date(student.created_at).toLocaleDateString('vi-VN')}
+                </span>
+              </div> */}
+              
+              {/* Quick stats placeholder */}
+              {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-blue-600">-</div>
+                    <div className="text-xs text-gray-600">Lớp đang học</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-blue-600">-</div>
+                    <div className="text-xs text-gray-600">Điểm TB</div>
+                  </div>
+                </div>
+              </div>
+            </div> */}
 
             {/* Footer */}
-            <div className="mt-auto pt-4 border-t border-gray-100 flex gap-2">
+            <div className="mt-auto pt-6 border-t border-gray-100 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 font-medium py-2 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/teacher/students/${student.id}`);
+                  }}
+                >
+                  <Eye className="w-3 h-3 mr-1" /> Chi tiết
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium py-2 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/teacher/students/${student.id}/edit`);
+                  }}
+                >
+                  <Edit className="w-3 h-3 mr-1" /> Sửa
+                </Button>
+              </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/teacher/students/edit/${student.id}`);
-                }}
-              >
-                <Edit className="w-3 h-3 mr-1" /> Sửa
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                className="w-full bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium py-2 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(student.id);
@@ -289,7 +340,7 @@ const StudentManagement: React.FC = () => {
         </div>
 
         {/* Students Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
           {filteredStudents.map((student) => (
             <StudentCard key={student.id} student={student} />
           ))}

@@ -212,6 +212,30 @@ class SimpleUserService {
     }
   }
 
+  // Delete student
+  async deleteStudent(id: number): Promise<any> {
+    try {
+      console.log(`Deleting student ${id}...`);
+      
+      const response = await fetch(`${API_BASE_URL}/users/students/${id}`, {
+        method: 'DELETE',
+        headers: this.getHeaders()
+      });
+
+      const result = await response.json();
+      console.log('Delete student response:', result);
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        throw new Error(result.message || 'Failed to delete student');
+      }
+    } catch (error: any) {
+      console.error('Delete student error:', error);
+      throw error;
+    }
+  }
+
   // ==================== ROLES ====================
   
   // Get roles list
