@@ -289,7 +289,7 @@ const ClassManagement: React.FC = () => {
                   <div className="text-2xl font-bold">{classes.length}</div>
                   <div className="text-blue-100 text-sm">Tổng lớp học phần</div>
                 </div>
-                <Button
+                {/* <Button
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
                   onClick={() => navigate('/teacher/my-classes/add')}
                 >
@@ -300,7 +300,7 @@ const ClassManagement: React.FC = () => {
                     onClick={() => navigate('/teacher/classes/add')}
                   >
                     <UserPlus className="w-4 h-4 mr-2" /> Thêm sinh viên
-                  </Button>
+                  </Button> */}
               </div>
             </div>
           </div>

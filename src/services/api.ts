@@ -1,4 +1,4 @@
-// Simple API configuration - No complex types, use 'any' for simplicity
+
 export const API_BASE_URL = 'http://localhost:3000/api'; // Backend port
 
 // Simple auth helper
@@ -131,7 +131,7 @@ export const apiClient = {
 // Simple health check function
 export const testConnection = async (): Promise<any> => {
   try {
-    const response = await fetch('http://localhost:5000/health');
+    const response = await fetch('http://localhost:3000/health');
     return await response.json();
   } catch (error: any) {
     console.error('Connection test failed:', error);

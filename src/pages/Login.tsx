@@ -130,7 +130,7 @@ export function Login() {
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               <div className="flex items-center">
                 <span className="text-red-500 mr-2">⚠️</span>
-                {error}
+                {error ? "Sai tên đăng nhập hoặc mật khẩu" : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'}
               </div>
             </div>
           )}

@@ -6,45 +6,41 @@ export * from './types';
 
 // Import services first
 import authService from './auth.service';
-import userService from './user.service';
-import courseService from './course.service';
-import lectureService from './lecture.service';
-import materialService from './material.service';
-import { quizService } from './quiz.service';
 
 // Import simple services
 import { simpleUserService } from './user.service.simple';
 import { simpleCourseService } from './course.service.simple';
 import { simpleClassService } from './class.service.simple';
 import { simpleQuizService } from './quiz.service.simple';
+import { simpleChapterService } from './chapter.service.simple';
+import { simpleLectureService } from './lecture.service.simple';
+import { simpleMaterialService } from './material.service.simple';
+import { simpleMaterialService } from './material.service.simple';
 
 // Export services
 export {
   authService,
-  userService,
-  courseService,
-  lectureService,
-  materialService,
-  quizService,
+
   simpleUserService,
   simpleCourseService,
   simpleClassService,
   simpleQuizService,
+  simpleChapterService,
+  simpleLectureService,
+  simpleMaterialService,
 };
 
 // Service collection object
 export const services = {
   auth: authService,
-  user: userService,
-  course: courseService,
-  lecture: lectureService,
-  material: materialService,
-  quiz: quizService,
   simpleUser: simpleUserService,
   simpleCourse: simpleCourseService,
   simpleClass: simpleClassService,
   simpleQuiz: simpleQuizService,
+  simpleChapter: simpleChapterService,
+  simpleLecture: simpleLectureService,
+  simpleMaterial: simpleMaterialService,
 };
 
 // Default export
-export default services; 
+export default services;

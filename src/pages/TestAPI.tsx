@@ -4,6 +4,7 @@ import { authService } from '../services/auth.service'
 import { simpleUserService } from '../services/user.service.simple'
 import { simpleCourseService } from '../services/course.service.simple'
 import { simpleQuizService } from '../services/quiz.service.simple'
+import { simpleMaterialService } from '../services/material.service.simple'
 
 export default function TestAPI() {
   const [result, setResult] = useState<any>(null)
@@ -127,6 +128,93 @@ export default function TestAPI() {
       setQuizError(err.message || `${testType} failed`)
     } finally {
       setQuizLoading(false)
+    }
+  }
+
+  const testMaterialsAPI = async () => {
+    setLoading(true)
+    setError('')
+    setResult(null)
+    
+    try {
+      console.log('Testing materials API...')
+      
+      // Test basic fetch first
+      const basicTest = await fetch('http://localhost:3000/api/materials?page=1&size=5', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      console.log('Basic fetch response status:', basicTest.status)
+      console.log('Basic fetch response ok:', basicTest.ok)
+      
+      if (!basicTest.ok) {
+        const errorText = await basicTest.text()
+        console.log('Basic fetch error:', errorText)
+        throw new Error(`HTTP ${basicTest.status}: ${errorText}`)
+      }
+      
+      const basicResult = await basicTest.json()
+      console.log('Basic fetch result:', basicResult)
+      
+      // Test with service
+      const serviceResult = await simpleMaterialService.getMaterials({ page: 1, size: 5 })
+      console.log('Service result:', serviceResult)
+      
+      setResult({
+        basicFetch: basicResult,
+        serviceCall: serviceResult,
+        status: 'SUCCESS'
+      })
+      
+    } catch (err: any) {
+      console.error('API test error:', err)
+      setError(err.message || 'Unknown error')
+      setResult({
+        error: err.message,
+        status: 'ERROR'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const testServerConnection = async () => {
+    setLoading(true)
+    setError('')
+    setResult(null)
+    
+    try {
+      console.log('Testing server connection...')
+      
+      const response = await fetch('http://localhost:3000/api', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const text = await response.text()
+      
+      setResult({
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        response: text,
+        type: 'SERVER_CONNECTION'
+      })
+      
+    } catch (err: any) {
+      console.error('Server connection error:', err)
+      setError(err.message || 'Cannot connect to server')
+      setResult({
+        error: err.message,
+        type: 'CONNECTION_ERROR'
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -595,6 +683,54 @@ export default function TestAPI() {
         <div className="mt-4 p-3 bg-blue-100 rounded">
           <h4 className="font-semibold text-blue-900 mb-1">🎉 Next Phase: Real Page Implementation</h4>
           <p className="text-blue-800 text-sm">Once Quiz APIs are tested → implement Login page, Dashboard, and main application pages!</p>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">API Debug Tool</h2>
+        
+        <div className="flex gap-4">
+          <button
+            onClick={testServerConnection}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+          >
+            {loading ? 'Testing...' : 'Test Server Connection'}
+          </button>
+          
+          <button
+            onClick={testMaterialsAPI}
+            disabled={loading}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+          >
+            {loading ? 'Testing...' : 'Test Materials API'}
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-4">
+            <h3 className="font-semibold text-red-800 mb-2">Error:</h3>
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {result && (
+          <div className="bg-gray-50 border rounded p-4">
+            <h3 className="font-semibold mb-2">Result:</h3>
+            <pre className="text-sm overflow-auto bg-white p-4 rounded border">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        <div className="bg-blue-50 border border-blue-200 rounded p-4">
+          <h3 className="font-semibold text-blue-800 mb-2">Debug Info:</h3>
+          <ul className="text-blue-700 space-y-1 text-sm">
+            <li>• Backend URL: http://localhost:3000</li>
+            <li>• API Base: http://localhost:3000/api</li>
+            <li>• Materials endpoint: /api/materials</li>
+            <li>• Current time: {new Date().toLocaleString()}</li>
+          </ul>
         </div>
       </div>
     </div>

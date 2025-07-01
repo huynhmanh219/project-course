@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BookOpen, Edit2, Loader2, Trash2 } from "lucide-react";
-import { simpleClassService } from "../../../services/class.service.simple";
+import  {simpleClassService}  from "../../../services/class.service.simple";
 import { simpleCourseService } from "../../../services/course.service.simple";
 import { authService } from "../../../services/auth.service";
 
@@ -15,6 +15,7 @@ const ClassEdit: React.FC = () => {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [lecturers, setLecturers] = useState<any[]>([]);
   const [classData, setClassData] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [form, setForm] = useState({
     subject_id: 0,
@@ -33,37 +34,68 @@ const ClassEdit: React.FC = () => {
         setLoading(true);
         setError(null);
         
+        // Get current user first
+        const currentUser = authService.getCurrentUser();
+        setCurrentUser(currentUser);
+        
+        if (!currentUser) {
+          navigate('/login');
+          return;
+        }
+        
+        // Check basic permissions
+        if (!['admin', 'lecturer'].includes(currentUser.role?.toLowerCase())) {
+          setError('Bạn không có quyền chỉnh sửa lớp học phần');
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+        
         // Load class details, subjects and lecturers in parallel
         const [classResponse, subjectsResponse, lecturersResponse] = await Promise.all([
           simpleClassService.getClass(Number(id)),
           simpleCourseService.getCourses(),
-          simpleCourseService.getLecturers()
+          currentUser.role?.toLowerCase() === 'admin' ? simpleCourseService.getLecturers() : Promise.resolve([])
         ]);
+        
+        console.log('🔄 Class data:', classResponse);
+        console.log('🔄 Subjects data:', subjectsResponse);
+        console.log('🔄 Lecturers data:', lecturersResponse);
+        console.log('👤 Current user:', currentUser);
         
         // Set class data - backend returns { data: { class: {...} } }
         const currentClass = classResponse.class || classResponse;
         setClassData(currentClass);
         
-        // Check permission - only lecturer assigned to this class or admin can edit
-        const currentUser = authService.getCurrentUser();
-        if (currentUser) {
-          const isAdmin = currentUser.role?.toLowerCase() === 'admin';
-          const isLecturer = currentUser.role?.toLowerCase() === 'lecturer' || currentUser.role?.toLowerCase() === 'teacher';
-          const isAssignedLecturer = currentClass.lecturer_id === currentUser.id;
-          
-
-          
-          // Temporarily allow all lecturers to edit any class for debugging
-          // Later we can tighten this to only assigned lecturers
-          if (!isAdmin && !isLecturer) {
-            setError('Bạn không có quyền chỉnh sửa lớp học phần này. Chỉ giảng viên hoặc admin mới có thể chỉnh sửa.');
-            setTimeout(() => {
-              navigate('/teacher/my-classes');
-            }, 3000);
+        // Check detailed permission - only lecturer assigned to this class or admin can edit
+        const isAdmin = currentUser.role?.toLowerCase() === 'admin';
+        
+        let isAssignedLecturer = false;
+        if (!isAdmin && currentUser.role?.toLowerCase() === 'lecturer') {
+          try {
+            // Get lecturer profile to get correct lecturer_id for permission check
+            const lecturerProfile = await simpleClassService.getCurrentLecturerProfile();
+            isAssignedLecturer = currentClass.lecturer_id === lecturerProfile.lecturer_id;
+            
+            console.log('🔐 Permission check:', { 
+              isAdmin, 
+              isAssignedLecturer, 
+              classLecturerId: currentClass.lecturer_id, 
+              userLecturerId: lecturerProfile.lecturer_id,
+              userAccountId: currentUser.id 
+            });
+          } catch (error: any) {
+            console.error('❌ Failed to get lecturer profile for permission check:', error);
+            setError('Không thể xác minh quyền truy cập. Vui lòng thử lại.');
             return;
           }
-          
-
+        }
+        
+        if (!isAdmin && !isAssignedLecturer) {
+          setError('Bạn không có quyền chỉnh sửa lớp học phần này. Chỉ giảng viên được phân công hoặc admin mới có thể chỉnh sửa.');
+          setTimeout(() => {
+            navigate('/teacher/my-classes');
+          }, 3000);
+          return;
         }
         
         setForm({
@@ -80,17 +112,19 @@ const ClassEdit: React.FC = () => {
         // Set subjects and lecturers with proper sorting
         setSubjects(subjectsResponse.data || []);
         
-        // Sort lecturers by full name (Vietnamese style: last_name first_name)
-        const sortedLecturers = (lecturersResponse || []).sort((a: any, b: any) => {
-          const nameA = `${a.profile?.last_name || ''} ${a.profile?.first_name || ''}`.trim();
-          const nameB = `${b.profile?.last_name || ''} ${b.profile?.first_name || ''}`.trim();
-          return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
-        });
-        
-        setLecturers(sortedLecturers);
+        if (currentUser.role?.toLowerCase() === 'admin') {
+          // Sort lecturers by full name (Vietnamese style: last_name first_name)
+          const sortedLecturers = (lecturersResponse || []).sort((a: any, b: any) => {
+            const nameA = `${a.profile?.last_name || ''} ${a.profile?.first_name || ''}`.trim();
+            const nameB = `${b.profile?.last_name || ''} ${b.profile?.first_name || ''}`.trim();
+            return nameA.localeCompare(nameB, 'vi', { sensitivity: 'base' });
+          });
+          
+          setLecturers(sortedLecturers);
+        }
         
       } catch (error: any) {
-        console.error('Error loading data:', error);
+        console.error('❌ Error loading data:', error);
         setError(error.message || 'Không thể tải dữ liệu');
       } finally {
         setLoading(false);
@@ -125,8 +159,25 @@ const ClassEdit: React.FC = () => {
       if (!form.section_name.trim()) {
         throw new Error('Tên lớp học phần là bắt buộc');
       }
-      if (!form.lecturer_id || form.lecturer_id === 0) {
+      
+      // For admin, lecturer_id must be selected
+      // For lecturer, lecturer_id is automatically their own ID
+      if (currentUser?.role?.toLowerCase() === 'admin' && (!form.lecturer_id || form.lecturer_id === 0)) {
         throw new Error('Vui lòng chọn giảng viên phụ trách');
+      }
+      
+      // Validate required dates
+      if (!form.start_date) {
+        throw new Error('Ngày bắt đầu là bắt buộc');
+      }
+      
+      if (!form.end_date) {
+        throw new Error('Ngày kết thúc là bắt buộc');
+      }
+      
+      // Validate date logic
+      if (new Date(form.end_date) <= new Date(form.start_date)) {
+        throw new Error('Ngày kết thúc phải sau ngày bắt đầu');
       }
       
       // Clean up form data before sending - exclude subject_id as backend doesn't allow updating it
@@ -134,11 +185,11 @@ const ClassEdit: React.FC = () => {
         lecturer_id: form.lecturer_id,
         section_name: form.section_name.trim(),
         max_students: form.max_students,
+        start_date: form.start_date,
+        end_date: form.end_date
       };
       
       // Only include optional fields if they have values
-      if (form.start_date) updateData.start_date = form.start_date;
-      if (form.end_date) updateData.end_date = form.end_date;
       if (form.schedule?.trim()) updateData.schedule = form.schedule.trim();
       if (form.room?.trim()) updateData.room = form.room.trim();
       
@@ -297,30 +348,53 @@ const ClassEdit: React.FC = () => {
 
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Giảng viên phụ trách</label>
-            <select 
-              name="lecturer_id" 
-              value={form.lecturer_id} 
-              onChange={handleChange} 
-              required
-              disabled={authService.getCurrentUser()?.role?.toLowerCase() !== 'admin'}
-              className={`border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base ${
-                authService.getCurrentUser()?.role?.toLowerCase() !== 'admin' ? 'bg-gray-100 cursor-not-allowed' : ''
-              }`}
-            >
-              <option value={0}>Chọn giảng viên</option>
-              {lecturers.map((lecturer) => {
-                const lastName = lecturer.profile?.last_name || '';
-                const firstName = lecturer.profile?.first_name || '';
-                const fullName = `${lastName} ${firstName}`.trim() || 'Chưa cập nhật tên';
-                
-                return (
-                  <option key={lecturer.id} value={lecturer.id - 1}>
-                    {fullName} ({lecturer.email})
-                  </option>
-                );
-              })}
+            {currentUser?.role?.toLowerCase() === 'admin' ? (
+              // Admin can select any lecturer
+              <select 
+                name="lecturer_id" 
+                value={form.lecturer_id} 
+                onChange={handleChange} 
+                required
+                className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              >
+                <option value={0}>Chọn giảng viên</option>
+                {lecturers.map((lecturer) => {
+                  const lastName = lecturer.profile?.last_name || '';
+                  const firstName = lecturer.profile?.first_name || '';
+                  const fullName = `${lastName} ${firstName}`.trim() || 'Chưa cập nhật tên';
+                  
+                  return (
+                    <option key={lecturer.id} value={lecturer.id - 1}>
+                      {fullName} ({lecturer.email})
+                    </option>
+                  );
+                })}
             </select>
-            {authService.getCurrentUser()?.role?.toLowerCase() !== 'admin' && (
+            ) : (
+              // Lecturer sees their own info and cannot change
+              <div className="border rounded-xl px-3 py-2 w-full bg-gray-100 text-gray-700 text-base">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {classData?.lecturer ? 
+                      `${classData.lecturer.last_name || ''} ${classData.lecturer.first_name || ''}`.trim() ||
+                      `${currentUser?.last_name || ''} ${currentUser?.first_name || ''}`.trim() ||
+                      currentUser?.userName || 
+                      currentUser?.email || 
+                      'Bạn'
+                      :
+                      `${currentUser?.last_name || ''} ${currentUser?.first_name || ''}`.trim() ||
+                      currentUser?.userName || 
+                      currentUser?.email || 
+                      'Bạn'
+                    }
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({classData?.lecturer?.title ? `${classData.lecturer.title} - ` : ''}{currentUser?.email})
+                  </span>
+                </div>
+              </div>
+            )}
+            {currentUser?.role?.toLowerCase() !== 'admin' && (
               <p className="text-sm text-gray-500 mt-1">
                 Chỉ admin mới có thể thay đổi giảng viên phụ trách
               </p>
@@ -344,22 +418,28 @@ const ClassEdit: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 mb-2 font-semibold">Ngày bắt đầu</label>
+              <label className="block text-gray-700 mb-2 font-semibold">
+                Ngày bắt đầu <span className="text-red-500">*</span>
+              </label>
               <input 
                 name="start_date" 
                 type="date"
                 value={form.start_date} 
                 onChange={handleChange} 
+                required
                 className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base" 
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-2 font-semibold">Ngày kết thúc</label>
+              <label className="block text-gray-700 mb-2 font-semibold">
+                Ngày kết thúc <span className="text-red-500">*</span>
+              </label>
               <input 
                 name="end_date" 
                 type="date"
                 value={form.end_date} 
                 onChange={handleChange} 
+                required
                 className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base" 
               />
             </div>

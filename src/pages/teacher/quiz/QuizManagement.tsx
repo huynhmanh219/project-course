@@ -13,66 +13,75 @@ import {
   Play,
   Pause,
   Copy,
-  FileDown
+  FileDown,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
+import { simpleQuizService } from '../../../services/quiz.service.simple';
 
-// Mock data
-const mockQuizzes = [
-  {
-    id: 1,
-    tenBaiKiemTra: 'Kiểm tra Chương 1 - Giới thiệu Toán cao cấp',
-    moTa: 'Bài kiểm tra 15 phút về kiến thức cơ bản',
-    soCauHoi: 10,
-    thoiGianLamBai: 15,
-    diemToiDa: 10,
-    trangThaiQuiz: 'published' as const,
-    ngayBatDau: '2024-01-15T08:00:00',
-    ngayKetThuc: '2024-01-15T23:59:59',
-    soSinhVienDaLam: 25,
-    tongSoSinhVien: 30,
-    lopHoc: { tenLopHoc: 'Toán cao cấp A1' },
-    chuong: { tenChuong: 'Chương 1: Giới thiệu' }
-  },
-  {
-    id: 2,
-    tenBaiKiemTra: 'Bài tập trắc nghiệm Vi phân',
-    moTa: 'Kiểm tra giữa kỳ về vi phân',
-    soCauHoi: 20,
-    thoiGianLamBai: 45,
-    diemToiDa: 20,
-    trangThaiQuiz: 'draft' as const,
-    ngayBatDau: '2024-01-20T08:00:00',
-    ngayKetThuc: '2024-01-20T23:59:59',
-    soSinhVienDaLam: 0,
-    tongSoSinhVien: 30,
-    lopHoc: { tenLopHoc: 'Toán cao cấp A1' },
-    chuong: { tenChuong: 'Chương 2: Vi phân' }
-  },
-  {
-    id: 3,
-    tenBaiKiemTra: 'Kiểm tra cuối kỳ - Tích phân',
-    moTa: 'Đề thi cuối kỳ toàn bộ kiến thức',
-    soCauHoi: 30,
-    thoiGianLamBai: 90,
-    diemToiDa: 30,
-    trangThaiQuiz: 'closed' as const,
-    ngayBatDau: '2024-01-10T08:00:00',
-    ngayKetThuc: '2024-01-10T23:59:59',
-    soSinhVienDaLam: 28,
-    tongSoSinhVien: 30,
-    lopHoc: { tenLopHoc: 'Toán cao cấp A1' },
-    chuong: { tenChuong: 'Chương 3: Tích phân' }
-  }
-];
+  
 
 const QuizManagement: React.FC = () => {
   const navigate = useNavigate();
-  const [quizzes, setQuizzes] = useState(mockQuizzes);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published' | 'closed'>('all');
+  
+  useEffect(() => {
+    loadQuizzes();
+  }, []);
+  
+  const loadQuizzes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await simpleQuizService.getQuizzes({
+        page: 1,
+        size: 50 
+      });
+      
+      console.log('Loaded quizzes:', response);
+      
+      const quizzesList = response.data || response.results || [];
+      console.log('API Response:', response);
+      console.log('Raw quizzes data:', quizzesList);
+      
+      const transformedQuizzes = (quizzesList || []).map((quiz: any) => ({
+        id: quiz.id,
+        tenBaiKiemTra: quiz.title,
+        moTa: quiz.description || '',
+        soCauHoi: quiz.questions?.length || 0,
+        thoiGianLamBai: quiz.time_limit || 0,
+        diemToiDa: quiz.total_points || 0,
+        trangThaiQuiz: quiz.status,
+        ngayBatDau: quiz.start_time,
+        ngayKetThuc: quiz.end_time,
+        soSinhVienDaLam: 0, // TODO: Get from submissions
+        tongSoSinhVien: 0, // TODO: Get from course enrollment
+        lopHoc: { 
+          tenLopHoc: quiz.courseSection?.section_name || quiz.subject?.subject_name || 'N/A' 
+        },
+        chuong: { 
+          tenChuong: quiz.subject?.subject_name || 'N/A' 
+        }
+      }));
+      
+      setQuizzes(transformedQuizzes);
+      
+    } catch (err: any) {
+      console.error('Error loading quizzes:', err);
+      setError(err.message || 'Failed to load quizzes');
+      setQuizzes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -98,16 +107,43 @@ const QuizManagement: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handlePublishQuiz = (quizId: number) => {
-    setQuizzes(prev => prev.map(quiz => 
-      quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'published' as const } : quiz
-    ));
+  const handlePublishQuiz = async (quizId: number) => {
+    try {
+      await simpleQuizService.publishQuiz(quizId);
+      setQuizzes(prev => prev.map(quiz => 
+        quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'published' as const } : quiz
+      ));
+      console.log('Quiz published successfully');
+    } catch (err: any) {
+      console.error('Error publishing quiz:', err);
+      alert('Failed to publish quiz: ' + err.message);
+    }
   };
 
-  const handleCloseQuiz = (quizId: number) => {
-    setQuizzes(prev => prev.map(quiz => 
-      quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'closed' as const } : quiz
-    ));
+  const handleCloseQuiz = async (quizId: number) => {
+    try {
+      await simpleQuizService.closeQuiz(quizId);
+      setQuizzes(prev => prev.map(quiz => 
+        quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'closed' as const } : quiz
+      ));
+      console.log('Quiz closed successfully');
+    } catch (err: any) {
+      console.error('Error closing quiz:', err);
+      alert('Failed to close quiz: ' + err.message);
+    }
+  };
+
+  const handleDeleteQuiz = async (quizId: number) => {
+    if (!confirm('Are you sure you want to delete this quiz?')) return;
+    
+    try {
+      await simpleQuizService.deleteQuiz(quizId);
+      setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
+      console.log('Quiz deleted successfully');
+    } catch (err: any) {
+      console.error('Error deleting quiz:', err);
+      alert('Failed to delete quiz: ' + err.message);
+    }
   };
 
   return (
@@ -173,9 +209,38 @@ const QuizManagement: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Loading State */}
+        {loading && (
+          <Card className="shadow-lg border border-gray-200">
+            <CardContent className="p-12 text-center">
+              <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Đang tải bài kiểm tra...</h3>
+              <p className="text-gray-600">Vui lòng đợi trong giây lát</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <Card className="shadow-lg border border-red-200">
+            <CardContent className="p-12 text-center">
+              <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Có lỗi xảy ra</h3>
+              <p className="text-red-600 mb-6">{error}</p>
+              <Button
+                onClick={loadQuizzes}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3"
+              >
+                Thử lại
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Quiz List */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredQuizzes.map((quiz) => (
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredQuizzes.map((quiz) => (
             <Card key={quiz.id} className="shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -282,18 +347,22 @@ const QuizManagement: React.FC = () => {
                     <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                       <Copy className="w-4 h-4" />
                     </button>
-                    <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <button 
+                      onClick={() => handleDeleteQuiz(quiz.id)}
+                      className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+                        ))}
+            </div>
+          )}
 
         {/* Empty State */}
-        {filteredQuizzes.length === 0 && (
+        {!loading && !error && filteredQuizzes.length === 0 && (
           <Card className="shadow-lg border border-gray-200">
             <CardContent className="p-12 text-center">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />

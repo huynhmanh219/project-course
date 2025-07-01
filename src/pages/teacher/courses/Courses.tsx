@@ -215,10 +215,10 @@ const TeacherCourses: React.FC = () => {
                   {course.hocKy} - {course.namHoc}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              {/* <div className="flex items-center gap-2 text-sm text-gray-600">
                 <GraduationCap className="w-4 h-4 text-green-500 flex-shrink-0" />
                 <span>{course.soSinhVien} sinh viên</span>
-              </div>
+              </div> */}
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <BookOpen className="w-4 h-4 text-purple-500 flex-shrink-0" />
                 <span>{course.soTinChi} tín chỉ</span>

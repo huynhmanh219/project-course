@@ -1,18 +1,16 @@
-// Simple User Service - No complex types, use 'any' for simplicity
 import { API_BASE_URL } from './api';
 import { authService } from './auth.service';
 
 class SimpleUserService {
-  // Helper to get auth headers
-  private getHeaders(): any {
+  private async getHeaders(): Promise<any> {
+    const token = await authService.getValidToken();
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authService.getToken()}`
+      'Authorization': `Bearer ${token}`
     };
   }
 
-  // ==================== TEACHERS ====================
-  
+
   // Get teachers list
   async getTeachers(params?: any): Promise<any> {
     try {
@@ -24,9 +22,10 @@ class SimpleUserService {
         url += `?${searchParams}`;
       }
       
+      const headers = await this.getHeaders();
       const response = await fetch(url, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -48,9 +47,10 @@ class SimpleUserService {
     try {
       console.log(`Getting teacher ${id}...`);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/teachers/${id}`, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -72,9 +72,10 @@ class SimpleUserService {
     try {
       console.log('Creating teacher:', data);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/teachers`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers,
         body: JSON.stringify(data)
       });
 
@@ -84,6 +85,16 @@ class SimpleUserService {
       if (response.ok) {
         return result.data || result;
       } else {
+        if (result.errors && Array.isArray(result.errors)) {
+          console.error('Validation errors:', result.errors);
+          result.errors.forEach((error: any, index: number) => {
+            console.error(`Validation Error ${index + 1}:`, error);
+          });
+        }
+        
+        console.error('Data sent to API:', JSON.stringify(data, null, 2));
+        console.error('Full API response:', JSON.stringify(result, null, 2));
+        
         throw new Error(result.message || 'Failed to create teacher');
       }
     } catch (error: any) {
@@ -92,7 +103,64 @@ class SimpleUserService {
     }
   }
 
-  // ==================== STUDENTS ====================
+  // Update teacher
+  async updateTeacher(id: number, data: any): Promise<any> {
+    try {
+      console.log(`Updating teacher ${id}:`, data);
+      
+      const headers = await this.getHeaders();
+      const response = await fetch(`${API_BASE_URL}/users/teachers/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      console.log('Update teacher response:', result);
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        if (result.errors && Array.isArray(result.errors)) {
+          console.error('Validation errors:', result.errors);
+          result.errors.forEach((error: any, index: number) => {
+            console.error(`Validation Error ${index + 1}:`, error);
+          });
+        }
+        throw new Error(result.message || 'Failed to update teacher');
+      }
+    } catch (error: any) {
+      console.error('Update teacher error:', error);
+      throw error;
+    }
+  }
+
+  // Delete teacher
+  async deleteTeacher(id: number): Promise<any> {
+    try {
+      console.log(`Deleting teacher ${id}...`);
+      
+      const headers = await this.getHeaders();
+      const response = await fetch(`${API_BASE_URL}/users/teachers/${id}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      const result = await response.json();
+      console.log('Delete teacher response:', result);
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        throw new Error(result.message || 'Failed to delete teacher');
+      }
+    } catch (error: any) {
+      console.error('Delete teacher error:', error);
+      throw error;
+    }
+  }
+
+    
   
   // Get students list
   async getStudents(params?: any): Promise<any> {
@@ -105,9 +173,10 @@ class SimpleUserService {
         url += `?${searchParams}`;
       }
       
+      const headers = await this.getHeaders();
       const response = await fetch(url, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -129,9 +198,10 @@ class SimpleUserService {
     try {
       console.log(`Getting student ${id}...`);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/students/${id}`, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -153,9 +223,10 @@ class SimpleUserService {
     try {
       console.log('Creating student:', data);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/students`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers,
         body: JSON.stringify(data)
       });
 
@@ -165,7 +236,6 @@ class SimpleUserService {
       if (response.ok) {
         return result.data || result;
       } else {
-        // Enhanced error logging for validation issues
         if (result.errors && Array.isArray(result.errors)) {
           console.error('Validation errors:', result.errors);
           result.errors.forEach((error: any, index: number) => {
@@ -185,9 +255,10 @@ class SimpleUserService {
     try {
       console.log(`Updating student ${id}:`, data);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/students/${id}`, {
         method: 'PUT',
-        headers: this.getHeaders(),
+        headers,
         body: JSON.stringify(data)
       });
 
@@ -197,7 +268,6 @@ class SimpleUserService {
       if (response.ok) {
         return result.data || result;
       } else {
-        // Enhanced error logging for validation issues
         if (result.errors && Array.isArray(result.errors)) {
           console.error('Validation errors:', result.errors);
           result.errors.forEach((error: any, index: number) => {
@@ -217,9 +287,10 @@ class SimpleUserService {
     try {
       console.log(`Deleting student ${id}...`);
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/students/${id}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -236,16 +307,14 @@ class SimpleUserService {
     }
   }
 
-  // ==================== ROLES ====================
-  
-  // Get roles list
   async getRoles(): Promise<any> {
     try {
       console.log('Getting roles list...');
       
+      const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/users/roles`, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers
       });
 
       const result = await response.json();
@@ -263,6 +332,5 @@ class SimpleUserService {
   }
 }
 
-// Export singleton
 export const simpleUserService = new SimpleUserService();
-export default simpleUserService; 
+export default simpleUserService;

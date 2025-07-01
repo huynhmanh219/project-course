@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { 
-  Users, 
   UserPlus, 
   Edit, 
   Trash2, 
@@ -14,31 +12,39 @@ import {
   AlertCircle, 
   RefreshCw, 
   GraduationCap, 
-  UserCheck, 
-  Crown 
+  Crown, 
+  Search,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Star,
+  Eye
 } from 'lucide-react';
 import { authService } from '../../services/auth.service';
 import SimpleUserService from '../../services/user.service.simple';
 
 const UserManagement: React.FC = () => {
   const [teachers, setTeachers] = useState<any[]>([]);
-  const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('teachers');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
+    fetchTeachers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchTeachers = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
@@ -47,51 +53,45 @@ const UserManagement: React.FC = () => {
         return;
       }
 
-      console.log('Fetching users...');
+      console.log('🔄 Fetching teachers...');
+      const teachersData = await SimpleUserService.getTeachers();
       
-      // Fetch teachers and students in parallel
-      const [teachersResponse, studentsResponse] = await Promise.all([
-        SimpleUserService.getTeachers().catch(() => ({ data: [] })),
-        SimpleUserService.getStudents().catch(() => ({ data: [] }))
-      ]);
-
-      console.log('Teachers response:', teachersResponse);
-      console.log('Students response:', studentsResponse);
+      console.log('📥 Teachers response:', teachersData);
       
-      // Process teachers data
-      if (teachersResponse && teachersResponse.data) {
-        const processedTeachers = teachersResponse.data.map((teacher: any) => ({
-          id: teacher.lecturer_id || teacher.id,
-          hoTen: teacher.full_name || teacher.name || teacher.lecturer_name || 'Chưa có tên',
+      if (teachersData && Array.isArray(teachersData.teachers)) {
+        const processedTeachers = teachersData.teachers.map((teacher: any) => ({
+          id: teacher.id,
+          fullName: `${teacher.profile?.first_name || ''} ${teacher.profile?.last_name || ''}`.trim() || 'Chưa có tên',
           email: teacher.email || 'Chưa có email',
-          department: teacher.department || teacher.department_name || 'Chưa phân khoa',
-          hinhAnh: teacher.avatar || teacher.image || '',
-          trangThai: teacher.status === 'active' || teacher.is_active !== false,
-          soDienThoai: teacher.phone || teacher.phone_number || '',
-          ngayThamGia: teacher.created_at || teacher.join_date || new Date().toISOString(),
-          chuyenMon: teacher.specialization || teacher.expertise || 'Chưa xác định'
+          phone: teacher.profile?.phone || '',
+          title: teacher.profile?.title || '',
+          department: teacher.profile?.department || 'Chưa phân khoa',
+          bio: teacher.profile?.bio || '',
+          avatar: teacher.profile?.avatar || '',
+          hireDate: teacher.created_at || new Date().toISOString(),
+          status: teacher.is_active ? 'active' : 'inactive',
+          isActive: teacher.is_active !== false,
+          profile: teacher.profile
         }));
+        
+        console.log('✅ Processed teachers:', processedTeachers);
         setTeachers(processedTeachers);
-      }
-
-      // Process students data
-      if (studentsResponse && studentsResponse.data) {
-        const processedStudents = studentsResponse.data.map((student: any) => ({
-          id: student.student_id || student.id,
-          hoTen: student.full_name || student.name || student.student_name || 'Chưa có tên',
-          email: student.email || 'Chưa có email',
-          lop: student.class_name || student.class || 'Chưa có lớp',
-          maSinhVien: student.student_code || student.code || '',
-          hinhAnh: student.avatar || student.image || '',
-          trangThai: student.status === 'active' || student.is_active !== false,
-          khoaHoc: student.academic_year || student.year || 'Chưa xác định',
-          ngayNhapHoc: student.enrollment_date || student.created_at || new Date().toISOString()
-        }));
-        setStudents(processedStudents);
+      } else {
+        console.warn('⚠️ No teachers data received or incorrect format');
+        setTeachers([]);
       }
     } catch (error: any) {
-      console.error('Error fetching users:', error);
-      setError('Không thể tải danh sách người dùng');
+      console.error('❌ Error fetching teachers:', error);
+      
+      // Handle token expiration
+      if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
+        setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
+        setTimeout(() => {
+          authService.logout();
+        }, 2000);
+      } else {
+        setError('Không thể tải danh sách giảng viên: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -101,175 +101,61 @@ const UserManagement: React.FC = () => {
     const teacher = teachers.find(t => t.id === teacherId);
     if (!teacher) return;
 
-    const confirmMessage = `Bạn có chắc chắn muốn xóa giảng viên "${teacher.hoTen}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
-    
+    const confirmMessage = `⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa giảng viên "${teacher.fullName}" không?\n\n` +
+      `Email: ${teacher.email}\n` +
+      `Khoa: ${teacher.department}\n\n` +
+      `Hành động này sẽ vô hiệu hóa tài khoản giảng viên.`;
+
     if (window.confirm(confirmMessage)) {
       try {
-        console.log('Deleting teacher:', teacherId);
-        // TODO: Implement delete API call
-        // await SimpleUserService.deleteTeacher(teacherId);
+        console.log('🗑️ Deleting teacher:', teacherId);
+        await SimpleUserService.deleteTeacher(teacherId);
         
-        // For now, just remove from local state
+        // Update local state - remove the teacher from list
         setTeachers(teachers.filter((t) => t.id !== teacherId));
-        alert("Đã xóa giảng viên thành công!");
-      } catch (error: any) {
-        console.error('Error deleting teacher:', error);
-        alert('Lỗi khi xóa giảng viên: ' + (error.message || 'Vui lòng thử lại'));
-      }
-    }
-  };
-
-  const handleDeleteStudent = async (studentId: number) => {
-    const student = students.find(s => s.id === studentId);
-    if (!student) return;
-
-    const confirmMessage = `Bạn có chắc chắn muốn xóa sinh viên "${student.hoTen}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
-    
-    if (window.confirm(confirmMessage)) {
-      try {
-        console.log('Deleting student:', studentId);
-        // TODO: Implement delete API call
-        // await SimpleUserService.deleteStudent(studentId);
         
-        // For now, just remove from local state
-        setStudents(students.filter((s) => s.id !== studentId));
-        alert("Đã xóa sinh viên thành công!");
+        // Show success message
+        alert(`✅ Đã xóa giảng viên "${teacher.fullName}" thành công!`);
+        
+        console.log('✅ Teacher deleted successfully');
       } catch (error: any) {
-        console.error('Error deleting student:', error);
-        alert('Lỗi khi xóa sinh viên: ' + (error.message || 'Vui lòng thử lại'));
+        console.error('❌ Error deleting teacher:', error);
+        
+        if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
+          setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
+          setTimeout(() => {
+            authService.logout();
+          }, 2000);
+        } else {
+          alert(`❌ Lỗi khi xóa giảng viên: ${error.message || 'Vui lòng thử lại'}`);
+        }
       }
     }
   };
 
-  const UserTable: React.FC<{ users: any[], type: 'teacher' | 'student', onDelete: (id: number) => void }> = ({ users, type, onDelete }) => {
-    if (users.length === 0) {
-      return (
-        <div className="text-center py-16">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 max-w-md mx-auto">
-            {type === 'teacher' ? (
-              <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-            ) : (
-              <UserCheck className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-            )}
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              Chưa có {type === 'teacher' ? 'giảng viên' : 'sinh viên'} nào
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Các {type === 'teacher' ? 'giảng viên' : 'sinh viên'} sẽ xuất hiện ở đây
-            </p>
-            <Button 
-              onClick={() => navigate(`/admin/${type === 'teacher' ? 'teachers' : 'students'}/add`)}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Thêm {type === 'teacher' ? 'giảng viên' : 'sinh viên'}
-            </Button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="overflow-x-auto rounded-2xl shadow-lg bg-white border border-gray-100">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gradient-to-r from-blue-50 to-indigo-50">
-              <th className="px-6 py-4 text-left text-sm font-bold text-blue-700">Họ tên</th>
-              <th className="px-6 py-4 text-left text-sm font-bold text-blue-700">Email</th>
-              <th className="px-6 py-4 text-left text-sm font-bold text-blue-700">
-                {type === 'teacher' ? 'Khoa/Chuyên môn' : 'Lớp'}
-              </th>
-              {type === 'student' && (
-                <th className="px-6 py-4 text-left text-sm font-bold text-blue-700">Mã SV</th>
-              )}
-              <th className="px-6 py-4 text-center text-sm font-bold text-blue-700">Ảnh đại diện</th>
-              <th className="px-6 py-4 text-center text-sm font-bold text-blue-700">Trạng thái</th>
-              <th className="px-6 py-4 text-center text-sm font-bold text-blue-700">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user, idx) => (
-              <tr
-                key={user.id}
-                className="hover:bg-blue-50 transition-all duration-200 border-b border-gray-100"
-              >
-                <td className="px-6 py-4 font-semibold text-gray-800 text-left">{user.hoTen}</td>
-                <td className="px-6 py-4 text-gray-600 text-left text-sm">{user.email}</td>
-                <td className="px-6 py-4 text-gray-600 text-left text-sm">
-                  {type === 'teacher' ? (user.department || user.chuyenMon) : user.lop}
-                </td>
-                {type === 'student' && (
-                  <td className="px-6 py-4 text-gray-600 text-left text-sm font-mono">
-                    {user.maSinhVien || 'N/A'}
-                  </td>
-                )}
-                <td className="px-6 py-4 text-center">
-                  {user.hinhAnh ? (
-                    <img 
-                      src={user.hinhAnh} 
-                      alt="avatar" 
-                      className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-blue-200 shadow-sm" 
-                    />
-                  ) : (
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 text-blue-600 mx-auto shadow-sm">
-                      {type === 'teacher' ? (
-                        <GraduationCap className="w-6 h-6" />
-                      ) : (
-                        <UserCheck className="w-6 h-6" />
-                      )}
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <Badge 
-                    className={`${
-                      user.trangThai 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-red-100 text-red-600'
-                    }`}
-                  >
-                    {user.trangThai ? (
-                      <>
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Hoạt động
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-3 h-3 mr-1" />
-                        Đã khóa
-                      </>
-                    )}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <div className="flex gap-2 justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100"
-                      onClick={() => navigate(`/admin/${type === 'teacher' ? 'teachers' : 'students'}/edit/${user.id}`)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Sửa
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100"
-                      onClick={() => onDelete(user.id)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Xóa
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+  const handleViewDetails = (teacher: any) => {
+    setSelectedTeacher(teacher);
+    setShowDetailsModal(true);
   };
+
+  const closeDetailsModal = () => {
+    setSelectedTeacher(null);
+    setShowDetailsModal(false);
+  };
+
+  // Filter teachers
+  const filteredTeachers = teachers.filter(teacher => {
+    const matchesSearch = teacher.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         teacher.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && teacher.isActive) ||
+                         (statusFilter === 'inactive' && !teacher.isActive);
+    const matchesDepartment = departmentFilter === 'all' || teacher.department === departmentFilter;
+    return matchesSearch && matchesStatus && matchesDepartment;
+  });
+
+  const departments = [...new Set(teachers.map(t => t.department).filter(d => d && d !== 'Chưa phân khoa'))];
 
   if (loading) {
     return (
@@ -278,7 +164,7 @@ const UserManagement: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Đang tải danh sách người dùng...</p>
+              <p className="text-gray-600 text-lg">Đang tải danh sách giảng viên...</p>
             </div>
           </div>
         </div>
@@ -286,115 +172,351 @@ const UserManagement: React.FC = () => {
     );
   }
 
-  const activeTeachers = teachers.filter(t => t.trangThai).length;
-  const activeStudents = students.filter(s => s.trangThai).length;
-  const totalUsers = teachers.length + students.length;
+  const activeTeachers = teachers.filter(t => t.isActive).length;
+  const inactiveTeachers = teachers.filter(t => !t.isActive).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-[1600px] mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white">
           <div className="absolute inset-0 bg-black/10"></div>
+          <div className="absolute -top-32 -right-32 w-64 h-64 bg-white/10 rounded-full"></div>
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white/5 rounded-full"></div>
+          
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight mb-3 flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                   <Crown className="w-10 h-10" />
-                  Quản lý Người dùng
-                </h1>
+                  <h1 className="text-4xl font-bold tracking-tight">Quản lý Giảng viên</h1>
+                </div>
                 <p className="text-blue-100 text-lg">
-                  Chào mừng {user?.userName || user?.email}, quản lý giảng viên và sinh viên trong hệ thống
+                  Chào mừng, quản lý thông tin giảng viên trong hệ thống LMS
                 </p>
               </div>
+              
               <div className="flex items-center gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{activeTeachers}</div>
-                  <div className="text-blue-100 text-sm">Giảng viên</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{activeStudents}</div>
-                  <div className="text-blue-100 text-sm">Sinh viên</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{totalUsers}</div>
-                  <div className="text-blue-100 text-sm">Tổng người dùng</div>
-                </div>
-                <Button
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
+                <Card className="bg-white/20 backdrop-blur border-white/30 text-white">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold">{activeTeachers}</div>
+                    <div className="text-blue-100 text-sm">Hoạt động</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white/20 backdrop-blur border-white/30 text-white">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold">{teachers.length}</div>
+                    <div className="text-blue-100 text-sm">Tổng số</div>
+                  </CardContent>
+                </Card>
+                {/* <Button
+                  className="bg-white/20 hover:bg-white/30 text-white"
                   onClick={() => navigate('/admin/teachers/add')}
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Thêm người dùng
-                </Button>
+                  Thêm GV
+                </Button> */}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Error display */}
+        {/* Error Message */}
         {error && (
-          <Card className="border-red-200 bg-red-50">
+          <Card className="bg-red-50 border-red-200 shadow-lg">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3 text-red-800">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">{error}</span>
-                    <Button
-                  onClick={fetchUsers}
-                      variant="outline"
-                      size="sm"
-                  className="ml-auto border-red-300 text-red-700 hover:bg-red-100"
-                    >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  Thử lại
-                    </Button>
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <span className="text-red-700">{error}</span>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* User Management Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px] mx-auto">
-            <TabsTrigger value="teachers" className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
-              Giảng viên ({teachers.length})
-            </TabsTrigger>
-            <TabsTrigger value="students" className="flex items-center gap-2">
-              <UserCheck className="w-4 h-4" />
-              Sinh viên ({students.length})
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="teachers" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">Quản lý Giảng viên</h2>
-                    <Button
-                onClick={() => navigate('/admin/teachers/add')}
-                className="bg-green-500 hover:bg-green-600 text-white"
+        {/* Search and Filters */}
+        {/* <Card className="shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              Tìm kiếm và lọc
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên, email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl w-full focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
               >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Thêm giảng viên
-                    </Button>
-        </div>
-            <UserTable users={teachers} type="teacher" onDelete={handleDeleteTeacher} />
-          </TabsContent>
-          
-          <TabsContent value="students" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">Quản lý Sinh viên</h2>
-              <Button
-                onClick={() => navigate('/admin/students/add')}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Ngừng hoạt động</option>
+              </select>
+
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
               >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Thêm sinh viên
+                <option value="all">Tất cả khoa</option>
+                {departments.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+
+              <Button onClick={fetchTeachers} className="bg-blue-500 hover:bg-blue-600 text-white">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Làm mới</span>
               </Button>
             </div>
-            <UserTable users={students} type="student" onDelete={handleDeleteStudent} />
-          </TabsContent>
-        </Tabs>
+          </CardContent>
+        </Card> */}
+
+        {/* Teachers Grid */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Danh sách giảng viên ({filteredTeachers.length})
+            </h2>
+            <Button
+              onClick={() => navigate('/admin/teachers/add')}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Thêm giảng viên
+            </Button>
+          </div>
+          
+          {filteredTeachers.length === 0 ? (
+            <Card className="text-center py-16">
+              <CardContent>
+                <GraduationCap className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Chưa có giảng viên nào
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Hãy thêm giảng viên đầu tiên cho hệ thống
+                </p>
+                <Button 
+                  onClick={() => navigate('/admin/teachers/add')}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Thêm giảng viên
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredTeachers.map((teacher) => (
+                <Card key={teacher.id} className="hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col space-y-4">
+                      {/* Header with avatar and basic info */}
+                      <div className="flex items-start gap-4">
+                        <div className="relative flex-shrink-0">
+                          {teacher.avatar ? (
+                            <img src={teacher.avatar} alt="avatar" className="w-16 h-16 rounded-2xl object-cover" />
+                          ) : (
+                            <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center">
+                              <GraduationCap className="w-8 h-8 text-blue-600" />
+                            </div>
+                          )}
+                          <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full ${
+                            teacher.isActive ? 'bg-green-500' : 'bg-red-500'
+                          } flex items-center justify-center`}>
+                            {teacher.isActive ? <CheckCircle className="w-3 h-3 text-white" /> : <XCircle className="w-3 h-3 text-white" />}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">{teacher.fullName}</h3>
+                          {teacher.title && (
+                            <Badge className="bg-purple-100 text-purple-700 mb-2 text-xs">
+                              <Star className="w-3 h-3 mr-1" />
+                              {teacher.title}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contact Info */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Mail className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">{teacher.email}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">{teacher.department}</span>
+                        </div>
+                        
+                        {teacher.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{teacher.phone}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => navigate(`/admin/teachers/edit/${teacher.id}`)} 
+                          title="Chỉnh sửa"
+                          className="flex-1"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          <span className="hidden sm:inline">Sửa</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewDetails(teacher)} 
+                          title="Xem chi tiết"
+                          className="flex-1"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          <span className="hidden sm:inline">Xem</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDeleteTeacher(teacher.id)}
+                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          <span className="hidden sm:inline">Xóa</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Teacher Details Modal */}
+      {showDetailsModal && selectedTeacher && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Chi tiết giảng viên</h2>
+                <button
+                  onClick={closeDetailsModal}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  title="Đóng"
+                >
+                  <XCircle className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Teacher Details */}
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div className="flex items-start gap-6">
+                  <div className="relative">
+                    {selectedTeacher.avatar ? (
+                      <img src={selectedTeacher.avatar} alt="avatar" className="w-24 h-24 rounded-2xl object-cover" />
+                    ) : (
+                      <div className="w-24 h-24 rounded-2xl bg-blue-100 flex items-center justify-center">
+                        <GraduationCap className="w-12 h-12 text-blue-600" />
+                      </div>
+                    )}
+                    <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-full ${
+                      selectedTeacher.isActive ? 'bg-green-500' : 'bg-red-500'
+                    } flex items-center justify-center`}>
+                      {selectedTeacher.isActive ? <CheckCircle className="w-4 h-4 text-white" /> : <XCircle className="w-4 h-4 text-white" />}
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedTeacher.fullName}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Mail className="w-4 h-4" />
+                        <span>{selectedTeacher.email}</span>
+                      </div>
+                      {selectedTeacher.phone && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Phone className="w-4 h-4" />
+                          <span>{selectedTeacher.phone}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        <span>{selectedTeacher.department}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(selectedTeacher.hireDate).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Info */}
+                <div className="border-t pt-4">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-3">Thông tin chuyên môn</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedTeacher.title && (
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">Học hàm/Học vị:</span>
+                        <p className="text-gray-900">{selectedTeacher.title}</p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Trạng thái:</span>
+                      <p className={`inline-flex items-center gap-1 ${selectedTeacher.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                        {selectedTeacher.isActive ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                        {selectedTeacher.isActive ? 'Hoạt động' : 'Ngừng hoạt động'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {selectedTeacher.bio && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-3">Giới thiệu</h4>
+                    <p className="text-gray-700 leading-relaxed">{selectedTeacher.bio}</p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="border-t pt-4 flex gap-3 justify-end">
+                  <Button variant="outline" onClick={closeDetailsModal}>
+                    Đóng
+                  </Button>
+                  <Button onClick={() => navigate(`/admin/teachers/edit/${selectedTeacher.id}`)}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Chỉnh sửa
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -12,9 +12,7 @@ import {
   AlertCircle,
   ChevronRight,
   BookOpen,
-  FileText,
-  Upload,
-  Video
+  FileText
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
@@ -119,7 +117,7 @@ const Lectures: React.FC = () => {
     const lecture = lectures.find(l => l.id === lectureId);
     if (!lecture) return;
 
-    const confirmMessage = `Bạn có chắc chắn muốn xóa bài giảng "${lecture.title}" không?\n\nHành động này sẽ xóa tất cả nội dung và không thể hoàn tác.`;
+    const confirmMessage = `Bạn có chắc chắn muốn xóa bài giảng "${lecture.title}" không?\n\nHành động này sẽ xóa video và tất cả tài liệu liên quan và không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
       try {
@@ -203,7 +201,7 @@ const Lectures: React.FC = () => {
 
   const LectureCard: React.FC<{ lecture: Lecture }> = ({ lecture }) => {
     return (
-      <Card className="hover:shadow-lg transition-all duration-300 border border-gray-200 group">
+      <Card className="hover:shadow-lg transition-all duration-300 border border-gray-200 group min-h-[320px]">
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -211,88 +209,83 @@ const Lectures: React.FC = () => {
                 {lecture.title}
               </h3>
               
-              {/* Thông tin cơ bản */}
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-3 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{lecture.duration_minutes || 0} phút đọc</span>
+              {/* Hiển thị nội dung đầy đủ như document */}
+              {lecture.content ? (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-blue-500">
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      {lecture.content}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  {lecture.is_published ? (
-                    <>
-                      <Eye className="w-4 h-4" />
-                      <span>Đã xuất bản</span>
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="w-4 h-4" />
-                      <span>Bản nháp</span>
-                    </>
-                  )}
+              ) : (
+                <div className="bg-gray-100 rounded-lg p-4 mb-4 border-l-4 border-gray-300">
+                  <p className="text-gray-500 italic text-center">
+                    Chưa có nội dung bài giảng
+                  </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4 text-green-500" />
-                  <span>Tài liệu</span>
-                </div>
-              </div>
-
-              {/* Trạng thái nội dung */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`w-3 h-3 rounded-full ${lecture.is_published ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                <span className="text-sm text-gray-600">
-                  {lecture.content ? 'Có nội dung' : 'Chưa có nội dung'}
-                </span>
-              </div>
+              )}
             </div>
             <div className="ml-4 flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${lecture.is_published ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
               <FileText className="w-6 h-6 text-blue-500" />
             </div>
           </div>
 
-          {/* Các nút hành động */}
-          <div className="space-y-2">
-            {/* Nút chính */}
+          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{lecture.duration_minutes || 0} phút đọc</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {lecture.is_published ? (
+                <>
+                  <Eye className="w-4 h-4" />
+                  <span>Đã xuất bản</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="w-4 h-4" />
+                  <span>Bản nháp</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <BookOpen className="w-4 h-4 text-green-500" />
+              <span>Tài liệu</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
             <Button 
               size="sm" 
-              className="w-full bg-green-500 hover:bg-green-600"
-              onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/${lecture.id}`)}
+              className="flex-1 bg-blue-500 hover:bg-blue-600"
+              onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/${lecture.id}/edit`)}
             >
-              <Eye className="w-4 h-4 mr-2" />
-              Xem chi tiết
+              <Edit className="w-4 h-4 mr-2" />
+              Chỉnh sửa
             </Button>
-            
-            {/* Các nút phụ */}
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="flex-1 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/${lecture.id}/edit`)}
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                className={`flex-1 ${lecture.is_published ? 'text-yellow-600 border-yellow-200 hover:bg-yellow-50' : 'text-green-600 border-green-200 hover:bg-green-50'}`}
-                onClick={() => handleTogglePublish(lecture.id, lecture.is_published)}
-              >
-                {lecture.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                disabled={deletingLectureId === lecture.id}
-                onClick={() => handleDeleteLecture(lecture.id)}
-              >
-                {deletingLectureId === lecture.id ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className={`${lecture.is_published ? 'text-yellow-600 border-yellow-200 hover:bg-yellow-50' : 'text-green-600 border-green-200 hover:bg-green-50'}`}
+              onClick={() => handleTogglePublish(lecture.id, lecture.is_published)}
+            >
+              {lecture.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              disabled={deletingLectureId === lecture.id}
+              onClick={() => handleDeleteLecture(lecture.id)}
+            >
+              {deletingLectureId === lecture.id ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -409,5 +402,3 @@ const Lectures: React.FC = () => {
 };
 
 export default Lectures; 
-
-

@@ -31,7 +31,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ video?: string; thumbnail?: string }>({});
 
-  // Validate video file
   const validateVideo = (file: File): FileValidation => {
     const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm'];
     const maxSize = 500 * 1024 * 1024; // 500MB
@@ -53,7 +52,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     return { valid: true };
   };
 
-  // Validate image file
   const validateImage = (file: File): FileValidation => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -75,7 +73,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     return { valid: true };
   };
 
-  // Handle video file selection
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -88,7 +85,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
       setVideoFile(file);
       setErrors(prev => ({ ...prev, video: undefined }));
       
-      // Create preview URL
       if (videoPreview) URL.revokeObjectURL(videoPreview);
       const previewUrl = URL.createObjectURL(file);
       setVideoPreview(previewUrl);
@@ -97,7 +93,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     }
   };
 
-  // Handle thumbnail file selection
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -110,7 +105,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
       setThumbnailFile(file);
       setErrors(prev => ({ ...prev, thumbnail: undefined }));
       
-      // Create preview URL
       if (thumbnailPreview) URL.revokeObjectURL(thumbnailPreview);
       const previewUrl = URL.createObjectURL(file);
       setThumbnailPreview(previewUrl);
@@ -119,7 +113,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     }
   };
 
-  // Remove video
   const removeVideo = () => {
     if (videoPreview) URL.revokeObjectURL(videoPreview);
     setVideoFile(null);
@@ -128,7 +121,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     onVideoSelect?.(null);
   };
 
-  // Remove thumbnail
   const removeThumbnail = () => {
     if (thumbnailPreview) URL.revokeObjectURL(thumbnailPreview);
     setThumbnailFile(null);
@@ -137,7 +129,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
     onThumbnailSelect?.(null);
   };
 
-  // Format file size
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -148,7 +139,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Video Upload */}
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
           <Video className="w-4 h-4" />
@@ -198,7 +188,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
                 </Button>
               </div>
               
-              {/* Upload Progress */}
               {uploading && videoProgress > 0 && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -232,7 +221,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
         )}
       </div>
 
-      {/* Thumbnail Upload */}
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
           <Image className="w-4 h-4" />
@@ -290,7 +278,6 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
                 </Button>
               </div>
               
-              {/* Upload Progress */}
               {uploading && thumbnailProgress > 0 && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -323,8 +310,7 @@ const MediaUpload: React.FC<MediaUploadProps> = ({
           </div>
         )}
       </div>
-
-      {/* Upload Summary */}
+        
       {(videoFile || thumbnailFile) && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4">

@@ -3,67 +3,84 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, User, Eye, Download, Share2, Bookmark, GraduationCap, Star } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
+import { simpleLectureService, simpleChapterService, simpleCourseService } from '../../../services';
 
 interface Lecture {
   id: number;
-  Ten_Bai_Giang: string;
-  Mo_Ta: string;
-  Thu_Tu: number;
-  Noi_Dung: string;
-  Mon_Hoc_ID: number;
-  Ngay_Tao: string;
-  Ngay_Cap_Nhat?: string;
-  Tac_Gia?: string;
-  Thoi_Luong?: number;
-  Luot_Xem?: number;
-  Trang_Thai?: string;
+  title: string;
+  content?: string;
+  chapter_id: number;
+  duration_minutes?: number;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-const monHocList = [
-  { id: 1, ten: 'Toán cao cấp', ma: 'MATH101' },
-  { id: 2, ten: 'Lập trình Web', ma: 'CS201' },
-  { id: 3, ten: 'Cơ sở dữ liệu', ma: 'CS301' },
-];
+interface Chapter {
+  id: number;
+  title: string;
+  subject_id: number;
+}
+
+interface Course {
+  id: number;
+  subject_name: string;
+  subject_code: string;
+}
 
 const LectureDetail: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { courseId, chapterId, lectureId } = useParams<{ 
+    courseId: string; 
+    chapterId: string; 
+    lectureId: string; 
+  }>();
+  
   const [lecture, setLecture] = useState<Lecture | null>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // TODO: Gọi API lấy thông tin bài giảng theo id
-    // Giả lập dữ liệu
-    setLecture({
-      id: Number(id),
-      Ten_Bai_Giang: "Giới thiệu về Toán cao cấp - Khái niệm cơ bản",
-      Mo_Ta: "Bài giảng đầu tiên về Toán cao cấp, giới thiệu các khái niệm cơ bản và tầm quan trọng của môn học trong việc ứng dụng vào thực tế.",
-      Thu_Tu: 1,
-      Noi_Dung: `# Giới thiệu về Toán cao cấp
+    if (courseId && chapterId && lectureId) {
+      loadData();
+    }
+  }, [courseId, chapterId, lectureId]);
 
-## 1. Tổng quan về môn học
-Toán cao cấp là một môn học quan trọng trong chương trình đào tạo kỹ sư...
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError('');
 
-## 2. Các khái niệm cơ bản
-### 2.1 Giới hạn
-Khái niệm giới hạn là nền tảng của toán cao cấp...
+      // Load course info
+      const courseResponse = await simpleCourseService.getCourse(Number(courseId));
+      if (courseResponse.course) {
+        setCourse(courseResponse.course);
+      }
 
-### 2.2 Đạo hàm
-Đạo hàm biểu thị tốc độ thay đổi của hàm số...
+      // Load chapter info
+      const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
+      if (chapterResponse) {
+        setChapter(chapterResponse);
+      }
 
-## 3. Ứng dụng thực tế
-- Tính toán trong kỹ thuật
-- Mô hình hóa các hiện tượng tự nhiên
-- Tối ưu hóa các bài toán kinh tế`,
-      Mon_Hoc_ID: 1,
-      Ngay_Tao: "2024-03-15",
-      Ngay_Cap_Nhat: "2024-03-20",
-      Tac_Gia: "TS. Nguyễn Văn A",
-      Thoi_Luong: 90,
-      Luot_Xem: 1250,
-      Trang_Thai: "Đã xuất bản"
-    });
-  }, [id]);
+      // Load lecture info
+      const lectureResponse = await simpleLectureService.getLecture(Number(lectureId));
+      if (lectureResponse) {
+        setLecture(lectureResponse);
+      } else {
+        setError('Không tìm thấy bài giảng');
+      }
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      setError(error.message || 'Lỗi khi tải thông tin');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -73,20 +90,13 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Đã xuất bản':
-        return 'bg-green-100 text-green-800';
-      case 'Bản nháp':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Đang xem xét':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusColor = (status: boolean) => {
+    return status 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-yellow-100 text-yellow-800';
   };
 
-  if (!lecture) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
         <div className="text-center">
@@ -97,7 +107,19 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
     );
   }
 
-  const monHoc = monHocList.find(mh => mh.id === lecture.Mon_Hoc_ID);
+  if (error || !lecture) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">{error || 'Không tìm thấy bài giảng'}</div>
+          <Button onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Quay lại
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -110,7 +132,7 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
               <div className="flex items-center gap-4">
                 <Button
                   variant="secondary"
-                  onClick={() => navigate('/teacher/lectures')}
+                  onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures`)}
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 p-3"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -122,20 +144,16 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
               </div>
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{lecture.Luot_Xem?.toLocaleString()}</div>
-                  <div className="text-blue-100 text-sm">Lượt xem</div>
+                  <div className="text-2xl font-bold">{lecture.duration_minutes || 0}</div>
+                  <div className="text-blue-100 text-sm">Phút đọc</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{lecture.Thoi_Luong}</div>
-                  <div className="text-blue-100 text-sm">Phút</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">#{lecture.Thu_Tu}</div>
+                  <div className="text-2xl font-bold">#{lecture.order_index}</div>
                   <div className="text-blue-100 text-sm">Thứ tự</div>
                 </div>
                 <Button
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
-                  onClick={() => navigate(`/teacher/lectures/edit/${lecture.id}`)}
+                  onClick={() => navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures/${lecture.id}/edit`)}
                 >
                   <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
                 </Button>
@@ -156,47 +174,22 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(lecture.Trang_Thai || '')}`}>
-                        {lecture.Trang_Thai}
+                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(lecture.is_published)}`}>
+                        {lecture.is_published ? 'Đã xuất bản' : 'Bản nháp'}
                       </span>
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center gap-1">
                         <Hash className="w-3 h-3" />
-                        Bài {lecture.Thu_Tu}
+                        Bài {lecture.order_index}
                       </span>
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800 mb-4 leading-tight">{lecture.Ten_Bai_Giang}</h2>
-                    <p className="text-gray-600 text-lg leading-relaxed">{lecture.Mo_Ta}</p>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4 leading-tight">{lecture.title}</h2>
+                    <div className="text-gray-600 mb-4">
+                      <span className="text-sm">Thuộc chương: </span>
+                      <span className="font-semibold">{chapter?.title}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200">
-                  <Button
-                    // variant="outline"
-                    size="sm"
-                    onClick={() => setIsBookmarked(!isBookmarked)}
-                    className={`${
-                      isBookmarked 
-                        ? 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100' 
-                        : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
-                    }`}
-                  >
-                    <Bookmark className={`w-4 h-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
-                    {isBookmarked ? 'Đã lưu' : 'Lưu'}
-                  </Button>
-                  <Button variant="default" size="sm" className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Xem trước
-                  </Button>
-                  <Button variant="default" size="sm" className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100">
-                    <Download className="w-4 h-4 mr-2" />
-                    Tải PDF
-                  </Button>
-                  <Button variant="default" size="sm" className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Chia sẻ
-                  </Button>
-                </div>
               </CardContent>
             </Card>
 
@@ -210,9 +203,15 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
                   <h3 className="text-2xl font-bold text-gray-800">Nội dung bài giảng</h3>
                 </div>
                 <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed text-sm">
-                    {lecture.Noi_Dung}
-                  </pre>
+                  {lecture.content ? (
+                    <div className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed text-sm">
+                      {lecture.content}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 italic text-center py-8">
+                      Chưa có nội dung bài giảng
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -232,46 +231,43 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
                 <div className="space-y-4">
                   <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
                     <p className="text-sm text-blue-600 font-semibold mb-1">Tên môn học</p>
-                    <p className="text-gray-800 font-bold">{monHoc?.ten}</p>
+                    <p className="text-gray-800 font-bold">{course?.subject_name}</p>
                   </div>
                   <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
                     <p className="text-sm text-blue-600 font-semibold mb-1">Mã môn học</p>
-                    <p className="text-gray-800 font-bold">{monHoc?.ma}</p>
+                    <p className="text-gray-800 font-bold">{course?.subject_code}</p>
+                  </div>
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <p className="text-sm text-blue-600 font-semibold mb-1">Chương</p>
+                    <p className="text-gray-800 font-bold">{chapter?.title}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Author and Dates Card */}
+            {/* Dates Card */}
             <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="rounded-xl bg-gradient-to-tr from-orange-500 to-red-500 p-2 shadow-lg">
-                    <User className="text-white w-5 h-5" />
+                    <Calendar className="text-white w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-800">Thông tin khác</h3>
+                  <h3 className="text-xl font-bold text-gray-800">Thời gian</h3>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
-                    <User className="w-5 h-5 text-indigo-600" />
-                    <div>
-                      <p className="text-sm text-gray-600">Tác giả</p>
-                      <p className="font-semibold text-gray-800">{lecture.Tac_Gia}</p>
-                    </div>
-                  </div>
                   <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
                     <Calendar className="w-5 h-5 text-indigo-600" />
                     <div>
                       <p className="text-sm text-gray-600">Ngày tạo</p>
-                      <p className="font-semibold text-gray-800">{formatDate(lecture.Ngay_Tao)}</p>
+                      <p className="font-semibold text-gray-800">{formatDate(lecture.created_at)}</p>
                     </div>
                   </div>
-                  {lecture.Ngay_Cap_Nhat && (
+                  {lecture.updated_at && lecture.updated_at !== lecture.created_at && (
                     <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-100">
                       <Calendar className="w-5 h-5 text-indigo-600" />
                       <div>
                         <p className="text-sm text-gray-600">Cập nhật lần cuối</p>
-                        <p className="font-semibold text-gray-800">{formatDate(lecture.Ngay_Cap_Nhat)}</p>
+                        <p className="font-semibold text-gray-800">{formatDate(lecture.updated_at)}</p>
                       </div>
                     </div>
                   )}
@@ -288,20 +284,22 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
                   </div>
                   <h3 className="text-xl font-bold text-gray-800">Thống kê</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-lg mx-auto mb-2">
-                      <Eye className="w-4 h-4 text-white" />
-                    </div>
-                    <p className="text-lg font-bold text-gray-800">{lecture.Luot_Xem?.toLocaleString()}</p>
-                    <p className="text-xs text-gray-600">Lượt xem</p>
-                  </div>
+                <div className="grid grid-cols-1 gap-4">
                   <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
                     <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-lg mx-auto mb-2">
                       <Clock className="w-4 h-4 text-white" />
                     </div>
-                    <p className="text-lg font-bold text-gray-800">{lecture.Thoi_Luong}</p>
-                    <p className="text-xs text-gray-600">Phút</p>
+                    <p className="text-lg font-bold text-gray-800">{lecture.duration_minutes || 0}</p>
+                    <p className="text-xs text-gray-600">Phút đọc</p>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-lg mx-auto mb-2">
+                      <FileText className="w-4 h-4 text-white" />
+                    </div>
+                    <p className="text-lg font-bold text-gray-800">
+                      {lecture.content ? Math.ceil(lecture.content.length / 100) : 0}
+                    </p>
+                    <p className="text-xs text-gray-600">Độ dài nội dung</p>
                   </div>
                 </div>
               </CardContent>
@@ -313,4 +311,4 @@ Khái niệm giới hạn là nền tảng của toán cao cấp...
   );
 };
 
-export default LectureDetail; 
+export default LectureDetail;

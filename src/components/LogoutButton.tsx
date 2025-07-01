@@ -11,11 +11,9 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ className, children 
   const handleLogout = async () => {
     try {
       console.log('Logout clicked - calling authService.logout()');
-      // AuthService logout will clear storage and redirect to login
       await authService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
-      // Fallback redirect if logout fails
+      console.error('Logout error:', error);  
       window.location.href = '/login';
     }
   };

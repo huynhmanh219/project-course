@@ -15,7 +15,6 @@ class MediaUploadService {
     };
   }
 
-  // Upload video file for lecture
   async uploadVideo(lectureId: number, videoFile: File, onProgress?: (progress: UploadProgress) => void): Promise<any> {
     try {
       console.log(`Uploading video for lecture ${lectureId}:`, videoFile.name);
@@ -28,7 +27,6 @@ class MediaUploadService {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         
-        // Upload progress tracking
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable && onProgress) {
             const progress = Math.round((e.loaded / e.total) * 100);
@@ -66,7 +64,6 @@ class MediaUploadService {
         
         xhr.open('POST', `${API_BASE_URL}/lectures/${lectureId}/upload-video`);
         
-        // Set headers
         Object.entries(headers).forEach(([key, value]) => {
           xhr.setRequestHeader(key, value);
         });
@@ -79,7 +76,6 @@ class MediaUploadService {
     }
   }
 
-  // Upload thumbnail image for lecture
   async uploadThumbnail(lectureId: number, imageFile: File, onProgress?: (progress: UploadProgress) => void): Promise<any> {
     try {
       console.log(`Uploading thumbnail for lecture ${lectureId}:`, imageFile.name);
@@ -92,7 +88,6 @@ class MediaUploadService {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         
-        // Upload progress tracking
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable && onProgress) {
             const progress = Math.round((e.loaded / e.total) * 100);
@@ -130,7 +125,6 @@ class MediaUploadService {
         
         xhr.open('POST', `${API_BASE_URL}/lectures/${lectureId}/upload-thumbnail`);
         
-        // Set headers
         Object.entries(headers).forEach(([key, value]) => {
           xhr.setRequestHeader(key, value);
         });
@@ -143,7 +137,6 @@ class MediaUploadService {
     }
   }
 
-  // Upload both video and thumbnail simultaneously
   async uploadVideoAndThumbnail(
     lectureId: number, 
     videoFile: File, 
@@ -154,7 +147,6 @@ class MediaUploadService {
     try {
       console.log(`Uploading video and thumbnail for lecture ${lectureId}`);
       
-      // Upload both files simultaneously
       const [videoResult, thumbnailResult] = await Promise.all([
         this.uploadVideo(lectureId, videoFile, onVideoProgress),
         this.uploadThumbnail(lectureId, thumbnailFile, onThumbnailProgress)
@@ -170,7 +162,6 @@ class MediaUploadService {
     }
   }
 
-  // Validate video file
   validateVideoFile(file: File): { valid: boolean; error?: string } {
     const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm'];
     const maxSize = 500 * 1024 * 1024; // 500MB
@@ -192,7 +183,6 @@ class MediaUploadService {
     return { valid: true };
   }
 
-  // Validate image file
   validateImageFile(file: File): { valid: boolean; error?: string } {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -214,7 +204,6 @@ class MediaUploadService {
     return { valid: true };
   }
 
-  // Extract video duration
   async getVideoDuration(file: File): Promise<number> {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
@@ -235,12 +224,11 @@ class MediaUploadService {
     });
   }
 
-  // Create preview URL for files
   createPreviewUrl(file: File): string {
     return URL.createObjectURL(file);
   }
 
-  // Cleanup preview URL
+
   revokePreviewUrl(url: string): void {
     URL.revokeObjectURL(url);
   }

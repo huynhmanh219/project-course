@@ -1,4 +1,4 @@
-﻿// API Configuration
+// API Configuration
 export { apiClient, API_BASE_URL, handleApiResponse, handleApiError } from './api';
 
 // Types
@@ -14,6 +14,7 @@ import { simpleClassService } from './class.service.simple';
 import { simpleQuizService } from './quiz.service.simple';
 import { simpleChapterService } from './chapter.service.simple';
 import { simpleLectureService } from './lecture.service.simple';
+import { simpleMaterialService } from './material.service.simple';
 
 // Export services
 export {
@@ -25,6 +26,7 @@ export {
   simpleQuizService,
   simpleChapterService,
   simpleLectureService,
+  simpleMaterialService,
 };
 
 // Service collection object
@@ -36,6 +38,7 @@ export const services = {
   simpleQuiz: simpleQuizService,
   simpleChapter: simpleChapterService,
   simpleLecture: simpleLectureService,
+  simpleMaterial: simpleMaterialService,
 };
 
 // Default export

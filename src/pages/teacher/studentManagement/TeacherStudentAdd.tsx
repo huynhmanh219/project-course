@@ -14,8 +14,6 @@ const TeacherStudentAdd: React.FC = () => {
     student_id: "",           // MSSV
     first_name: "",           // Họ đệm
     last_name: "",            // Tên
-    email: "",
-    password: "",
     phone: "",
     date_of_birth: "",
     address: ""
@@ -37,20 +35,20 @@ const TeacherStudentAdd: React.FC = () => {
     setError('');
 
     // Basic validation
-    if (!form.student_id || !form.first_name || !form.last_name || !form.email || !form.password) {
+    if (!form.student_id || !form.first_name || !form.last_name) {
       setError('Vui lòng điền đầy đủ thông tin bắt buộc');
       setLoading(false);
       return;
     }
 
-    if (!form.email.includes('@')) {
-      setError('Email không hợp lệ');
+    if (form.phone && !form.phone.match(/^\d+$/)) {
+      setError('Số điện thoại phải là số');
       setLoading(false);
       return;
     }
 
-    if (form.password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự');
+    if (!form.date_of_birth.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      setError('Ngày sinh phải đúng định dạng YYYY-MM-DD');
       setLoading(false);
       return;
     }
@@ -69,8 +67,6 @@ const TeacherStudentAdd: React.FC = () => {
       // Debug: Log each field individually
       console.log('Form data breakdown:');
       console.log('- student_id:', JSON.stringify(form.student_id), typeof form.student_id);
-      console.log('- email:', JSON.stringify(form.email), typeof form.email);
-      console.log('- password:', JSON.stringify(form.password), typeof form.password);
       console.log('- first_name:', JSON.stringify(form.first_name), typeof form.first_name);
       console.log('- last_name:', JSON.stringify(form.last_name), typeof form.last_name);
       console.log('- phone:', JSON.stringify(form.phone), typeof form.phone);
@@ -80,13 +76,11 @@ const TeacherStudentAdd: React.FC = () => {
       // Sanitize data to ensure all fields are strings and handle empty values
       const sanitizedData = {
         student_id: String(form.student_id || '').trim(),
-        email: String(form.email || '').trim(),
-        password: String(form.password || ''),
         first_name: String(form.first_name || '').trim(),
         last_name: String(form.last_name || '').trim(),
-        phone: String(form.phone || '').trim() || undefined,  // Send undefined for empty phone
+        phone: String(form.phone || '').trim() || undefined,
         date_of_birth: form.date_of_birth ? String(form.date_of_birth).trim() : undefined,
-        address: String(form.address || '').trim() || undefined  // Send undefined for empty address
+        address: String(form.address || '').trim() || undefined
       };
       
       console.log('Sanitized data:', sanitizedData);
@@ -95,7 +89,10 @@ const TeacherStudentAdd: React.FC = () => {
       const response = await SimpleUserService.createStudent(sanitizedData);
       console.log('Student created successfully:', response);
       
-      alert(`Tạo tài khoản sinh viên thành công!\n\nEmail: ${form.email}\nMSSV: ${form.student_id}\nHọ tên: ${form.first_name} ${form.last_name}`);
+      const autoEmail = `${form.student_id}@lms.com`;
+      const autoPassword = form.student_id;
+      
+      alert(`Tạo tài khoản sinh viên thành công!\n\nMSSV: ${form.student_id}\nHọ tên: ${form.first_name} ${form.last_name}\nEmail: ${autoEmail}\nMật khẩu: ${autoPassword}\n\nSinh viên cần đổi mật khẩu lần đầu đăng nhập.`);
       navigate('/teacher/students');
       
     } catch (error: any) {
@@ -103,9 +100,7 @@ const TeacherStudentAdd: React.FC = () => {
       
       // Handle specific error messages
       let errorMessage = 'Lỗi khi tạo tài khoản sinh viên: ';
-      if (error.message.includes('Email already exists')) {
-        errorMessage = 'Email đã tồn tại trong hệ thống!';
-      } else if (error.message.includes('Student ID already exists')) {
+      if (error.message.includes('Student ID already exists')) {
         errorMessage = 'MSSV đã tồn tại trong hệ thống!';
       } else if (error.message.includes('Validation failed')) {
         errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.';
@@ -155,21 +150,6 @@ const TeacherStudentAdd: React.FC = () => {
                 placeholder="VD: SV001, 2023001234"
               />
             </div>
-            <div>
-              <label className="block text-gray-700 mb-2 font-semibold">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                type="email"
-                disabled={loading}
-                className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
-                placeholder="student@university.edu.vn"
-              />
-            </div>
           </div>
 
           {/* Name Section */}
@@ -204,74 +184,52 @@ const TeacherStudentAdd: React.FC = () => {
             </div>
           </div>
 
-          {/* Password Section */}
+          {/* Phone Section */}
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">
-              Mật khẩu <span className="text-red-500">*</span>
+              Số điện thoại <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <input
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                type={showPassword ? "text" : "password"}
-                disabled={loading}
-                className="border rounded-xl px-3 py-2 w-full pr-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
-                placeholder="Mật khẩu tối thiểu 6 ký tự"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
+              placeholder="VD: 0123456789"
+            />
           </div>
 
-          {/* Optional Info Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Thông tin bổ sung (không bắt buộc)</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 mb-2 font-semibold">Số điện thoại</label>
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  disabled={loading}
-                  className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
-                  placeholder="VD: 0123456789"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2 font-semibold">Ngày sinh</label>
-                <input
-                  name="date_of_birth"
-                  value={form.date_of_birth}
-                  onChange={handleChange}
-                  type="date"
-                  disabled={loading}
-                  className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
-                />
-              </div>
-            </div>
+          {/* Date of Birth Section */}
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">
+              Ngày sinh <span className="text-red-500">*</span>
+            </label>
+            <input
+              name="date_of_birth"
+              value={form.date_of_birth}
+              onChange={handleChange}
+              required
+              type="date"
+              disabled={loading}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
+            />
+          </div>
 
-            <div className="mt-6">
-              <label className="block text-gray-700 mb-2 font-semibold">Địa chỉ</label>
-              <textarea
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                disabled={loading}
-                rows={3}
-                className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100 resize-none"
-                placeholder="VD: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM"
-              />
-            </div>
+          {/* Address Section */}
+          <div className="mt-6">
+            <label className="block text-gray-700 mb-2 font-semibold">
+              Địa chỉ <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              required
+              rows={3}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100 resize-none"
+              placeholder="VD: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM"
+            />
           </div>
 
           {/* Action Buttons */}

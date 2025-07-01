@@ -41,7 +41,6 @@ export function Sidebar() {
   const [role, setRole] = useState<string>('');
 
   useEffect(() => {
-    // Get current user and role
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
@@ -49,16 +48,14 @@ export function Sidebar() {
     }
   }, []);
 
-  // Helper functions to check roles
   const isStudent = () => role === 'student';
   const isTeacher = () => role === 'lecturer' || role === 'teacher';
   const isAdmin = () => role === 'admin';
-  const canAccessTeacherFeatures = () => isTeacher() || isAdmin(); // Admin has teacher access
+  const canAccessTeacherFeatures = () => isTeacher() || isAdmin(); 
   const canAccessAdminFeatures = () => isAdmin();
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 shadow-sm h-full flex flex-col">
-      {/* Header - Fixed */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
           {isAdmin() ? (
@@ -73,16 +70,14 @@ export function Sidebar() {
           <span className="text-lg font-bold text-gray-800">LMS Portal</span>
           {user && (
             <span className="text-xs text-gray-600">
-              {isAdmin() ? '👑 Admin' : isTeacher() ? '🎓 Teacher' : '📚 Student'}
+              {isAdmin() ? '👑 Quản trị viên' : isTeacher() ? '🎓 Giảng Viên' : '📚 Sinh viên'}
             </span>
           )}
         </div>
       </div>
 
-      {/* Navigation - Scrollable */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         
-        {/* ADMIN-ONLY FEATURES */}
         {canAccessAdminFeatures() && (
           <>
             <div className={sectionTitleClass}>
@@ -109,7 +104,6 @@ export function Sidebar() {
           </>
         )}
 
-        {/* TEACHER FEATURES (Available to Teacher + Admin) */}
         {canAccessTeacherFeatures() && (
           <>
             <div className={sectionTitleClass}>
@@ -123,10 +117,6 @@ export function Sidebar() {
             <NavLink to="/teacher/my-classes" className={navLinkClass}>
               <Layers className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Danh Sách lớp học phần</span>
-            </NavLink>
-            <NavLink to="/teacher/lectures" className={navLinkClass}>
-              <Presentation className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Bài giảng</span>
             </NavLink>
             <NavLink to="/teacher/materials" className={navLinkClass}>
               <FileText className="h-4 w-4 flex-shrink-0" />
@@ -156,7 +146,6 @@ export function Sidebar() {
           </>
         )}
 
-        {/* STUDENT FEATURES */}
         {isStudent() && (
           <>
             <div className={sectionTitleClass}>
@@ -169,30 +158,24 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/student/classes" className={navLinkClass}>
               <ClipboardList className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Lớp học của tôi</span>
+              <span className="truncate">Lớp học phần của tôi</span>
             </NavLink>
-            <NavLink to="/courses" className={navLinkClass}>
+            {/* <NavLink to="/courses" className={navLinkClass}>
               <BookOpen className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Khóa học</span>
-            </NavLink>
+            </NavLink> */}
             <NavLink to="/student/quiz" className={navLinkClass}>
               <CheckSquare className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Bài kiểm tra</span>
             </NavLink>
-            <NavLink to="/calendar" className={navLinkClass}>
-              <Calendar className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Lịch học</span>
-            </NavLink>
           </>
         )}
 
-        {/* UNIVERSAL FEATURES */}
         <div className={sectionTitleClass}>
           <User className="h-3 w-3 inline mr-1" />
           Tài khoản
         </div>
         
-        {/* Dynamic profile link based on role */}
         <NavLink 
           to={
             isAdmin() ? '/admin/profile' : 
@@ -217,11 +200,9 @@ export function Sidebar() {
           <span className="truncate">Đổi mật khẩu</span>
         </NavLink>
         
-        {/* Spacing for better UX */}
         <div className="h-4"></div>
       </nav>
       
-      {/* Footer - User Info */}
       <div className="border-t border-gray-100 p-3 bg-gradient-to-r from-gray-50 to-blue-50 flex-shrink-0">
         {user && (
           <div className="text-xs text-gray-600">
@@ -230,7 +211,7 @@ export function Sidebar() {
               {isAdmin() && <Crown className="h-3 w-3" />}
               {isTeacher() && <GraduationCap className="h-3 w-3" />}
               {isStudent() && <UserCheck className="h-3 w-3" />}
-              <span className="capitalize">{role === 'lecturer' ? 'Teacher' : role}</span>
+              <span className="capitalize">{role === 'lecturer' ? 'Giảng viên' : role}</span>
             </div>
           </div>
         )}

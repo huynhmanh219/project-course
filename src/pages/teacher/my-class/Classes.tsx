@@ -4,7 +4,7 @@ import { BookOpen, CheckCircle, XCircle, Users, Edit, Trash2, UserPlus, Search, 
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { authService } from '../../../services/auth.service';
-import { simpleClassService } from '../../../services/class.service.simple';
+import  {simpleClassService}  from '../../../services/class.service.simple';
 
 const TeacherClasses: React.FC = () => {
   const [classes, setClasses] = useState<any[]>([]);
@@ -33,14 +33,21 @@ const TeacherClasses: React.FC = () => {
         return;
       }
 
-      console.log('Fetching my classes...');
+      console.log('🔄 Fetching classes for user:', currentUser);
+      
+      // Check if user has appropriate permissions
+      if (!currentUser.role || !['admin', 'lecturer'].includes(currentUser.role)) {
+        setError('Bạn không có quyền truy cập chức năng này');
+        return;
+      }
+
       const response = await simpleClassService.getMyClasses();
-      console.log('My classes response:', response);
+      console.log('📥 Classes response:', response);
       
       // Backend returns: { data: [...], pagination: {...} }
       let classesData = response.data || [];
       
-      console.log('My classes data to process:', classesData);
+      console.log('📋 Classes data to process:', classesData);
       
       if (classesData && classesData.length > 0) {
         // Process class data - map from API format to UI format
@@ -57,18 +64,28 @@ const TeacherClasses: React.FC = () => {
           endDate: classItem.end_date || '',
           schedule: classItem.schedule || '',
           status: true, // Default to active for now
-          createdAt: classItem.created_at || new Date().toISOString()
+          createdAt: classItem.created_at || new Date().toISOString(),
+          lecturerName: classItem.lecturer ? `${classItem.lecturer.first_name} ${classItem.lecturer.last_name}` : ''
         }));
         
-        console.log('Processed my classes:', processedClasses);
+        console.log('✅ Processed classes:', processedClasses);
         setClasses(processedClasses);
       } else {
-        console.log('No classes found for this lecturer');
+        console.log('ℹ️ No classes found');
         setClasses([]);
       }
     } catch (error: any) {
-      console.error('Error fetching my classes:', error);
-      setError('Không thể tải danh sách lớp học phần của bạn');
+      console.error('❌ Error fetching classes:', error);
+      
+      // Better error handling
+      if (error.message.includes('Token expired') || error.message.includes('Unauthorized')) {
+        setError('Phiên đăng nhập đã hết hạn. Đang chuyển hướng...');
+        setTimeout(() => {
+          authService.logout();
+        }, 2000);
+      } else {
+        setError('Không thể tải danh sách lớp học phần: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -144,7 +161,7 @@ const TeacherClasses: React.FC = () => {
 
   const ClassCard: React.FC<{ classItem: any }> = ({ classItem }) => {
     return (
-      <Card className="h-full flex flex-col shadow-lg border border-gray-200 bg-white hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+      <Card className="h-full flex flex-col shadow-lg border border-gray-200 bg-white hover:shadow-xl transition-all duration-300 relative overflow-hidden group w-full max-w-[380px] m-4">
         {/* Header gradient bar */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
         
@@ -155,30 +172,36 @@ const TeacherClasses: React.FC = () => {
               <BookOpen className="text-white w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-xl text-gray-800 mb-2 line-clamp-2">
+              <h3 className="font-bold text-xl text-gray-800 mb-3 line-clamp-2">
                 {classItem.name}
               </h3>
-              <div className="flex items-center justify-between mb-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                  {classItem.course} {classItem.courseCode && `(${classItem.courseCode})`}
-                </span>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                  classItem.status 
-                    ? "bg-green-100 text-green-700" 
-                    : "bg-red-100 text-red-700"
-                }`}>
-                  {classItem.status ? (
-                    <>
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Hoạt động
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-3 h-3 mr-1" />
-                      Khóa
-                    </>
-                  )}
-                </span>
+              
+              {/* Course and Status in separate rows for better spacing */}
+              <div className="space-y-2">
+                <div className="flex justify-start">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    {classItem.course} {classItem.courseCode && `(${classItem.courseCode})`}
+                  </span>
+                </div>
+                <div className="flex justify-start">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                    classItem.status 
+                      ? "bg-green-100 text-green-700" 
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    {classItem.status ? (
+                      <>
+                        <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                        Hoạt động
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                        Khóa
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -195,6 +218,12 @@ const TeacherClasses: React.FC = () => {
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="w-4 h-4 text-green-500 flex-shrink-0" />
                 <span className="font-medium">{classItem.enrollmentCount}/{classItem.maxStudents} sinh viên</span>
+              </div>
+            )}
+            {user?.role === 'admin' && classItem.lecturerName && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <GraduationCap className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                <span className="font-medium">GV: {classItem.lecturerName}</span>
               </div>
             )}
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -258,7 +287,12 @@ const TeacherClasses: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-600" />
-              <p className="text-gray-600">Đang tải danh sách lớp học phần của bạn...</p>
+              <p className="text-gray-600">
+                {user?.role === 'admin' 
+                  ? 'Đang tải danh sách lớp học phần...' 
+                  : 'Đang tải danh sách lớp học phần của bạn...'
+                }
+              </p>
             </div>
           </div>
         )}
@@ -293,9 +327,15 @@ const TeacherClasses: React.FC = () => {
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight mb-3">Lớp học phần của tôi</h1>
+                <h1 className="text-4xl font-bold tracking-tight mb-3">
+                  {user?.role === 'admin' ? 'Quản lý lớp học phần' : 'Lớp học phần của tôi'}
+                </h1>
                 <p className="text-blue-100 text-lg">
-                  Chào mừng {user?.userName || user?.email}, quản lý các lớp học phần bạn đang phụ trách
+                  Chào mừng <span className="font-semibold">{user?.userName || user?.email}</span>, 
+                  {user?.role === 'admin' 
+                    ? ' quản lý tất cả lớp học phần trong hệ thống' 
+                    : ' quản lý các lớp học phần bạn đang phụ trách'
+                  }
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -320,12 +360,7 @@ const TeacherClasses: React.FC = () => {
                   >
                     <Plus className="w-4 h-4 mr-2" /> Thêm lớp học phần
                   </Button>
-                  <Button
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-4 py-2 rounded-xl transition-all duration-200"
-                    onClick={() => navigate('/teacher/classes/add')}
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" /> Thêm sinh viên
-                  </Button>
+
                 </div>
               </div>
             </div>
@@ -362,7 +397,12 @@ const TeacherClasses: React.FC = () => {
                 {searchTerm ? "Không tìm thấy lớp học phần nào" : "Chưa có lớp học phần nào"}
               </h3>
               <p className="text-gray-500 mb-4">
-                {searchTerm ? "Thử thay đổi từ khóa tìm kiếm" : "Bạn chưa được phân công phụ trách lớp học phần nào"}
+                {searchTerm 
+                  ? "Thử thay đổi từ khóa tìm kiếm" 
+                  : user?.role === 'admin' 
+                    ? "Hệ thống chưa có lớp học phần nào được tạo"
+                    : "Bạn chưa được phân công phụ trách lớp học phần nào"
+                }
               </p>
               {!searchTerm && (
                 <Button

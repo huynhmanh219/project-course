@@ -8,11 +8,11 @@ const Footer: React.FC = () => {
         <Copyright className="w-4 h-4" />
         <span>Hệ thống Quản lý Học tập</span>
       </div>
-      <div className="mt-2 md:mt-0 text-gray-500">&copy; {new Date().getFullYear()} <span className="font-semibold text-blue-700">MyCourse</span>. All rights reserved.</div>
+      <div className="mt-2 md:mt-0 text-gray-500">&copy; {new Date().getFullYear()} <span className="font-semibold text-blue-700">LMS</span>. All rights reserved.</div>
       <div className="mt-2 md:mt-0 flex items-center gap-2">
         <Mail className="w-4 h-4 text-blue-500" />
         <span>Liên hệ:</span>
-        <a href="mailto:support@mycourse.edu" className="text-blue-600 hover:underline font-medium">support@mycourse.edu</a>
+        <a href="mailto:support@lms.edu" className="text-blue-600 hover:underline font-medium">Hỗ trợ @lms.com</a>
       </div>
     </footer>
   );

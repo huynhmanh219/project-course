@@ -41,19 +41,23 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role permissions
+  const user = authService.getCurrentUser();
+  if (isAuthenticated && user && user.first_login && user.role === 'student') {
+    if (location.pathname === '/student/change-password') {
+      return <>{children}</>;
+    }
+    return <Navigate to="/student/change-password" replace />;
+  }
+
   if (requiredRole && userRole) {
-    // Admin can access everything
     if (userRole === 'admin') {
       return <>{children}</>;
     }
     
-    // For other roles, check if they have the required role
     if (!requiredRole.includes(userRole)) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
