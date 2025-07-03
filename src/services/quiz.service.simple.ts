@@ -10,7 +10,6 @@ class SimpleQuizService {
         'Authorization': `Bearer ${token}`
       };
     } catch (error) {
-      console.error('Failed to get valid token:', error);
       throw error;
     }
   }
@@ -33,7 +32,6 @@ class SimpleQuizService {
 
   async getQuizzes(params?: any): Promise<any> {
     try {
-      console.log('Getting quizzes list...');
       
       let url = `${API_BASE_URL}/quizzes`;
       if (params) {
@@ -48,18 +46,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quizzes response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quizzes error:', error);
       throw error;
     }
   }
 
   async getQuiz(id: number): Promise<any> {
     try {
-      console.log(`Getting quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}`, {
@@ -68,18 +63,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz error:', error);
       throw error;
     }
   }
 
   async createQuiz(data: any): Promise<any> {
     try {
-      console.log('Creating quiz:', data);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes`, {
@@ -89,18 +81,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Create quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Create quiz error:', error);
       throw error;
     }
   }
 
   async updateQuiz(id: number, data: any): Promise<any> {
-    try {
-      console.log(`Updating quiz ${id}:`, data);
+    try {   
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}`, {
@@ -110,18 +99,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Update quiz response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Update quiz error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async deleteQuiz(id: number): Promise<any> {
     try {
-      console.log(`Deleting quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}`, {
@@ -130,18 +116,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Delete quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Delete quiz error:', error);
       throw error;
     }
   }
 
   async getQuizQuestions(id: number, includeAnswers: boolean = true): Promise<any> {
     try {
-      console.log(`Getting questions for quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const url = `${API_BASE_URL}/quizzes/${id}/questions${includeAnswers ? '?include_answers=true' : ''}`;
@@ -151,18 +134,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz questions response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz questions error:', error);
       throw error;
     }
   }
 
   async startQuiz(id: number): Promise<any> {
     try {
-      console.log(`Starting quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/start`, {
@@ -171,18 +151,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Start quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Start quiz error:', error);
       throw error;
     }
   }
 
   async publishQuiz(id: number): Promise<any> {
     try {
-      console.log(`Publishing quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/publish`, {
@@ -191,18 +168,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Publish quiz response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Publish quiz error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async closeQuiz(id: number): Promise<any> {
     try {
-      console.log(`Closing quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/close`, {
@@ -211,18 +185,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Close quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Close quiz error:', error);
       throw error;
     }
   }
 
   async getQuizResults(id: number): Promise<any> {
     try {
-      console.log(`Getting results for quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/results`, {
@@ -231,18 +202,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz results response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz results error:', error);
       throw error;
     }
   }
 
   async getQuizStatistics(id: number): Promise<any> {
     try {
-      console.log(`Getting statistics for quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/statistics`, {
@@ -251,18 +219,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz statistics response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz statistics error:', error);
       throw error;
     }
   }
 
   async createQuestion(data: any): Promise<any> {
-    try {
-      console.log('Creating question:', data);
+    try {     
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/questions`, {
@@ -272,18 +237,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Create question response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Create question error:', error);
       throw error;
     }
   }
 
   async getQuestion(id: number): Promise<any> {
     try {
-      console.log(`Getting question ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
@@ -292,18 +254,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Question response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Get question error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async updateQuestion(id: number, data: any): Promise<any> {
     try {
-      console.log(`Updating question ${id}:`, data);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
@@ -313,18 +272,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Update question response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Update question error:', error);
       throw error;
     }
   }
 
   async deleteQuestion(id: number): Promise<any> {
     try {
-      console.log(`Deleting question ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
@@ -333,18 +289,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Delete question response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Delete question error:', error);
       throw error;
     }
   }
 
   async createQuizAttempt(data: any): Promise<any> {
     try {
-      console.log('Creating quiz attempt:', data);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts`, {
@@ -354,19 +307,16 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Create quiz attempt response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Create quiz attempt error:', error);
       throw error;
     }
   }
 
   async getQuizAttempt(id: number): Promise<any> {
-    try {
-      console.log(`Getting quiz attempt ${id}...`);
-      
+    try {   
+
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${id}`, {
         method: 'GET',
@@ -374,18 +324,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz attempt response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Get quiz attempt error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async submitAnswer(attemptId: number, data: any): Promise<any> {
-    try {
-      console.log(`Submitting answer for attempt ${attemptId}:`, data);
+    try {      
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${attemptId}/answer`, {
@@ -395,18 +342,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Submit answer response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Submit answer error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async submitQuizAttempt(attemptId: number): Promise<any> {
-    try {
-      console.log(`Submitting quiz attempt ${attemptId}...`);
+    try {      
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${attemptId}/submit`, {
@@ -415,18 +359,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Submit quiz attempt response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Submit quiz attempt error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async getAttemptResult(id: number): Promise<any> {
-    try {
-      console.log(`Getting result for attempt ${id}...`);
+    try {      
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${id}/result`, {
@@ -435,18 +376,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Attempt result response:', result);
 
       return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Get attempt result error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async getMyAttempts(params?: any): Promise<any> {
-    try {
-      console.log('Getting my quiz attempts...');
+    try {      
       
       let url = `${API_BASE_URL}/quiz-attempts/my-attempts`;
       if (params) {
@@ -461,18 +399,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('My attempts response:', result);
 
-      return this.handleResponse(response, result);
-    } catch (error: any) {
-      console.error('Get my attempts error:', error);
+    return this.handleResponse(response, result);
+    } catch (error: any) {      
       throw error;
     }
   }
 
   async getQuizProgress(attemptId: number): Promise<any> {
     try {
-      console.log(`Getting progress for attempt ${attemptId}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${attemptId}/progress`, {
@@ -481,18 +416,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz progress response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz progress error:', error);
       throw error;
     }
   }
 
   async flagQuestion(attemptId: number, questionId: number): Promise<any> {
     try {
-      console.log(`Flagging question ${questionId} for attempt ${attemptId}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${attemptId}/flag`, {
@@ -502,19 +434,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Flag question response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Flag question error:', error);
       throw error;
     }
   }
 
   async getQuizHistory(params?: any): Promise<any> {
-    try {
-      console.log('Getting quiz history...');
-      
+    try {      
       let url = `${API_BASE_URL}/quiz-attempts/my-attempts`;
       if (params) {
         const searchParams = new URLSearchParams(params);
@@ -528,18 +456,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz history response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz history error:', error);
       throw error;
     }
   }
 
   async getQuizResult(quizId: number, submissionId: number): Promise<any> {
     try {
-      console.log(`Getting quiz result for quiz ${quizId}, submission ${submissionId}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/${submissionId}/result`, {
@@ -548,18 +473,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz result response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz result error:', error);
       throw error;
     }
   }
 
   async submitQuiz(quizId: number, data: any): Promise<any> {
     try {
-      console.log(`Submitting quiz ${quizId}:`, data);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quiz-attempts/submit`, {
@@ -569,18 +491,15 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Submit quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Submit quiz error:', error);
       throw error;
     }
   }
 
   async getQuizById(id: number): Promise<any> {
     try {
-      console.log(`Getting quiz ${id} for taking...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}`, {
@@ -589,17 +508,14 @@ class SimpleQuizService {
       });
 
       const result = await response.json();
-      console.log('Quiz by ID response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Get quiz by ID error:', error);
       throw error;
     }
   }
   async forceDeleteQuiz(id: number): Promise<any> {
     try {
-      console.log(`Force deleting quiz ${id}...`);
       
       const headers = await this.getHeaders();
       const response = await fetch(`${API_BASE_URL}/quizzes/${id}/force`, {
@@ -607,11 +523,10 @@ class SimpleQuizService {
         headers
       });
       const result = await response.json();
-      console.log('Force delete quiz response:', result);
 
       return this.handleResponse(response, result);
     } catch (error: any) {
-      console.error('Force delete quiz error:', error);
+      
       throw error;
     }
   }

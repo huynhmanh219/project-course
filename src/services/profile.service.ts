@@ -37,7 +37,6 @@ export interface UpdateProfileData {
 
 class ProfileService {
   
-  // Get current user's profile
   async getCurrentProfile(): Promise<ProfileData> {
     try {
       const token = await authService.getValidToken();
@@ -61,7 +60,6 @@ class ProfileService {
         throw new Error(result.message || 'Failed to fetch profile');
       }
     } catch (error: any) {
-      console.error('Profile fetch error:', error);
       
       const currentUser = authService.getCurrentUser();
       if (currentUser) {
@@ -72,7 +70,6 @@ class ProfileService {
     }
   }
 
-  // Update current user's profile
   async updateProfile(data: UpdateProfileData): Promise<ProfileData> {
     try {
       const token = await authService.getValidToken();
@@ -97,17 +94,14 @@ class ProfileService {
         throw new Error(result.message || 'Failed to update profile');
       }
     } catch (error: any) {
-      console.error('Profile update error:', error);
       
-      console.log('Mock update:', data);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const currentProfile = await this.getCurrentProfile();
       return currentProfile;
     }
   }
-
-  // Upload avatar
+    
   async uploadAvatar(file: File): Promise<string> {
     try {
       if (!file.type.startsWith('image/')) {
@@ -142,13 +136,11 @@ class ProfileService {
         throw new Error(result.message || 'Failed to upload avatar');
       }
     } catch (error: any) {
-      console.error('Avatar upload error:', error);
       
       if (error.message.includes('Vui lòng chọn') || error.message.includes('Kích thước')) {
         throw error; 
       }
       
-      console.log('Mock avatar upload:', file.name);
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       return URL.createObjectURL(file);

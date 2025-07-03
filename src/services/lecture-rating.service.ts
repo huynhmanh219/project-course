@@ -30,7 +30,7 @@ export interface RatingStats {
 }
 
 class LectureRatingService {
-  // Student APIs
+
   async getRatingsForLecture(lectureId: number) {
     const response = await apiClient.get(`/lectures/${lectureId}/ratings`);
     return response.data;
@@ -56,7 +56,7 @@ class LectureRatingService {
     return response.data;
   }
 
-  // Teacher APIs
+
   async getMyLectureRatings() {
     const response = await apiClient.get('/my-lectures/ratings');
     return response.data;

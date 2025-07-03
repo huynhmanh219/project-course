@@ -122,7 +122,6 @@ class SimpleMaterialService {
     const token = authService.getToken();
     return {
       'Authorization': token ? `Bearer ${token}` : ''
-      // Don't set Content-Type for FormData uploads
     };
   }
 
@@ -136,9 +135,7 @@ class SimpleMaterialService {
 
   private logValidationErrors(result: any) {
     if (result.errors && Array.isArray(result.errors)) {
-      console.error('Validation errors:', result.errors);
       result.errors.forEach((error: any, index: number) => {
-        console.error(`Validation Error ${index + 1}:`, error);
       });
     }
   }
@@ -178,7 +175,6 @@ class SimpleMaterialService {
       const queryString = queryParams.toString();
       const url = `${API_BASE_URL}/materials${queryString ? `?${queryString}` : ''}`;
       
-      console.log(`Getting materials from: ${url}`);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -192,7 +188,6 @@ class SimpleMaterialService {
           errorMessage = errorResult.message || errorMessage;
           this.logValidationErrors(errorResult);
         } catch (e) {
-          console.error('Failed to parse error response:', e);
         }
         
         if (response.status === 401) {
@@ -203,7 +198,6 @@ class SimpleMaterialService {
       }
 
       const result = await response.json();
-      console.log('Get materials response:', result);
 
       const safeResponse = {
         items: [],
@@ -233,11 +227,9 @@ class SimpleMaterialService {
         safeResponse.totalPages = 1;
       }
 
-      console.log('Processed safe response:', safeResponse);
       return safeResponse;
 
     } catch (error: any) {
-      console.error('Get materials error:', error);
       
       const errorResponse = {
         items: [],
@@ -275,7 +267,6 @@ class SimpleMaterialService {
 
   async createMaterial(data: CreateMaterialData): Promise<Material> {
     try {
-      console.log('Creating material:', data);
       
       const response = await fetch(`${API_BASE_URL}/materials`, {
         method: 'POST',
@@ -299,7 +290,6 @@ class SimpleMaterialService {
 
   async updateMaterial(id: number, data: UpdateMaterialData): Promise<Material> {
     try {
-      console.log(`Updating material ${id}:`, data);
       
       const response = await fetch(`${API_BASE_URL}/materials/${id}`, {
         method: 'PUT',
@@ -308,7 +298,6 @@ class SimpleMaterialService {
       });
 
       const result = await response.json();
-      console.log('Update material response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -354,7 +343,6 @@ class SimpleMaterialService {
       });
 
       const result = await response.json();
-      console.log('Get material details response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -363,7 +351,6 @@ class SimpleMaterialService {
         throw new Error(result.message || 'Failed to fetch material details');
       }
     } catch (error: any) {
-      console.error('Get material details error:', error);
       throw error;
     }
   }
@@ -461,8 +448,7 @@ class SimpleMaterialService {
         const result = await response.json();
         throw new Error(result.message || 'Failed to download material');
       }
-    } catch (error: any) {
-      console.error('Download material error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }

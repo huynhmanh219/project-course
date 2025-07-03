@@ -17,7 +17,6 @@ class MediaService {
 
   async uploadVideo(lectureId: number, videoFile: File, onProgress?: (progress: UploadProgress) => void): Promise<any> {
     try {
-      console.log(`Uploading video for lecture ${lectureId}:`, videoFile.name);
       
       const formData = new FormData();
       formData.append('video', videoFile);
@@ -41,7 +40,6 @@ class MediaService {
         xhr.addEventListener('load', () => {
           try {
             const result = JSON.parse(xhr.responseText);
-            console.log('Upload video response:', result);
             
             if (xhr.status === 200) {
               resolve(result.data || result);
@@ -71,14 +69,12 @@ class MediaService {
         xhr.send(formData);
       });
     } catch (error: any) {
-      console.error('Upload video error:', error);
       throw error;
     }
   }
 
   async uploadThumbnail(lectureId: number, imageFile: File, onProgress?: (progress: UploadProgress) => void): Promise<any> {
     try {
-      console.log(`Uploading thumbnail for lecture ${lectureId}:`, imageFile.name);
       
       const formData = new FormData();
       formData.append('thumbnail', imageFile);
@@ -102,7 +98,6 @@ class MediaService {
         xhr.addEventListener('load', () => {
           try {
             const result = JSON.parse(xhr.responseText);
-            console.log('Upload thumbnail response:', result);
             
             if (xhr.status === 200) {
               resolve(result.data || result);
@@ -132,7 +127,6 @@ class MediaService {
         xhr.send(formData);
       });
     } catch (error: any) {
-      console.error('Upload thumbnail error:', error);
       throw error;
     }
   }
@@ -145,7 +139,6 @@ class MediaService {
     onThumbnailProgress?: (progress: UploadProgress) => void
   ): Promise<{video: any, thumbnail: any}> {
     try {
-      console.log(`Uploading video and thumbnail for lecture ${lectureId}`);
       
       const [videoResult, thumbnailResult] = await Promise.all([
         this.uploadVideo(lectureId, videoFile, onVideoProgress),
@@ -156,8 +149,7 @@ class MediaService {
         video: videoResult,
         thumbnail: thumbnailResult
       };
-    } catch (error: any) {
-      console.error('Upload video and thumbnail error:', error);
+    } catch (error: any) {        
       throw error;
     }
   }

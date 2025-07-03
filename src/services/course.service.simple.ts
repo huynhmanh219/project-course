@@ -111,14 +111,13 @@ class SimpleCourseService {
         }
       }
     } catch (error: any) {
-      console.error('Create course error:', error);
+        
       throw error;
     }
   }
 
   async updateCourse(id: number, data: any): Promise<any> {
     try {
-      console.log(`Updating course ${id}:`, data);
       
       const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
         method: 'PUT',
@@ -127,7 +126,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Update course response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -141,14 +139,12 @@ class SimpleCourseService {
         }
       }
     } catch (error: any) {
-      console.error('Update course error:', error);
       throw error;
     }
   }
 
   async deleteCourse(id: number): Promise<any> {
     try {
-      console.log(`Deleting course ${id}...`);
       
       const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
         method: 'DELETE',
@@ -156,7 +152,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Delete course response:', result);
 
       if (response.ok && result.status === 'success') {
         return result;
@@ -164,14 +159,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to delete course');
       }
     } catch (error: any) {
-      console.error('Delete course error:', error);
       throw error;
     }
   }
 
   async getLecturers(params?: any): Promise<any> {
     try {
-      console.log('Getting lecturers list...');
       
       let url = `${API_BASE_URL}/users/teachers`;
       if (params) {
@@ -185,7 +178,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Lecturers response:', result);
 
       if (response.ok && result.status === 'success') {
         return result.data.teachers || [];
@@ -193,22 +185,19 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get lecturers');
       }
     } catch (error: any) {
-      console.error('Get lecturers error:', error);
       throw error;
     }
   }
 
   async getClassesBySubject(subjectId: number): Promise<any> {
     try {
-      console.log(`Getting classes for subject ${subjectId}...`);
       
       const response = await fetch(`${API_BASE_URL}/courses/classes?subject_id=${subjectId}`, {
         method: 'GET',
         headers: await this.getHeaders()
       });
 
-      const result = await response.json();
-      console.log('Classes by subject response:', result);
+      const result = await response.json();     
 
       if (response.ok && result.status === 'success') {
         return result.data.classes || [];
@@ -216,14 +205,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get classes');
       }
     } catch (error: any) {
-      console.error('Get classes by subject error:', error);
       throw error;
     }
   }
   
   async getClasses(params?: any): Promise<any> {
     try {
-      console.log('Getting classes list...');
       
       let url = `${API_BASE_URL}/courses/classes`;
       if (params) {
@@ -237,7 +224,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Classes response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -245,14 +231,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get classes');
       }
     } catch (error: any) {
-      console.error('Get classes error:', error);
       throw error;
     }
   }
 
   async getClass(id: number): Promise<any> {
     try {
-      console.log(`Getting class ${id}...`);
       
       const response = await fetch(`${API_BASE_URL}/courses/classes/${id}`, {
         method: 'GET',
@@ -260,7 +244,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Class response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -268,14 +251,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get class');
       }
     } catch (error: any) {
-      console.error('Get class error:', error);
       throw error;
     }
   }
 
   async createClass(data: any): Promise<any> {
     try {
-      console.log('Creating class:', data);
       
       const response = await fetch(`${API_BASE_URL}/courses/classes`, {
         method: 'POST',
@@ -284,7 +265,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Create class response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -292,14 +272,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to create class');
       }
     } catch (error: any) {
-      console.error('Create class error:', error);
       throw error;
     }
   }
 
   async getClassStudents(classId: number, params?: any): Promise<any> {
-    try {
-      console.log(`Getting students in class ${classId}...`);
+    try {     
       
       let url = `${API_BASE_URL}/courses/classes/${classId}/students`;
       if (params) {
@@ -313,7 +291,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Class students response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -321,14 +298,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get class students');
       }
     } catch (error: any) {
-      console.error('Get class students error:', error);
       throw error;
     }
   }
 
   async getStudentClasses(studentId: number, params?: any): Promise<any> {
     try {
-      console.log(`Getting classes for student ${studentId}...`);
       
       let url = `${API_BASE_URL}/courses/students/${studentId}/classes`;
       if (params) {
@@ -342,7 +317,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Student classes response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -350,14 +324,12 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to get student classes');
       }
     } catch (error: any) {
-      console.error('Get student classes error:', error);
       throw error;
     }
   }
 
   async enrollStudents(classId: number, studentIds: number[]): Promise<any> {
     try {
-      console.log(`Enrolling students to class ${classId}:`, studentIds);
       
       const response = await fetch(`${API_BASE_URL}/courses/classes/${classId}/students`, {
         method: 'POST',
@@ -366,7 +338,6 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Enroll students response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -374,7 +345,6 @@ class SimpleCourseService {
         throw new Error(result.message || 'Failed to enroll students');
       }
     } catch (error: any) {
-      console.error('Enroll students error:', error);
       throw error;
     }
   }
@@ -382,7 +352,6 @@ class SimpleCourseService {
 
   async removeStudentFromClass(classId: number, studentId: number): Promise<any> {
     try {
-      console.log(`Removing student ${studentId} from class ${classId}...`);
       
       const response = await fetch(`${API_BASE_URL}/courses/classes/${classId}/students/${studentId}`, {
         method: 'DELETE',
@@ -390,15 +359,13 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Remove student response:', result);
 
       if (response.ok) {
         return result.data || result;
       } else {
         throw new Error(result.message || 'Failed to remove student from class');
       }
-    } catch (error: any) {
-      console.error('Remove student error:', error);
+    } catch (error: any) {      
       throw error;
     }
   }
