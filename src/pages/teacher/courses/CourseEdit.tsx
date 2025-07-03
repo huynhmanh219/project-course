@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BookOpen, Edit2, Layers, FileText, X, Loader2, Trash2 } from "lucide-react";
+import { BookOpen, Edit2, Layers, FileText, X, Loader2, Trash2, AlertCircle } from "lucide-react";
 import { simpleCourseService } from "../../../services/course.service.simple";
+import { authService } from "../../../services/auth.service";
 
 interface Lecturer {
   id: number;
@@ -42,6 +43,9 @@ const CourseEdit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lecturers, setLecturers] = useState<Lecturer[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
   
   const [form, setForm] = useState({
     subject_name: '',
@@ -60,18 +64,42 @@ const CourseEdit: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Load course details and lecturers in parallel
-        const [courseResponse, lecturersResponse] = await Promise.all([
-          simpleCourseService.getCourse(Number(id)),
-          simpleCourseService.getLecturers()
-        ]);
+        // Get current user first
+        const currentUser = authService.getCurrentUser();
+        setUser(currentUser);
+        
+        if (!currentUser) {
+          navigate('/login');
+          return;
+        }
+
+        // Check if user is admin
+        const userRole = currentUser.role || currentUser.roleName;
+        setIsAdmin(userRole === 'admin');
+        
+        // Load course details first to check ownership
+        const courseResponse = await simpleCourseService.getCourse(Number(id));
         
         console.log('Course data:', courseResponse);
-        console.log('Lecturers data:', lecturersResponse);
         
         // Set course data - backend returns { data: { course: {...} } }
         const courseData = courseResponse.course || courseResponse;
         setCourse(courseData);
+        
+        // Check if user can edit this course
+        const currentUserId = currentUser?.id;
+        const currentLecturerId = currentUser?.lecturerId || currentUser?.lecturer_id;
+        const canUserEdit = userRole === 'admin' || 
+                           courseData.lecturer_id === currentUserId || 
+                           courseData.lecturer_id === currentLecturerId;
+        
+        setCanEdit(canUserEdit);
+        
+        if (!canUserEdit) {
+          setError('Bạn không có quyền chỉnh sửa môn học này. Chỉ admin hoặc giảng viên phụ trách mới có thể chỉnh sửa.');
+          return;
+        }
+        
         setForm({
           subject_name: courseData.subject_name || '',
           description: courseData.description || '',
@@ -82,8 +110,11 @@ const CourseEdit: React.FC = () => {
           academic_year: courseData.academic_year || '2024-2025'
         });
         
-        // Set lecturers - backend returns array of teacher objects
-        setLecturers(lecturersResponse || []);
+        // Only load lecturers if admin (can change lecturer)
+        if (userRole === 'admin') {
+          const lecturersResponse = await simpleCourseService.getLecturers();
+          setLecturers(lecturersResponse || []);
+        }
         
       } catch (error: any) {
         console.error('Error loading data:', error);
@@ -96,7 +127,7 @@ const CourseEdit: React.FC = () => {
     if (id) {
       loadData();
     }
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -111,6 +142,11 @@ const CourseEdit: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!canEdit) {
+      setError('Bạn không có quyền chỉnh sửa môn học này.');
+      return;
+    }
+    
     try {
       setSaving(true);
       setError(null);
@@ -120,7 +156,7 @@ const CourseEdit: React.FC = () => {
       await simpleCourseService.updateCourse(Number(id), form);
       
       alert("Đã cập nhật môn học thành công!");
-    navigate("/teacher/courses");
+      navigate("/teacher/courses");
       
     } catch (error: any) {
       console.error('Error updating course:', error);
@@ -132,6 +168,11 @@ const CourseEdit: React.FC = () => {
 
   const handleDelete = async () => {
     if (!course) return;
+    
+    if (!canEdit) {
+      setError('Bạn không có quyền xóa môn học này.');
+      return;
+    }
 
     try {
       // First, check if course has active classes
@@ -245,20 +286,30 @@ const CourseEdit: React.FC = () => {
 
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Giảng viên phụ trách</label>
-            <select
-              name="lecturer_id"
-              value={form.lecturer_id}
-              onChange={handleChange}
-              required
-              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
-            >
-              <option value={0}>Chọn giảng viên</option>
-              {lecturers.map((lecturer) => (
-                <option key={lecturer.id} value={lecturer.id}>
-                  {lecturer.profile?.first_name} {lecturer.profile?.last_name} ({lecturer.email})
-                </option>
-              ))}
-            </select>
+            {isAdmin ? (
+              <select
+                name="lecturer_id"
+                value={form.lecturer_id}
+                onChange={handleChange}
+                required
+                className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              >
+                <option value={0}>Chọn giảng viên</option>
+                {lecturers.map((lecturer) => (
+                  <option key={lecturer.id} value={lecturer.id -1}>
+                    {lecturer.profile?.first_name} {lecturer.profile?.last_name} ({lecturer.email})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="border rounded-xl px-3 py-2 w-full bg-gray-100 text-gray-600 text-base">
+                {course?.lecturer ? 
+                  `${course.lecturer.first_name} ${course.lecturer.last_name} (${course.lecturer.account?.email})` :
+                  'Thông tin giảng viên không có sẵn'
+                }
+                <input type="hidden" name="lecturer_id" value={form.lecturer_id} />
+              </div>
+            )}
           </div>
 
           <div>

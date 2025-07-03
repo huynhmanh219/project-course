@@ -54,14 +54,10 @@ class SimpleChapterService {
     };
   }
 
-  // ==================== CHAPTER MANAGEMENT ====================
-  
-  // Get chapters with pagination and filtering
   async getChapters(params?: ChapterQueryParams): Promise<any> {
     try {
       const queryParams = new URLSearchParams();
       
-      // Convert to numbers and add to query - Backend expects numbers not strings
       if (params?.page) {
         queryParams.append('page', String(Number(params.page)));
       }
@@ -100,14 +96,12 @@ class SimpleChapterService {
       if (response.ok) {
         return result.data || result;
       } else {
-        // Handle token expiration
         if (response.status === 401) {
           authService.logout();
           window.location.href = '/login';
           throw new Error('Authentication required');
         }
         
-        // Enhanced error logging for validation issues
         if (result.errors && Array.isArray(result.errors)) {
           console.error('Validation errors:', result.errors);
           result.errors.forEach((error: any, index: number) => {
@@ -123,7 +117,6 @@ class SimpleChapterService {
     }
   }
 
-  // Get chapters by subject ID
   async getChaptersBySubject(subjectId: number): Promise<Chapter[]> {
     try {
       console.log(`Getting chapters for subject ${subjectId}...`);
@@ -150,7 +143,6 @@ class SimpleChapterService {
     }
   }
 
-  // Get single chapter
   async getChapter(id: number): Promise<any> {
     try {
       console.log(`Getting chapter ${id}...`);
@@ -179,7 +171,6 @@ class SimpleChapterService {
     }
   }
 
-  // Create new chapter
   async createChapter(data: CreateChapterData): Promise<Chapter> {
     try {
       console.log('Creating chapter:', data);
@@ -202,7 +193,6 @@ class SimpleChapterService {
           throw new Error('Authentication required');
         }
         
-        // Enhanced error logging for validation issues
         if (result.errors && Array.isArray(result.errors)) {
           console.error('Validation errors:', result.errors);
           result.errors.forEach((error: any, index: number) => {
@@ -218,7 +208,6 @@ class SimpleChapterService {
     }
   }
 
-  // Update chapter
   async updateChapter(id: number, data: UpdateChapterData): Promise<Chapter> {
     try {
       console.log(`Updating chapter ${id}:`, data);
@@ -241,7 +230,6 @@ class SimpleChapterService {
           throw new Error('Authentication required');
         }
         
-        // Enhanced error logging for validation issues
         if (result.errors && Array.isArray(result.errors)) {
           console.error('Validation errors:', result.errors);
           result.errors.forEach((error: any, index: number) => {
@@ -257,10 +245,8 @@ class SimpleChapterService {
     }
   }
 
-  // Delete chapter
   async deleteChapter(id: number): Promise<any> {
     try {
-      console.log(`Deleting chapter ${id}...`);
       
       const response = await fetch(`${API_BASE_URL}/lectures/chapters/${id}`, {
         method: 'DELETE',
@@ -268,7 +254,6 @@ class SimpleChapterService {
       });
 
       const result = await response.json();
-      console.log('Delete chapter response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -286,15 +271,12 @@ class SimpleChapterService {
     }
   }
 
-  // Get lectures in a chapter
   async getChapterLectures(chapterId: number): Promise<any> {
     try {
-      console.log(`Getting lectures for chapter ${chapterId}...`);
       
-      // Use common pagination schema with proper number conversion
       const queryParams = new URLSearchParams();
       queryParams.append('page', '1');
-      queryParams.append('size', '50'); // Backend uses 'size' parameter for this endpoint
+      queryParams.append('size', '50'); 
       
       const url = `${API_BASE_URL}/lectures/chapters/${chapterId}/lectures?${queryParams.toString()}`;
       
@@ -304,7 +286,6 @@ class SimpleChapterService {
       });
 
       const result = await response.json();
-      console.log('Get chapter lectures response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -322,20 +303,14 @@ class SimpleChapterService {
     }
   }
 
-  // ==================== UTILITY METHODS ====================
-  
-  // Reorder chapters within a subject
   async reorderChapters(subjectId: number, chapterOrders: { id: number; order_index: number }[]): Promise<any> {
     try {
-      console.log(`Reordering chapters for subject ${subjectId}:`, chapterOrders);
-      
-      // Update each chapter's order individually
+        
       const updatePromises = chapterOrders.map(({ id, order_index }) => 
         this.updateChapter(id, { order_index })
       );
       
       const results = await Promise.all(updatePromises);
-      console.log('Reorder chapters results:', results);
       
       return results;
     } catch (error: any) {
@@ -344,7 +319,7 @@ class SimpleChapterService {
     }
   }
 
-  // Get chapter statistics
+
   async getChapterStats(chapterId: number): Promise<{ lecture_count: number; total_duration: number }> {
     try {
       const lectures = await this.getChapterLectures(chapterId);
@@ -368,12 +343,11 @@ class SimpleChapterService {
       
       return { lecture_count: 0, total_duration: 0 };
     } catch (error: any) {
-      console.error('Get chapter stats error:', error);
       return { lecture_count: 0, total_duration: 0 };
     }
   }
 
-  // Search chapters across subjects
+
   async searchChapters(searchTerm: string, subjectId?: number): Promise<Chapter[]> {
     try {
       const params: ChapterQueryParams = {
@@ -396,8 +370,7 @@ class SimpleChapterService {
       }
       
       return [];
-    } catch (error: any) {
-      console.error('Search chapters error:', error);
+    } catch (error: any) {  
       throw error;
     }
   }

@@ -6,6 +6,7 @@ import { Card, CardContent } from '../../../components/ui/card';
 import { simpleMaterialService, type UpdateMaterialData, type Material } from '../../../services/material.service.simple';
 import { simpleChapterService } from '../../../services/chapter.service.simple';
 import { simpleCourseService } from '../../../services/course.service.simple';
+import { Link } from 'react-router-dom';
 
 interface Subject {
   id: number;
@@ -27,7 +28,7 @@ const MaterialEdit: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    material_type: 'document' as 'document' | 'video' | 'image',
+    material_type: 'document' as 'document' | 'video' | 'image'|"link",
     subject_id: '',
     chapter_id: '',
     is_public: true
@@ -244,6 +245,7 @@ const MaterialEdit: React.FC = () => {
       case 'document': return FileText;
       case 'video': return Video;
       case 'image': return Image;
+      case 'link': return Link;
       default: return FileText;
     }
   };

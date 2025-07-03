@@ -1,20 +1,13 @@
-// Simple Auth Service - No complex types, use 'any' for simplicity
 import { API_BASE_URL } from './api';
 
 class AuthService {
-  // Đăng nhập đơn giản - FIX: dùng 'password' thay vì 'matKhau'
   async login(credentials: any): Promise<any> {
     try {
-      console.log('🔐 Login attempt with credentials:', credentials);
       
-      // FIX: Convert matKhau to password nếu cần
       const loginData = {
         email: credentials.email,
         password: credentials.matKhau || credentials.password
       };
-      
-      console.log('📤 Sending login data to backend:', loginData);
-      console.log('🌐 API URL:', `${API_BASE_URL}/auth/login`);
       
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -24,45 +17,34 @@ class AuthService {
         body: JSON.stringify(loginData)
       });
 
-      console.log('📋 Response status:', response.status, response.statusText);
-      console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
 
       const result = await response.json();
-      console.log('📨 Login response:', result);
-      console.log('📨 Full response object:', JSON.stringify(result, null, 2));
+
       
-      // Debug validation errors
       if (result.errors && Array.isArray(result.errors)) {
-        console.log('❌ Validation errors:', result.errors);
         result.errors.forEach((error: string, index: number) => {
-          console.log(`  Validation Error ${index + 1}:`, error);
         });
       }
 
-      // Check if response indicates success
-      console.log('✅ Response OK?', response.ok);
-      console.log('✅ Status === success?', result.status === 'success');
+  
 
       if (response.ok && result.status === 'success') {
-        // FIX: Backend format khác - data.tokens.accessToken
         const { data } = result;
-        console.log('📦 Data from response:', data);
-        
         const accessToken = data.tokens.accessToken;
         const refreshToken = data.tokens.refreshToken;
+
         
-        console.log('🎫 Access token:', accessToken ? 'EXISTS' : 'MISSING');
-        console.log('🔄 Refresh token:', refreshToken ? 'EXISTS' : 'MISSING');
-        console.log('👤 User data:', data.user);
-        
-        // Lưu token và thông tin user
         localStorage.setItem('token', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
         
-        console.log('✅ Login successful, tokens and user data saved to localStorage');
+        const userData = { ...data.user };
+        if (userData.role === 'lecturer' && userData.profile?.id) {
+          userData.lecturer_id = userData.profile.id;
+        }
         
-        // Return trong format mà frontend expect
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        
         return {
           accessToken,
           refreshToken,
@@ -70,22 +52,10 @@ class AuthService {
           tokens: data.tokens
         };
       } else {
-        console.error('❌ Login failed - response details:');
-        console.error('  Status code:', response.status);
-        console.error('  Status text:', response.statusText);
-        console.error('  Result status:', result.status);
-        console.error('  Result message:', result.message);
-        console.error('  Full result:', result);
         
         throw new Error(result.message || 'Login failed');
       }
     } catch (error: any) {
-      console.error('💥 Login error:', error);
-      console.error('💥 Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       throw error;
     }
   }
@@ -162,7 +132,6 @@ class AuthService {
         throw new Error('No refresh token available');
       }
 
-      console.log('Refreshing access token...');
       
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
@@ -177,14 +146,12 @@ class AuthService {
       if (response.ok && result.status === 'success') {
         const newAccessToken = result.data.accessToken;
         localStorage.setItem('token', newAccessToken);
-        console.log('Token refreshed successfully');
         return newAccessToken;
       } else {
         throw new Error(result.message || 'Token refresh failed');
       }
     } catch (error: any) {
-      console.error('Token refresh error:', error);
-      this.logout(); // Auto logout if refresh fails
+      this.logout(); 
       window.location.href = '/login';
       return null;
     }
@@ -218,16 +185,8 @@ class AuthService {
     if (userString) {
       try {
         const user = JSON.parse(userString);
-        console.log('👤 [getCurrentUser] Parsed user data:', user);
-        console.log('📧 [getCurrentUser] User email:', user.email);
-        console.log('🏷️ [getCurrentUser] User role:', user.role);
-        console.log('🆔 [getCurrentUser] User ID:', user.id);
-        
-        // Check if token is still valid
         const token = this.getToken();
-        console.log('🎫 [getCurrentUser] Current token exists:', !!token);
-        console.log('⏰ [getCurrentUser] Token expired:', this.isTokenExpired());
-        
+ 
         return user;
       } catch (error) {
         console.error('❌ [getCurrentUser] Error parsing user:', error);
@@ -266,7 +225,6 @@ class AuthService {
     const user = this.getCurrentUser();
     if (!user) return false;
     
-    // Simple role check - backend trả role string trực tiếp
     const userRole = user.role || 'student';
     console.log('Checking permission:', userRole, 'vs', requiredRole);
     
@@ -319,25 +277,14 @@ class AuthService {
       });
 
       const result = await response.json();
-      console.log('🌐 [refreshUserData] Server response:', result);
 
       if (response.ok && result.status === 'success') {
         const freshUserData = result.data.user;
-        console.log('✅ [refreshUserData] Fresh user data from server:', freshUserData);
         
-        // Compare with localStorage data
         const localUser = this.getCurrentUser();
-        console.log('🔄 [refreshUserData] Comparison:');
-        console.log('  Server email:', freshUserData.email);
-        console.log('  Local email:', localUser?.email);
-        console.log('  Server ID:', freshUserData.id);
-        console.log('  Local ID:', localUser?.id);
-        console.log('  Server role:', freshUserData.role);
-        console.log('  Local role:', localUser?.role);
+
         
-        // Update localStorage with fresh data
         localStorage.setItem('user', JSON.stringify(freshUserData));
-        console.log('✅ [refreshUserData] Updated localStorage with fresh data');
         
         return freshUserData;
       } else {
@@ -350,6 +297,6 @@ class AuthService {
   }
 }
 
-// Export singleton
+
 export const authService = new AuthService();
 export default authService; 

@@ -34,6 +34,7 @@ const QuizTaking: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
+  const [attemptId, setAttemptId] = useState<number | null>(null);
 
   useEffect(() => {
     if (quizId) {
@@ -72,29 +73,57 @@ const QuizTaking: React.FC = () => {
   const loadQuizData = async () => {
     try {
       setLoading(true);
+      setError(''); // Reset error state
       
       // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
       if (!currentUser) {
+        console.error('No current user found, redirecting to login');
         navigate('/login');
         return;
       }
 
-      console.log('Loading quiz data for ID:', quizId);
+      console.log('Loading quiz data for ID:', quizId, 'User:', currentUser.email);
       
-      // Fetch quiz details
-      const quizResponse = await SimpleQuizService.getQuizById(parseInt(quizId!));
-      console.log('Quiz response:', quizResponse);
-      
-      if (quizResponse && quizResponse.data) {
-        const quizData = quizResponse.data;
+      // Add timeout for API calls
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
+      });
+
+      try {
+        // Fetch quiz details with timeout
+        console.log('Fetching quiz details...');
+        const quizResponse = await Promise.race([
+          SimpleQuizService.getQuizById(parseInt(quizId!)),
+          timeoutPromise
+        ]);
+                console.log('Quiz response:', quizResponse);
+        console.log('Quiz response type:', typeof quizResponse);
+        console.log('Quiz response keys:', Object.keys(quizResponse || {}));
+
+        if (!quizResponse) {
+          throw new Error('No response from quiz API');
+        }
+
+        // handleResponse already unwraps the data, so quizResponse IS the quiz data
+        const quizData = quizResponse;
+        if (!quizData || !quizData.id) {
+          throw new Error('Quiz data is empty or invalid');
+        }
         
         // Check if quiz is available for taking
         const now = new Date();
         const startDate = quizData.start_time ? new Date(quizData.start_time) : null;
         const endDate = quizData.end_time ? new Date(quizData.end_time) : null;
+        
+        console.log('Quiz timing check:', {
+          now: now.toISOString(),
+          startDate: startDate?.toISOString(),
+          endDate: endDate?.toISOString(),
+          status: quizData.status
+        });
         
         if (startDate && now < startDate) {
           setError('Bài kiểm tra chưa đến thời gian làm bài');
@@ -107,11 +136,11 @@ const QuizTaking: React.FC = () => {
         }
 
         if (quizData.status !== 'published') {
-          setError('Bài kiểm tra chưa được xuất bản');
+          setError(`Bài kiểm tra chưa được xuất bản (Status: ${quizData.status})`);
           return;
         }
 
-        setQuiz({
+        const processedQuiz = {
           id: quizData.quiz_id || quizData.id,
           tenBaiKiemTra: quizData.title || quizData.quiz_title || 'Bài kiểm tra',
           moTa: quizData.description || quizData.instructions || '',
@@ -119,49 +148,196 @@ const QuizTaking: React.FC = () => {
           soCauHoi: quizData.question_count || quizData.total_questions || 0,
           diemToiDa: quizData.max_score || quizData.total_marks || 10,
           ngayBatDau: quizData.start_time,
-          ngayKetThuc: quizData.end_time
-        });
+          ngayKetThuc: quizData.end_time,
+          attempts_allowed: quizData.attempts_allowed || 1
+        };
         
-        // Set initial timer
-        const duration = (quizData.duration || quizData.time_limit || 60) * 60; // Convert to seconds
+        console.log('Processed quiz:', processedQuiz);
+        setQuiz(processedQuiz);
+        
+        const duration = (processedQuiz.thoiGianLamBai) * 60; 
         setTimeRemaining(duration);
-        
-        // Fetch quiz questions
+
         try {
-          const questionsResponse = await SimpleQuizService.getQuizQuestions(parseInt(quizId!));
+          console.log('Checking existing quiz attempts...');
+          const debugResponse = await fetch(`http://localhost:3000/api/debug-direct?quiz_id=${processedQuiz.id}`, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          const debugResult = await debugResponse.json();
+          console.log('Debug API response:', debugResult);
+          const myAttempts = debugResult.success ? debugResult.data : [];
+          console.log('My attempts for this quiz:', myAttempts);
+          
+          if (myAttempts && Array.isArray(myAttempts) && myAttempts.length > 0) {
+            const inProgressAttempt = myAttempts.find((attempt: any) => attempt.status === 'in_progress');
+            
+            if (inProgressAttempt) {
+              console.log('Found in-progress attempt, resuming:', inProgressAttempt.id);
+              setAttemptId(inProgressAttempt.id);
+              
+              const startTime = new Date(inProgressAttempt.started_at);
+              const now = new Date();
+              const elapsedSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+              const remainingTime = Math.max(0, (processedQuiz.thoiGianLamBai * 60) - elapsedSeconds);
+              setTimeRemaining(remainingTime);
+              
+              if (remainingTime <= 0) {
+                console.log('Time expired, auto-submitting...');
+                await SimpleQuizService.submitQuizAttempt(inProgressAttempt.id);
+                navigate(`/student/quiz/${quizId}/result?submission=${inProgressAttempt.id}`);
+                return;
+              }
+            } else {
+              const completedAttempt = myAttempts.find((attempt: any) => 
+                attempt.status === 'submitted' || attempt.status === 'graded'
+              );
+              
+              if (completedAttempt) {
+                console.log('Found completed attempt, redirecting to results:', completedAttempt.id);
+                navigate(`/student/quiz/${quizId}/result?submission=${completedAttempt.id}`);
+                return;
+              }
+              
+              const attemptsAllowed = quizData.attempts_allowed || 1;
+              if (myAttempts.length >= attemptsAllowed) {
+                setError(`Bạn đã sử dụng hết ${attemptsAllowed} lượt làm bài cho quiz này.`);
+                return;
+              }
+              
+              console.log(`Creating new attempt (${myAttempts.length + 1}/${attemptsAllowed})...`);
+              const attemptData = {
+                quiz_id: processedQuiz.id
+              };
+              const attemptResponse = await SimpleQuizService.createQuizAttempt(attemptData);
+              console.log('Quiz attempt created:', attemptResponse);
+              
+              if (attemptResponse && attemptResponse.submission_id) {
+                setAttemptId(attemptResponse.submission_id);
+                console.log('Attempt ID set to:', attemptResponse.submission_id);
+              } else {
+                throw new Error('Failed to create quiz attempt');
+              }
+            }
+          } else {
+            console.log('No existing attempts, creating new quiz attempt...');
+            const attemptData = {
+              quiz_id: processedQuiz.id
+            };
+            const attemptResponse = await SimpleQuizService.createQuizAttempt(attemptData);
+            console.log('Quiz attempt created:', attemptResponse);
+            
+            if (attemptResponse && attemptResponse.submission_id) {
+              setAttemptId(attemptResponse.submission_id);
+              console.log('Attempt ID set to:', attemptResponse.submission_id);
+            } else {
+              throw new Error('Failed to create quiz attempt');
+            }
+          }
+        } catch (attemptError: any) {
+          console.error('Error managing quiz attempt:', attemptError);
+          
+          if (attemptError.message.includes('Maximum attempts reached')) {
+            setError('Bạn đã hết lượt làm bài cho quiz này. Vui lòng xem kết quả từ lần làm trước.');
+          } else {
+            setError('Không thể bắt đầu bài kiểm tra. Vui lòng thử lại.');
+          }
+          return;
+        }
+        
+        console.log('Fetching quiz questions...');
+        try {
+          const questionsResponse = await Promise.race([
+            SimpleQuizService.getQuizQuestions(parseInt(quizId!)),
+            timeoutPromise
+          ]);
           console.log('Questions response:', questionsResponse);
           
-          if (questionsResponse && questionsResponse.data) {
-            const processedQuestions = questionsResponse.data.map((q: any) => ({
-              id: q.question_id || q.id,
-              noiDungCauHoi: q.question_text || q.content || q.question,
-              loaiCauHoi: q.question_type || 'single_choice',
-              diemSo: q.marks || q.points || 1,
-              thuTu: q.order || q.question_number || q.sort_order || 1,
-              answers: q.answers ? q.answers.map((a: any) => ({
-                id: a.answer_id || a.id,
-                noiDungDapAn: a.answer_text || a.content || a.text,
-                laDapAnDung: a.is_correct || false,
-                thuTu: a.order || a.option_number || 1
-              })) : []
-            }));
-            
-            // Sort questions by order
-            processedQuestions.sort((a: any, b: any) => a.thuTu - b.thuTu);
-            setQuestions(processedQuestions);
-          } else {
-            setError('Không thể tải câu hỏi của bài kiểm tra');
+          if (!questionsResponse) {
+            throw new Error('No response from questions API');
           }
-        } catch (questionsError) {
+
+          const questionsData = questionsResponse;
+          if (!questionsData || !Array.isArray(questionsData) || questionsData.length === 0) {
+            console.warn('Questions API response invalid or empty, trying fallback...');
+            const mockQuestions = [{
+              id: 1,
+              noiDungCauHoi: 'Đây là câu hỏi demo (API chưa hoạt động)',
+              loaiCauHoi: 'multiple_choice',
+              diemSo: 1,
+              thuTu: 1,
+              answers: [
+                { id: 1, noiDungDapAn: 'Lựa chọn A', laDapAnDung: false, thuTu: 1 },
+                { id: 2, noiDungDapAn: 'Lựa chọn B', laDapAnDung: true, thuTu: 2 },
+                { id: 3, noiDungDapAn: 'Lựa chọn C', laDapAnDung: false, thuTu: 3 },
+                { id: 4, noiDungDapAn: 'Lựa chọn D', laDapAnDung: false, thuTu: 4 }
+              ]
+            }];
+            setQuestions(mockQuestions);
+            console.log('Using mock questions for demo');
+            return;
+          }
+
+          const processedQuestions = questionsData.map((q: any, index: number) => ({
+            id: q.question_id || q.id || index + 1,
+            noiDungCauHoi: q.question_text || q.content || q.question || `Câu hỏi ${index + 1}`,
+            loaiCauHoi: q.question_type || 'multiple_choice',
+            diemSo: q.marks || q.points || 1,
+            thuTu: q.order || q.question_number || q.sort_order || (index + 1),
+            answers: q.answers ? q.answers.map((a: any, aIndex: number) => ({
+              id: a.answer_id || a.id || aIndex + 1,
+              noiDungDapAn: a.answer_text || a.content || a.text || `Lựa chọn ${String.fromCharCode(65 + aIndex)}`,
+              laDapAnDung: a.is_correct || false,
+              thuTu: a.order || a.option_number || (aIndex + 1)
+            })) : []
+          }));
+          
+          processedQuestions.sort((a: any, b: any) => a.thuTu - b.thuTu);
+          console.log('Processed questions:', processedQuestions.length);
+          setQuestions(processedQuestions);
+          
+        } catch (questionsError: any) {
           console.error('Error loading questions:', questionsError);
-          setError('Lỗi khi tải câu hỏi');
+          console.log('Trying alternative questions API...');
+          
+          try {
+            const alternativeResponse = await SimpleQuizService.getQuiz(parseInt(quizId!));
+            if (alternativeResponse && alternativeResponse.questions) {
+              console.log('Got questions from alternative API');
+              const altQuestions = alternativeResponse.questions.map((q: any, index: number) => ({
+                id: q.question_id || q.id || index + 1,
+                noiDungCauHoi: q.question_text || q.content || q.question || `Câu hỏi ${index + 1}`,
+                loaiCauHoi: q.question_type || 'multiple_choice',
+                diemSo: q.marks || q.points || 1,
+                thuTu: q.order || q.question_number || q.sort_order || (index + 1),
+                answers: q.answers ? q.answers.map((a: any, aIndex: number) => ({
+                  id: a.answer_id || a.id || aIndex + 1,
+                  noiDungDapAn: a.answer_text || a.content || a.text || `Lựa chọn ${String.fromCharCode(65 + aIndex)}`,
+                  laDapAnDung: a.is_correct || false,
+                  thuTu: a.order || a.option_number || (aIndex + 1)
+                })) : []
+              }));
+              setQuestions(altQuestions);
+            } else {
+              throw new Error('Alternative API also failed');
+            }
+          } catch (altError) {
+            console.error('Alternative questions API also failed:', altError);
+            setError('Không thể tải câu hỏi của bài kiểm tra. Vui lòng thử lại sau.');
+          }
         }
-      } else {
-        setError('Không tìm thấy bài kiểm tra');
+      } catch (quizError: any) {
+        console.error('Error loading quiz details:', quizError);
+        if (quizError.message === 'Request timeout') {
+          setError('Quá thời gian tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
+        } else {
+          setError('Không thể tải thông tin bài kiểm tra. Vui lòng thử lại.');
+        }
       }
     } catch (error: any) {
-      console.error('Error loading quiz:', error);
-      setError('Không thể tải dữ liệu bài kiểm tra');
+      console.error('General error in loadQuizData:', error);
+      setError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -206,7 +382,7 @@ const QuizTaking: React.FC = () => {
   };
 
   const handleSubmitQuiz = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || !attemptId) return;
     
     // Confirmation dialog
     const unansweredCount = questions.length - Object.keys(answers).length;
@@ -219,29 +395,28 @@ const QuizTaking: React.FC = () => {
     
     setIsSubmitting(true);
     try {
-      console.log('Submitting quiz with answers:', answers);
+      console.log('Submitting quiz answers before final submission...');
       
-      // Prepare submission data
-      const submissionData = {
-        quiz_id: quiz.id,
-        student_id: user?.id || user?.student_id,
-        answers: Object.entries(answers).map(([questionId, answerId]) => ({
-          question_id: parseInt(questionId),
-          answer_id: answerId,
-          selected_answer: answerId
-        })),
-        time_taken: (quiz.thoiGianLamBai * 60) - timeRemaining,
-        submitted_at: new Date().toISOString()
-      };
+      for (const [questionId, answerId] of Object.entries(answers)) {
+        try {
+          const answerData = {
+            question_id: parseInt(questionId),
+            answer_id: answerId
+          };
+          await SimpleQuizService.submitAnswer(attemptId, answerData);
+          console.log(`Submitted answer for question ${questionId}`);
+        } catch (answerError: any) {
+          console.error(`Error submitting answer for question ${questionId}:`, answerError);
+        }
+      }
 
-      // Submit quiz
-      const submitResponse = await SimpleQuizService.submitQuiz(quiz.id, submissionData);
-      console.log('Submit response:', submitResponse);
+      console.log('Submitting final quiz attempt...');
+      
+      const submitResponse = await SimpleQuizService.submitQuizAttempt(attemptId);
+      console.log('Final submit response:', submitResponse);
 
-      if (submitResponse && submitResponse.data) {
-        // Redirect to results page with submission ID
-        const submissionId = submitResponse.data.submission_id || submitResponse.data.id;
-        navigate(`/student/quiz/${quizId}/result?submission=${submissionId}`);
+      if (submitResponse) {
+        navigate(`/student/quiz/${quizId}/result?submission=${attemptId}`);
       } else {
         throw new Error('Không nhận được phản hồi từ server');
       }
@@ -272,17 +447,41 @@ const QuizTaking: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+        <Card className="max-w-lg w-full">
           <CardContent className="p-6 text-center">
             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Không thể tải bài kiểm tra</h3>
             <p className="text-gray-600 mb-4">{error}</p>
+            
+            <div className="text-left bg-gray-100 p-3 rounded-lg mb-4 text-sm">
+              <h4 className="font-semibold mb-2">Thông tin debug:</h4>
+              <p><strong>Quiz ID:</strong> {quizId}</p>
+              <p><strong>Attempt ID:</strong> {attemptId || 'Chưa tạo'}</p>
+              <p><strong>User:</strong> {user?.email || 'Chưa đăng nhập'}</p>
+              <p><strong>Time:</strong> {new Date().toLocaleString('vi-VN')}</p>
+              <p><strong>API Base:</strong> http://localhost:3000/api</p>
+            </div>
+            
             <div className="space-y-2">
               <Button onClick={() => navigate('/student/quiz')} className="w-full">
                 Quay lại danh sách
               </Button>
               <Button onClick={loadQuizData} variant="outline" className="w-full">
                 Thử lại
+              </Button>
+              <Button 
+                onClick={() => {
+                  console.log('Testing API connectivity...');
+                  fetch('http://localhost:3000/api/ping')
+                    .then(res => res.json())
+                    .then(data => console.log('API Test:', data))
+                    .catch(err => console.error('API Test Failed:', err));
+                }}
+                variant="outline" 
+                size="sm"
+                className="w-full text-xs border-gray-300"
+              >
+                Test API Connection
               </Button>
             </div>
           </CardContent>
@@ -343,13 +542,11 @@ const QuizTaking: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 flex gap-6">
-        {/* Question Navigator Sidebar */}
         {showNavigator && (
           <Card className="w-80 shadow-lg border border-gray-200 h-fit">
             <CardContent className="p-4">
               <h3 className="font-semibold text-gray-900 mb-4">Điều hướng câu hỏi</h3>
               
-              {/* Progress */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Đã trả lời: {answeredCount}/{questions.length}</span>
@@ -363,7 +560,6 @@ const QuizTaking: React.FC = () => {
                 </div>
               </div>
 
-              {/* Legend */}
               <div className="space-y-2 mb-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-green-500 rounded"></div>
@@ -379,7 +575,6 @@ const QuizTaking: React.FC = () => {
                 </div>
               </div>
 
-              {/* Question Grid */}
               <div className="grid grid-cols-5 gap-2">
                 {questions.map((question, index) => {
                   const status = getQuestionStatus(question.id);

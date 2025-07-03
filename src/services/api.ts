@@ -1,7 +1,6 @@
 
 export const API_BASE_URL = 'http://localhost:3000/api'; // Backend port
 
-// Simple auth helper
 const getAuthHeaders = (): any => {
   const token = localStorage.getItem('token');
   return {
@@ -10,7 +9,6 @@ const getAuthHeaders = (): any => {
   };
 };
 
-// Handle API response - for compatibility with complex services
 export const handleApiResponse = <T>(response: any): T => {
   if (response && response.status === 'success') {
     return response.data;
@@ -18,26 +16,20 @@ export const handleApiResponse = <T>(response: any): T => {
   return response;
 };
 
-// Handle API error - for compatibility with complex services
 export const handleApiError = (error: any): Error => {
   console.error('API Error:', error);
   
   if (error.response) {
-    // Server responded with error status
     const message = error.response.data?.message || error.response.statusText || 'Server error';
     return new Error(message);
   } else if (error.request) {
-    // Request was made but no response received
     return new Error('No response from server');
   } else {
-    // Something else happened
     return new Error(error.message || 'Unknown error');
   }
 };
 
-// Simple API client using fetch
 export const apiClient = {
-  // GET request
   get: async (url: string): Promise<any> => {
     try {
       const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -59,7 +51,6 @@ export const apiClient = {
     }
   },
 
-  // POST request  
   post: async (url: string, data: any): Promise<any> => {
     try {
       const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -82,7 +73,6 @@ export const apiClient = {
     }
   },
 
-  // PUT request
   put: async (url: string, data: any): Promise<any> => {
     try {
       const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -105,7 +95,6 @@ export const apiClient = {
     }
   },
 
-  // DELETE request
   delete: async (url: string): Promise<any> => {
     try {
       const response = await fetch(`${API_BASE_URL}${url}`, {
@@ -128,7 +117,6 @@ export const apiClient = {
   }
 };
 
-// Simple health check function
 export const testConnection = async (): Promise<any> => {
   try {
     const response = await fetch('http://localhost:3000/health');
@@ -139,5 +127,4 @@ export const testConnection = async (): Promise<any> => {
   }
 };
 
-// Export for backward compatibility (if needed)
 export default apiClient; 

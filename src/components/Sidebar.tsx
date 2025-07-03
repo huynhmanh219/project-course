@@ -124,7 +124,7 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/teacher/quiz" className={navLinkClass}>
               <CheckSquare className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Quản lý Quiz</span>
+              <span className="truncate">Quản lý câu hỏi</span>
             </NavLink>
             
             <div className={sectionTitleClass}>
@@ -139,10 +139,10 @@ export function Sidebar() {
               <ClipboardList className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Lớp học phần của tôi</span>
             </NavLink>
-            <NavLink to="/teacher/gradebook" className={navLinkClass}>
+            {/* <NavLink to="/teacher/gradebook" className={navLinkClass}>
               <BarChart2 className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Sổ điểm</span>
-            </NavLink>
+            </NavLink> */}
           </>
         )}
 
@@ -211,7 +211,7 @@ export function Sidebar() {
               {isAdmin() && <Crown className="h-3 w-3" />}
               {isTeacher() && <GraduationCap className="h-3 w-3" />}
               {isStudent() && <UserCheck className="h-3 w-3" />}
-              <span className="capitalize">{role === 'lecturer' ? 'Giảng viên' : role}</span>
+              <span className="capitalize">{role === 'lecturer' ? 'Giảng viên' : role === "student"?"sinh viên":role ==="admin"?"quản trị viên":"quản trị viên" }</span>
             </div>
           </div>
         )}

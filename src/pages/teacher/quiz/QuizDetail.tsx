@@ -22,6 +22,7 @@ import { Card, CardContent } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { simpleQuizService } from '../../../services/quiz.service.simple';
 import { PermissionUtils } from '../../../utils/permissions';
+import { authService } from '../../../services/auth.service';
 
 const QuizDetail: React.FC = () => {
   const navigate = useNavigate();
@@ -44,17 +45,25 @@ const QuizDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const quizData = await simpleQuizService.getQuiz(parseInt(id!));
-      console.log('Loaded quiz:', quizData);
+      // Debug current user info
+      const currentUser = authService.getCurrentUser();
+      console.log('🔍 [QuizDetail] Current user from auth:', currentUser);
+      console.log('🔍 [QuizDetail] Current user ID:', currentUser?.id);
+      console.log('🔍 [QuizDetail] Current user role:', currentUser?.role);
       
-      // Check permission to access this quiz
+      const quizData = await simpleQuizService.getQuiz(parseInt(id!));
+      console.log('🔍 [QuizDetail] Loaded quiz from API:', quizData);
+      console.log('🔍 [QuizDetail] Quiz lecturer_id:', quizData?.lecturer_id);
+      console.log('🔍 [QuizDetail] Quiz lecturer object:', quizData?.lecturer);
+      
+            // Check permission to access this quiz  
       const permissionCheck = PermissionUtils.canAccessQuiz(quizData);
       if (!permissionCheck.canAccess) {
         console.log('Permission denied:', permissionCheck.reason);
         PermissionUtils.redirectIfNoPermission(false, permissionCheck.reason);
         return;
       }
-      
+
       setQuiz(quizData);
       
     } catch (err: any) {
@@ -177,10 +186,10 @@ const QuizDetail: React.FC = () => {
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
+        <div className="flex items-center gap-4">
+          <Button
                   variant="secondary"
-                  onClick={() => navigate('/teacher/quiz')}
+            onClick={() => navigate('/teacher/quiz')}
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 p-3"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -279,43 +288,21 @@ const QuizDetail: React.FC = () => {
               <CardContent className="p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Hành động</h3>
                 <div className="space-y-3">
-                  {PermissionUtils.canEditQuiz(quiz).canEdit ? (
-                    <Button
-                      onClick={() => navigate(`/teacher/quiz/${id}/edit`)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Chỉnh sửa thông tin
-                    </Button>
-                  ) : (
-                    <Button
-                      disabled
-                      className="w-full bg-gray-400 text-white flex items-center gap-2 cursor-not-allowed"
-                      title={PermissionUtils.canEditQuiz(quiz).reason}
-                    >
-                      <Edit className="w-4 h-4" />
-                      Chỉnh sửa thông tin
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => navigate(`/teacher/quiz/${id}/edit`)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Chỉnh sửa thông tin
+                  </Button>
                   
-                  {PermissionUtils.canManageQuestions(quiz).canManage ? (
-                    <Button
-                      onClick={() => navigate(`/teacher/quiz/${id}/questions/add`)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Thêm câu hỏi
-                    </Button>
-                  ) : (
-                    <Button
-                      disabled
-                      className="w-full bg-gray-400 text-white flex items-center gap-2 cursor-not-allowed"
-                      title={PermissionUtils.canManageQuestions(quiz).reason}
-                    >
-                      <Plus className="w-4 h-4" />
-                      Thêm câu hỏi
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => navigate(`/teacher/quiz/${id}/questions/add`)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Thêm câu hỏi
+                  </Button>
                   
                   {quiz?.status === 'published' && (
                     <Button
@@ -324,7 +311,7 @@ const QuizDetail: React.FC = () => {
                     >
                       <BarChart3 className="w-4 h-4" />
                       Xem kết quả
-                    </Button>
+          </Button>
                   )}
                 </div>
               </CardContent>
@@ -469,7 +456,7 @@ const QuizDetail: React.FC = () => {
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+            </div>
             )}
           </CardContent>
         </Card>

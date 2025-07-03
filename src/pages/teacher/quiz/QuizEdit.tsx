@@ -156,7 +156,7 @@ const QuizEdit: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error updating quiz:', error);
-      alert('Lỗi cập nhật bài kiểm tra: ' + (error.message || 'Unknown error'));
+      alert('Lỗi cập nhật bài kiểm tra: ' + ('không được sửa thông tin khi đã xuất bản'));
     } finally {
       setLoading(false);
     }

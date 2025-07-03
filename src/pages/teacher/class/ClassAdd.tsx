@@ -215,44 +215,7 @@ const ClassAdd: React.FC = () => {
           </div>
         )}
 
-        {/* DEBUG SECTION - XÓA SAU KHI FIX XONG */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-          <h3 className="font-bold text-yellow-800 mb-2">🐛 DEBUG INFO:</h3>
-          <button 
-            onClick={() => {
-              console.log('=== DEBUG USER INFO ===');
-              console.log('Current user from state:', currentUser);
-              console.log('User from localStorage:', authService.getCurrentUser());
-              console.log('LocalStorage raw:', localStorage.getItem('user'));
-              console.log('Token exists:', !!authService.getToken());
-              console.log('Token expired:', authService.isTokenExpired());
-            }}
-            className="bg-yellow-500 text-white px-3 py-1 rounded text-sm mr-2"
-          >
-            Debug Current User
-          </button>
-          <button 
-            onClick={async () => {
-              try {
-                console.log('=== REFRESHING USER DATA ===');
-                const fresh = await authService.refreshUserData();
-                setCurrentUser(fresh);
-                console.log('Fresh user set:', fresh);
-              } catch (error) {
-                console.error('Refresh failed:', error);
-              }
-            }}
-            className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
-          >
-            Refresh User Data
-          </button>
-          <p className="text-sm mt-2">
-            <strong>Current Email:</strong> {currentUser?.email || 'Unknown'} <br/>
-            <strong>Current Role:</strong> {currentUser?.role || 'Unknown'} <br/>
-            <strong>Profile Name:</strong> {currentUser?.profile ? 
-              `${currentUser.profile.last_name} ${currentUser.profile.first_name}` : 'No profile'}
-          </p>
-        </div>
+  
 
         <form className="bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-6" onSubmit={handleSubmit}>
           <div>
@@ -278,7 +241,7 @@ const ClassAdd: React.FC = () => {
             >
               <option value={0}>Chọn môn học</option>
               {subjects.map((subject) => (
-                <option key={subject.id} value={subject.id - 1}>
+                <option key={subject.id} value={subject.id}>
                   {subject.subject_name} ({subject.subject_code})
                 </option>
               ))}

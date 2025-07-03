@@ -12,6 +12,7 @@ const TeacherCourses: React.FC = () => {
   const [deletingCourseId, setDeletingCourseId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +32,11 @@ const TeacherCourses: React.FC = () => {
         navigate('/login');
         return;
       }
+
+      // Check if user is admin
+      const userRole = currentUser.role || currentUser.roleName;
+      setIsAdmin(userRole === 'admin');
+      console.log('User role:', userRole, 'Is admin:', userRole === 'admin');
 
       console.log('Fetching courses...');
       const response = await SimpleCourseService.getCourses();
@@ -67,6 +73,7 @@ const TeacherCourses: React.FC = () => {
           ngayKetThuc: course.end_date || '',
           trangThai: course.status === 'active' || course.is_active !== false,
           giangVien: course.lecturer?.first_name + ' ' + course.lecturer?.last_name || course.lecturer_name || course.teacher_name || 'Chưa phân công',
+          lecturerId: course.lecturer_id || course.lecturer?.id,
           soSinhVien: course.student_count || 0,
           soTinChi: course.credits || course.credit_hours || 3,
           hocKy: course.semester || 'Chưa xác định',
@@ -85,6 +92,18 @@ const TeacherCourses: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to check if user can edit/delete a course
+  const canEditCourse = (course: any) => {
+    if (isAdmin) return true; // Admin can edit all courses
+    
+    // Lecturer can only edit courses they are assigned to
+    const currentUserId = user?.id;
+    const currentLecturerId = user?.lecturerId || user?.lecturer_id;
+    
+    // Check if current user is the lecturer of this course
+    return course.lecturerId === currentUserId || course.lecturerId === currentLecturerId;
   };
 
   const handleDelete = async (courseId: number) => {
@@ -161,6 +180,8 @@ const TeacherCourses: React.FC = () => {
   };
 
   const CourseCard: React.FC<{ course: any }> = ({ course }) => {
+    const canEdit = canEditCourse(course);
+    
     return (
       <div className="group h-full">
         <Card 
@@ -215,10 +236,10 @@ const TeacherCourses: React.FC = () => {
                   {course.hocKy} - {course.namHoc}
                 </span>
               </div>
-              {/* <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <GraduationCap className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <span>{course.soSinhVien} sinh viên</span>
-              </div> */}
+                <span>GV: {course.giangVien}</span>
+              </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <BookOpen className="w-4 h-4 text-purple-500 flex-shrink-0" />
                 <span>{course.soTinChi} tín chỉ</span>
@@ -234,37 +255,48 @@ const TeacherCourses: React.FC = () => {
 
             {/* Footer */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/teacher/courses/edit/${course.id}`);
-                }}
-              >
-                <Edit className="w-3 h-3 mr-1" /> Sửa
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
-                disabled={deletingCourseId === course.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(course.id);
-                }}
-              >
-                {deletingCourseId === course.id ? (
-                  <>
-                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
-                  </>
-                ) : (
-                  <>
-                <Trash2 className="w-3 h-3 mr-1" /> Xóa
-                  </>
-                )}
-              </Button>
+              {canEdit ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/teacher/courses/edit/${course.id}`);
+                    }}
+                  >
+                    <Edit className="w-3 h-3 mr-1" /> Sửa
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                    disabled={deletingCourseId === course.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(course.id);
+                    }}
+                  >
+                    {deletingCourseId === course.id ? (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
+                      </>
+                    ) : (
+                      <>
+                    <Trash2 className="w-3 h-3 mr-1" /> Xóa
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <div className="flex-1 text-center py-2">
+                  <span className="text-sm text-gray-500 italic">
+                    <Info className="w-4 h-4 inline mr-1" />
+                    Chỉ xem (Không có quyền chỉnh sửa)
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -321,7 +353,7 @@ const TeacherCourses: React.FC = () => {
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
                   onClick={() => navigate('/teacher/courses/add')}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Thêm môn học
+                  <Plus className="w-4 h-4 mr-2" /> {isAdmin ? 'Thêm môn học' : 'Tạo môn học'}
                 </Button>
               </div>
             </div>
@@ -365,14 +397,17 @@ const TeacherCourses: React.FC = () => {
                 Chưa có môn học nào
               </h3>
               <p className="text-gray-500 mb-4">
-                Bắt đầu bằng cách tạo môn học đầu tiên của bạn
+                {isAdmin 
+                  ? "Bắt đầu bằng cách tạo môn học đầu tiên" 
+                  : "Bắt đầu bằng cách tạo môn học mà bạn phụ trách"
+                }
               </p>
               <Button 
                 onClick={() => navigate('/teacher/courses/add')}
                 className="bg-blue-500 hover:bg-blue-600 text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Thêm môn học đầu tiên
+                {isAdmin ? 'Thêm môn học đầu tiên' : 'Tạo môn học đầu tiên'}
               </Button>
             </div>
           </div>

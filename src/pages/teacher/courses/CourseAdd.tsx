@@ -6,6 +6,7 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { authService } from "../../../services/auth.service";
 import SimpleCourseService from "../../../services/course.service.simple";
 import SimpleUserService from "../../../services/user.service.simple";
+import { API_BASE_URL } from "../../../services/api";
 
 const CourseAdd: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const CourseAdd: React.FC = () => {
   const [error, setError] = useState('');
   const [giangVienOptions, setGiangVienOptions] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -47,81 +49,117 @@ const CourseAdd: React.FC = () => {
         return;
       }
 
+      // Check if user is admin
+      const userRole = currentUser.role || currentUser.roleName;
+      setIsAdmin(userRole === 'admin');
+      console.log('User role:', userRole, 'Is admin:', userRole === 'admin');
+
       // Permission check and suggestion
       if (currentUser.role !== 'admin' && currentUser.role !== 'lecturer') {
         console.log('⚠️ User role might not have teachers access. Current role:', currentUser.role);
         setError(`Role hiện tại (${currentUser.role}) có thể không có quyền truy cập teachers API. Thử login với admin hoặc lecturer account.`);
       }
 
-      // Fetch teachers list
-      console.log('🔍 Loading teachers list...');
-      try {
-        const teachersResponse = await SimpleUserService.getTeachers();
-        console.log('✅ Raw API response:', teachersResponse);
-        console.log('✅ Response type:', typeof teachersResponse);
-        console.log('✅ Response keys:', teachersResponse ? Object.keys(teachersResponse) : 'null/undefined');
-        
-        // Handle different possible response structures
-        let teachersData = null;
-        if (teachersResponse && teachersResponse.data) {
-          teachersData = teachersResponse.data;
-          console.log('✅ Found data in response.data:', teachersData);
-        } else if (teachersResponse && Array.isArray(teachersResponse)) {
-          teachersData = teachersResponse;
-          console.log('✅ Response is direct array:', teachersData);
-        } else if (teachersResponse && teachersResponse.teachers) {
-          teachersData = teachersResponse.teachers;
-          console.log('✅ Found data in response.teachers:', teachersData);
-        } else {
-          console.log('⚠️ Unexpected response structure:', teachersResponse);
-        }
-        
-        if (teachersData && Array.isArray(teachersData) && teachersData.length > 0) {
-          console.log('✅ Processing teachers data:', teachersData.length, 'teachers found');
+      // Only admin can select lecturers, lecturer automatically creates for themselves
+      if (isAdmin) {
+        // Fetch teachers list for admin
+        console.log('🔍 Loading teachers list for admin...');
+        try {
+          const teachersResponse = await SimpleUserService.getTeachers();
+          console.log('✅ Raw API response:', teachersResponse);
+          console.log('✅ Response type:', typeof teachersResponse);
+          console.log('✅ Response keys:', teachersResponse ? Object.keys(teachersResponse) : 'null/undefined');
           
-          const processedTeachers = teachersData.map((teacher: any) => {
-            console.log('🔍 Processing teacher:', teacher);
-            
-            // Handle different teacher object structures
-            const teacherId = teacher.lecturer_id || teacher.id || teacher.account_id;
-            const firstName = teacher.first_name || teacher.profile?.first_name || teacher.lecturer?.first_name;
-            const lastName = teacher.last_name || teacher.profile?.last_name || teacher.lecturer?.last_name;
-            const email = teacher.email || teacher.account?.email;
-            const fullName = teacher.full_name || teacher.name || teacher.lecturer_name || `${firstName || ''} ${lastName || ''}`.trim();
-            
-            return {
-              id: teacherId,
-              name: fullName || 'Chưa có tên',
-              email: email || 'Chưa có email'
-            };
-          });
-          
-          console.log('✅ Processed teachers:', processedTeachers);
-          setGiangVienOptions(processedTeachers);
-          
-          // Set first teacher as default if available
-          if (processedTeachers.length > 0) {
-            setForm(prev => ({ ...prev, giangVienId: processedTeachers[0].id.toString() }));
+          // Handle different possible response structures
+          let teachersData = null;
+          if (teachersResponse && teachersResponse.data) {
+            teachersData = teachersResponse.data;
+            console.log('✅ Found data in response.data:', teachersData);
+          } else if (teachersResponse && Array.isArray(teachersResponse)) {
+            teachersData = teachersResponse;
+            console.log('✅ Response is direct array:', teachersData);
+          } else if (teachersResponse && teachersResponse.teachers) {
+            teachersData = teachersResponse.teachers;
+            console.log('✅ Found data in response.teachers:', teachersData);
+          } else {
+            console.log('⚠️ Unexpected response structure:', teachersResponse);
           }
-        } else {
-          console.log('⚠️ No valid teachers data found');
-          throw new Error('No teachers data received');
+          
+          if (teachersData && Array.isArray(teachersData) && teachersData.length > 0) {
+            console.log('✅ Processing teachers data:', teachersData.length, 'teachers found');
+            
+            const processedTeachers = teachersData.map((teacher: any) => {
+              console.log('🔍 Processing teacher:', teacher);
+              
+              // Handle different teacher object structures
+              const teacherId = teacher.lecturer_id || teacher.id || teacher.account_id;
+              const firstName = teacher.first_name || teacher.profile?.first_name || teacher.lecturer?.first_name;
+              const lastName = teacher.last_name || teacher.profile?.last_name || teacher.lecturer?.last_name;
+              const email = teacher.email || teacher.account?.email;
+              const fullName = teacher.full_name || teacher.name || teacher.lecturer_name || `${firstName || ''} ${lastName || ''}`.trim();
+              
+              return {
+                id: teacherId,
+                name: fullName || 'Chưa có tên',
+                email: email || 'Chưa có email'
+              };
+            });
+            
+            console.log('✅ Processed teachers:', processedTeachers);
+            setGiangVienOptions(processedTeachers);
+            
+            // Set first teacher as default if available
+            if (processedTeachers.length > 0) {
+              setForm(prev => ({ ...prev, giangVienId: processedTeachers[0].id.toString() }));
+            }
+          } else {
+            console.log('⚠️ No valid teachers data found');
+            throw new Error('No teachers data received');
+          }
+        } catch (teacherError: any) {
+          console.error('❌ Teachers API failed:', teacherError);
+          
+          // Fallback: Use mock teachers data
+          console.log('🔧 Using fallback mock teachers data...');
+          const mockTeachers = [
+            { id: 1, name: "Nguyễn Văn A", email: "teacher1@lms.com" },
+            { id: 2, name: "Trần Thị B", email: "teacher2@lms.com" },
+            { id: 3, name: "Lê Hoàng C", email: "teacher3@lms.com" },
+          ];
+          setGiangVienOptions(mockTeachers);
+          setForm(prev => ({ ...prev, giangVienId: mockTeachers[0].id.toString() }));
+          
+          // Show warning but don't fail completely
+          setError('Không thể tải danh sách giảng viên từ server. Đang sử dụng dữ liệu mẫu.');
         }
-      } catch (teacherError: any) {
-        console.error('❌ Teachers API failed:', teacherError);
+      } else {
+        // Lecturer automatically creates for themselves
+        console.log('🔍 Lecturer creating course for themselves...');
         
-        // Fallback: Use mock teachers data
-        console.log('🔧 Using fallback mock teachers data...');
-        const mockTeachers = [
-          { id: 1, name: "Nguyễn Văn A", email: "teacher1@lms.com" },
-          { id: 2, name: "Trần Thị B", email: "teacher2@lms.com" },
-          { id: 3, name: "Lê Hoàng C", email: "teacher3@lms.com" },
-        ];
-        setGiangVienOptions(mockTeachers);
-        setForm(prev => ({ ...prev, giangVienId: mockTeachers[0].id.toString() }));
-        
-        // Show warning but don't fail completely
-        setError('Không thể tải danh sách giảng viên từ server. Đang sử dụng dữ liệu mẫu.');
+        // Get lecturer profile to find correct lecturer_id
+        try {
+          const token = authService.getToken();
+          const response = await fetch(`${API_BASE_URL}/users/profile`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const profileData = await response.json();
+          
+          if (response.ok && profileData?.status === 'success') {
+            const lecturerId = profileData.data?.user?.profile?.id || currentUser.id;
+            console.log('🔍 Lecturer profile info:', profileData);
+            console.log('🔍 Using lecturer_id:', lecturerId);
+            setForm(prev => ({ ...prev, giangVienId: lecturerId.toString() }));
+          } else {
+            console.log('⚠️ Could not get lecturer profile, using currentUser.id');
+            setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
+          }
+        } catch (profileError) {
+          console.log('⚠️ Profile API error, using currentUser.id:', profileError);
+          setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
+        }
       }
     } catch (error: any) {
       console.error('❌ Error loading initial data:', error);
@@ -229,9 +267,11 @@ const CourseAdd: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 flex items-center gap-4 text-white">
           <BookOpen className="w-10 h-10 text-white drop-shadow-lg" />
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-1">Thêm môn học</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight mb-1">
+              {isAdmin ? "Thêm môn học" : "Tạo môn học"}
+            </h1>
             <p className="text-blue-100 text-base">
-              Chào mừng {user?.userName || user?.email}, tạo mới một môn học cho hệ thống
+              Chào mừng {user?.userName || user?.email}, {isAdmin ? "tạo mới một môn học cho hệ thống" : "tạo môn học mà bạn phụ trách"}
             </p>
           </div>
         </div>
@@ -275,25 +315,37 @@ const CourseAdd: React.FC = () => {
             />
           </div>
           
-          <div>
-            <label className="block text-gray-700 mb-2 font-semibold">
-              Giảng viên phụ trách <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="giangVienId"
-              value={form.giangVienId}
-              onChange={handleChange}
-              required
-              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
-            >
-              <option value="">-- Chọn giảng viên --</option>
-              {giangVienOptions.map((gv) => (
-                <option key={gv.id} value={gv.id}>
-                  {gv.name} ({gv.email})
-                </option>
-              ))}
-            </select>
-          </div>
+          {isAdmin ? (
+            <div>
+              <label className="block text-gray-700 mb-2 font-semibold">
+                Giảng viên phụ trách <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="giangVienId"
+                value={form.giangVienId}
+                onChange={handleChange}
+                required
+                className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base"
+              >
+                <option value="">-- Chọn giảng viên --</option>
+                {giangVienOptions.map((gv) => (
+                  <option key={gv.id} value={gv.id-1}>
+                    {gv.name} ({gv.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-gray-700 mb-2 font-semibold">
+                Giảng viên phụ trách
+              </label>
+              <div className="border rounded-xl px-3 py-2 w-full bg-gray-100 text-gray-600 text-base">
+                {user?.userName || user?.email} (Bạn - Giảng viên tạo môn học)
+              </div>
+              <input type="hidden" name="giangVienId" value={form.giangVienId} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

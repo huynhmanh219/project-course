@@ -66,9 +66,14 @@ import QuizList from "./pages/student/quiz/QuizList"
 import QuizTaking from "./pages/student/quiz/QuizTaking"
 import QuizResult from "./pages/student/quiz/QuizResult"
 import QuizHistory from "./pages/student/quiz/QuizHistory"
+import LectureRating from "./pages/student/lecture/LectureRating"
+import ClassRatingPage from "./pages/student/ClassRating"
+import TestRating from "./pages/TestRating"
+import TestClassRating from "./pages/TestClassRating"
 
 // Test API page
 import TestAPI from "./pages/TestAPI"
+import TestQuizRouting from "./pages/TestQuizRouting"
 
 export function App() {
   return (
@@ -78,6 +83,9 @@ export function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/test-api" element={<TestAPI />} />
+        <Route path="/test-quiz-routing" element={<TestQuizRouting />} />
+        <Route path="/test-rating" element={<TestRating />} />
+        <Route path="/test-class-rating" element={<TestClassRating />} />
 
         {/* Các trang cần layout và authentication */}
         <Route
@@ -128,6 +136,16 @@ export function App() {
                       <ChangePassword />
                     </ProtectedRoute>
                   } />
+                  <Route path="/student/lecture/:lectureId/rating" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <LectureRating />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/class/:classId/rating" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <ClassRatingPage />
+                    </ProtectedRoute>
+                  } />
                 
                 {/* Student Quiz routes */}
                   <Route path="/student/quiz" element={
@@ -135,12 +153,17 @@ export function App() {
                       <QuizList />
                     </ProtectedRoute>
                   } />
-                  <Route path="/student/quiz/:id/take" element={
+                  <Route path="/student/quiz/:quizId/take" element={
                     <ProtectedRoute requiredRole={['student']}>
                       <QuizTaking />
                     </ProtectedRoute>
                   } />
-                  <Route path="/student/quiz/:id/result" element={
+                  <Route path="/student/quiz/:quizId/result" element={
+                    <ProtectedRoute requiredRole={['student']}>
+                      <QuizResult />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/student/quiz/:quizId/result/:submissionId" element={
                     <ProtectedRoute requiredRole={['student']}>
                       <QuizResult />
                     </ProtectedRoute>

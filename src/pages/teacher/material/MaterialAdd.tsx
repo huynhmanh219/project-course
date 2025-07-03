@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, FileText, BookOpen, Upload, Tag, Video, Image, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
@@ -26,7 +26,7 @@ const MaterialAdd: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    material_type: 'document' as 'document' | 'video' | 'image',
+    material_type: 'document' as 'document' | 'video' | 'image'|"link",
     subject_id: '',
     chapter_id: '',
     is_public: true
@@ -203,6 +203,7 @@ const MaterialAdd: React.FC = () => {
       case 'document': return FileText;
       case 'video': return Video;
       case 'image': return Image;
+      case 'link': return Link;
       default: return FileText;
     }
   };
@@ -212,6 +213,7 @@ const MaterialAdd: React.FC = () => {
       case 'document': return 'text-blue-600 bg-blue-50 border-blue-200';
       case 'video': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
       case 'image': return 'text-green-600 bg-green-50 border-green-200';
+      case 'link': return 'text-orange-600 bg-orange-50 border-orange-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };

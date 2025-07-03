@@ -1,33 +1,26 @@
-// Simple Course Service - Fixed token expiration and data format
 import { API_BASE_URL } from './api';
 import { authService } from './auth.service';
 
 class SimpleCourseService {
-  // Helper to get auth headers with token validation
   private async getHeaders(): Promise<any> {
     let token = authService.getToken();
     
-    // Check if token exists
     if (!token) {
-      console.log('No token found, redirecting to login...');
       window.location.href = '/login';
       throw new Error('No authentication token');
     }
     
-    // Simple token expiration check
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
       
       if (payload.exp < currentTime) {
-        console.log('Token expired, redirecting to login...');
-        localStorage.clear(); // Clear all data
+        localStorage.clear(); 
         window.location.href = '/login';
         throw new Error('Token expired');
       }
     } catch (error) {
-      console.error('Token validation error:', error);
-      localStorage.clear(); // Clear all data
+      localStorage.clear(); 
       window.location.href = '/login';
       throw new Error('Invalid token');
     }
@@ -38,12 +31,9 @@ class SimpleCourseService {
     };
   }
 
-  // ==================== SUBJECTS/COURSES ====================
-  
-  // Get courses/subjects list
+
   async getCourses(params?: any): Promise<any> {
     try {
-      console.log('Getting courses list...');
       
       let url = `${API_BASE_URL}/courses`;
       if (params) {
@@ -57,22 +47,17 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Courses response:', result);
 
       if (response.ok && result.status === 'success') {
-        // Backend returns: { status: 'success', data: { courses: [...], pagination: {...} } }
-        // Frontend expects: { data: [...] }
         return {
-          data: result.data.courses || [], // Extract courses array
+          data: result.data.courses || [], 
           pagination: result.data.pagination
         };
       } else {
         throw new Error(result.message || 'Failed to get courses');
       }
     } catch (error: any) {
-      console.error('Get courses error:', error);
       
-      // Handle token expiration specifically
       if (error.message.includes('Token expired') || error.message.includes('Invalid token')) {
         localStorage.clear();
         window.location.href = '/login';
@@ -83,10 +68,8 @@ class SimpleCourseService {
     }
   }
 
-  // Get single course
   async getCourse(id: number): Promise<any> {
     try {
-      console.log(`Getting course ${id}...`);
       
       const response = await fetch(`${API_BASE_URL}/courses/${id}`, {
         method: 'GET',
@@ -94,24 +77,19 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Course response:', result);
 
       if (response.ok && result.status === 'success') {
-        // Backend returns: { status: 'success', data: { course: {...} } }
         return result.data;
       } else {
         throw new Error(result.message || 'Failed to get course');
       }
     } catch (error: any) {
-      console.error('Get course error:', error);
       throw error;
     }
   }
 
-  // Create course
   async createCourse(data: any): Promise<any> {
     try {
-      console.log('Creating course:', data);
       
       const response = await fetch(`${API_BASE_URL}/courses`, {
         method: 'POST',
@@ -120,12 +98,10 @@ class SimpleCourseService {
       });
 
       const result = await response.json();
-      console.log('Create course response:', result);
 
       if (response.ok) {
         return result.data || result;
       } else {
-        // Handle validation errors specifically
         if (result.message === 'Validation failed' && result.errors) {
           const error = new Error(result.message);
           (error as any).validationErrors = result.errors;
@@ -140,7 +116,6 @@ class SimpleCourseService {
     }
   }
 
-  // Update course
   async updateCourse(id: number, data: any): Promise<any> {
     try {
       console.log(`Updating course ${id}:`, data);
@@ -157,7 +132,6 @@ class SimpleCourseService {
       if (response.ok) {
         return result.data || result;
       } else {
-        // Handle validation errors specifically
         if (result.message === 'Validation failed' && result.errors) {
           const error = new Error(result.message);
           (error as any).validationErrors = result.errors;
@@ -172,7 +146,6 @@ class SimpleCourseService {
     }
   }
 
-  // Delete course
   async deleteCourse(id: number): Promise<any> {
     try {
       console.log(`Deleting course ${id}...`);
@@ -186,7 +159,6 @@ class SimpleCourseService {
       console.log('Delete course response:', result);
 
       if (response.ok && result.status === 'success') {
-        // Backend returns: { status: 'success', message: 'Course deleted successfully' }
         return result;
       } else {
         throw new Error(result.message || 'Failed to delete course');
@@ -197,9 +169,6 @@ class SimpleCourseService {
     }
   }
 
-  // ==================== LECTURERS ====================
-  
-  // Get lecturers list (using teachers API)
   async getLecturers(params?: any): Promise<any> {
     try {
       console.log('Getting lecturers list...');
@@ -219,8 +188,6 @@ class SimpleCourseService {
       console.log('Lecturers response:', result);
 
       if (response.ok && result.status === 'success') {
-        // Backend returns { data: { teachers: [...], pagination: {...} } }
-        // Frontend expects array of lecturers/teachers
         return result.data.teachers || [];
       } else {
         throw new Error(result.message || 'Failed to get lecturers');
@@ -231,9 +198,6 @@ class SimpleCourseService {
     }
   }
 
-  // ==================== CLASSES ====================
-  
-  // Get classes by subject/course ID
   async getClassesBySubject(subjectId: number): Promise<any> {
     try {
       console.log(`Getting classes for subject ${subjectId}...`);
@@ -247,7 +211,6 @@ class SimpleCourseService {
       console.log('Classes by subject response:', result);
 
       if (response.ok && result.status === 'success') {
-        // Backend returns: { status: 'success', data: { classes: [...], pagination: {...} } }
         return result.data.classes || [];
       } else {
         throw new Error(result.message || 'Failed to get classes');
@@ -258,7 +221,6 @@ class SimpleCourseService {
     }
   }
   
-  // Get classes list
   async getClasses(params?: any): Promise<any> {
     try {
       console.log('Getting classes list...');
@@ -288,7 +250,6 @@ class SimpleCourseService {
     }
   }
 
-  // Get single class
   async getClass(id: number): Promise<any> {
     try {
       console.log(`Getting class ${id}...`);
@@ -312,7 +273,6 @@ class SimpleCourseService {
     }
   }
 
-  // Create class
   async createClass(data: any): Promise<any> {
     try {
       console.log('Creating class:', data);
@@ -337,9 +297,6 @@ class SimpleCourseService {
     }
   }
 
-  // ==================== ENROLLMENT ====================
-  
-  // Get students in a class
   async getClassStudents(classId: number, params?: any): Promise<any> {
     try {
       console.log(`Getting students in class ${classId}...`);
@@ -369,7 +326,6 @@ class SimpleCourseService {
     }
   }
 
-  // Get student's classes
   async getStudentClasses(studentId: number, params?: any): Promise<any> {
     try {
       console.log(`Getting classes for student ${studentId}...`);
@@ -399,7 +355,6 @@ class SimpleCourseService {
     }
   }
 
-  // Enroll students to class
   async enrollStudents(classId: number, studentIds: number[]): Promise<any> {
     try {
       console.log(`Enrolling students to class ${classId}:`, studentIds);
@@ -424,7 +379,7 @@ class SimpleCourseService {
     }
   }
 
-  // Remove student from class
+
   async removeStudentFromClass(classId: number, studentId: number): Promise<any> {
     try {
       console.log(`Removing student ${studentId} from class ${classId}...`);
@@ -449,6 +404,6 @@ class SimpleCourseService {
   }
 }
 
-// Export singleton
+
 export const simpleCourseService = new SimpleCourseService();
 export default simpleCourseService; 

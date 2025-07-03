@@ -22,7 +22,7 @@ const QuizAdd: React.FC = () => {
     start_time: '',
     end_time: '',
     instructions: '',
-    attempts_allowed: 1,
+    attempts_allowed: 3,
     show_results: true,
     show_correct_answers: true,
     shuffle_questions: false,

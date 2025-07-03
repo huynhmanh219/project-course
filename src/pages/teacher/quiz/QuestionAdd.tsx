@@ -250,13 +250,13 @@ const QuestionAdd: React.FC = () => {
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-4">
-              <Button
+          <Button
                 variant="secondary"
                 onClick={() => navigate(`/teacher/quiz/${quizId}`)}
                 className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 p-3"
-              >
+          >
                 <ArrowLeft className="w-5 h-5" />
-              </Button>
+          </Button>
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-white/20 p-3">
                   <HelpCircle className="w-8 h-8 text-white" />

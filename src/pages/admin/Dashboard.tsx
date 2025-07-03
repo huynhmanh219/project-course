@@ -105,7 +105,7 @@ export default function Dashboard() {
                     <BarChart3 className="w-7 h-7 text-white" />
                   </div>
                   <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                    Admin Dashboard
+                    Trang chủ quản trị viên
                   </h1>
                 </div>
                 <p className="text-blue-100 text-base sm:text-lg">

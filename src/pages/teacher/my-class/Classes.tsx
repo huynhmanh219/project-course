@@ -105,15 +105,12 @@ const TeacherClasses: React.FC = () => {
     const classItem = classes.find(c => c.id === classId);
     if (!classItem) return;
 
-    // Prevent deleting if already deleting another class
     if (deletingClassId !== null) {
       alert('Vui lòng đợi quá trình xóa hiện tại hoàn thành');
       return;
     }
 
     try {
-      // Check if class has enrolled students
-      console.log('Checking students for class:', classId);
       const studentsResponse = await simpleClassService.getClassStudents(classId);
       
       if (studentsResponse.data && studentsResponse.data.length > 0) {
@@ -125,27 +122,22 @@ const TeacherClasses: React.FC = () => {
         return;
       }
 
-      // If no students, proceed with normal delete confirmation
       const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học phần "${classItem.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
         setDeletingClassId(classId);
         console.log('Deleting class:', classId);
         
-        // Call delete API
         await simpleClassService.deleteClass(classId);
         
-        // Remove from local state
         setClasses(classes.filter((c) => c.id !== classId));
         alert("Đã xóa lớp học phần thành công!");
         
-        // Refresh the list to ensure consistency
         fetchMyClasses();
     }
     } catch (error: any) {
       console.error('Error deleting class:', error);
       
-      // Handle specific error messages
       let errorMessage = 'Lỗi khi xóa lớp học phần: ';
       if (error.message.includes('Cannot delete class with enrolled students')) {
         errorMessage = `Không thể xóa lớp học phần "${classItem.name}"!\n\nLớp học phần này vẫn còn có sinh viên đang học. Vui lòng xóa tất cả sinh viên khỏi lớp trước khi xóa lớp học phần.`;

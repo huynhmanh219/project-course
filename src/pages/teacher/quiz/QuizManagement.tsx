@@ -15,7 +15,9 @@ import {
   Copy,
   FileDown,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
@@ -49,17 +51,17 @@ const QuizManagement: React.FC = () => {
       console.log('Loaded quizzes:', response);
       
       const quizzesList = response.data || response.results || [];
-      console.log('API Response:', response);
-      console.log('Raw quizzes data:', quizzesList);
-      
+
       const transformedQuizzes = (quizzesList || []).map((quiz: any) => ({
         id: quiz.id,
         tenBaiKiemTra: quiz.title,
         moTa: quiz.description || '',
-        soCauHoi: quiz.questions?.length || 0,
+        soCauHoi: quiz.questions?.length || quiz.question_count || 0,
         thoiGianLamBai: quiz.time_limit || 0,
         diemToiDa: quiz.total_points || 0,
         trangThaiQuiz: quiz.status,
+        ngayTao: quiz.created_at,
+        ngayCapNhat: quiz.updated_at,
         ngayBatDau: quiz.start_time,
         ngayKetThuc: quiz.end_time,
         soSinhVienDaLam: 0, // TODO: Get from submissions
@@ -100,6 +102,48 @@ const QuizManagement: React.FC = () => {
     return tongSo > 0 ? Math.round((daLam / tongSo) * 100) : 0;
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTimeStatus = (startTime: string | null, endTime: string | null) => {
+    const now = new Date();
+    const start = startTime ? new Date(startTime) : null;
+    const end = endTime ? new Date(endTime) : null;
+
+    if (start && end) {
+      if (now < start) {
+        return { status: 'upcoming', label: 'Sắp diễn ra', color: 'text-blue-600' };
+      } else if (now >= start && now <= end) {
+        return { status: 'active', label: 'Đang diễn ra', color: 'text-green-600' };
+      } else {
+        return { status: 'ended', label: 'Đã kết thúc', color: 'text-red-600' };
+      }
+    } else if (start && !end) {
+      if (now < start) {
+        return { status: 'upcoming', label: 'Sắp diễn ra', color: 'text-blue-600' };
+      } else {
+        return { status: 'active', label: 'Đang diễn ra', color: 'text-green-600' };
+      }
+    } else if (!start && end) {
+      if (now <= end) {
+        return { status: 'active', label: 'Còn thời gian', color: 'text-green-600' };
+      } else {
+        return { status: 'ended', label: 'Đã kết thúc', color: 'text-red-600' };
+      }
+    }
+    
+    return { status: 'no-time', label: 'Không giới hạn', color: 'text-gray-600' };
+  };
+
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesSearch = quiz.tenBaiKiemTra.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          quiz.lopHoc?.tenLopHoc.toLowerCase().includes(searchTerm.toLowerCase());
@@ -116,7 +160,7 @@ const QuizManagement: React.FC = () => {
       console.log('Quiz published successfully');
     } catch (err: any) {
       console.error('Error publishing quiz:', err);
-      alert('Failed to publish quiz: ' + err.message);
+      alert('không thể xuất bảng khi không có câu hỏi');
     }
   };
 
@@ -129,12 +173,12 @@ const QuizManagement: React.FC = () => {
       console.log('Quiz closed successfully');
     } catch (err: any) {
       console.error('Error closing quiz:', err);
-      alert('Failed to close quiz: ' + err.message);
+      alert('Không thể đóng bài kiểm tra khi đang có sinh viên làm bài');
     }
   };
 
   const handleDeleteQuiz = async (quizId: number) => {
-    if (!confirm('Are you sure you want to delete this quiz?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa bài kiểm tra này không?')) return;
     
     try {
       await simpleQuizService.deleteQuiz(quizId);
@@ -142,7 +186,44 @@ const QuizManagement: React.FC = () => {
       console.log('Quiz deleted successfully');
     } catch (err: any) {
       console.error('Error deleting quiz:', err);
-      alert('Failed to delete quiz: ' + err.message);
+      alert('Không thể xóa bài kiểm tra khi đang có sinh viên làm bài');
+    }
+  };
+
+  const handleDeleteClosedQuiz = async (quizId: number) => {
+    const confirmed = confirm(
+      'Bài kiểm tra này đã đóng và có thể có dữ liệu sinh viên.\n' +
+      'Bạn có chắc chắn muốn xóa vĩnh viễn không?\n\n' +
+      'Lưu ý: Hành động này không thể hoàn tác!'
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+      // For closed quizzes, we might need special API endpoint or force delete
+      await simpleQuizService.deleteQuiz(quizId);
+      setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
+      alert('Đã xóa bài kiểm tra thành công!');
+    } catch (err: any) {
+      console.error('Error deleting closed quiz:', err);
+      // If normal delete fails, show option to force delete
+      const forceDelete = confirm(
+        'Không thể xóa bình thường do có dữ liệu sinh viên.\n' +
+        'Bạn có muốn xóa gồm cả dữ liệu sinh viên không?\n\n' +
+        '⚠️ Cảnh báo: Điều này sẽ xóa tất cả kết quả làm bài!'
+      );
+      
+      if (forceDelete) {
+        try {
+          await simpleQuizService.forceDeleteQuiz(quizId);
+          
+          // For now, remove from frontend (you may need backend API update)
+          setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
+          alert('Đã force xóa bài kiểm tra và toàn bộ dữ liệu liên quan!');
+        } catch (forceErr: any) {
+          alert('Không thể force delete: ' + (forceErr.message || 'Unknown error'));
+        }
+      }
     }
   };
 
@@ -153,7 +234,7 @@ const QuizManagement: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
                 <div className="rounded-xl bg-white/20 p-3">
                   <BookOpen className="w-8 h-8 text-white" />
@@ -171,6 +252,76 @@ const QuizManagement: React.FC = () => {
                 Tạo bài kiểm tra
               </Button>
             </div>
+            
+            {/* Statistics Row */}
+            {!loading && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{quizzes.length}</div>
+                      <div className="text-blue-100 text-sm">Tổng bài kiểm tra</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/10 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-500/20 rounded-lg p-2">
+                      <Play className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{quizzes.filter(q => q.trangThaiQuiz === 'published').length}</div>
+                      <div className="text-blue-100 text-sm">Đã xuất bản</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* <div className="bg-white/10 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-400/20 rounded-lg p-2">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">
+                        {quizzes.filter(q => {
+                          const timeStatus = getTimeStatus(q.ngayBatDau, q.ngayKetThuc);
+                          return timeStatus.status === 'active';
+                        }).length}
+                      </div>
+                      <div className="text-blue-100 text-sm">Đang diễn ra</div>
+                    </div>
+                  </div>
+                </div> */}
+                
+                <div className="bg-white/10 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-yellow-500/20 rounded-lg p-2">
+                      <Edit className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{quizzes.filter(q => q.trangThaiQuiz === 'draft').length}</div>
+                      <div className="text-blue-100 text-sm">Bản nháp</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/10 rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-red-500/20 rounded-lg p-2">
+                      <Pause className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{quizzes.filter(q => q.trangThaiQuiz === 'closed').length}</div>
+                      <div className="text-blue-100 text-sm">Đã đóng</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -252,8 +403,23 @@ const QuizManagement: React.FC = () => {
                       </h3>
                       <p className="text-sm text-gray-600 mt-1">{quiz.lopHoc?.tenLopHoc}</p>
                       <p className="text-sm text-blue-600">{quiz.chuong?.tenChuong}</p>
+                      
+                      {/* Time Status */}
+                      {(() => {
+                        const timeStatus = getTimeStatus(quiz.ngayBatDau, quiz.ngayKetThuc);
+                        if (timeStatus.status !== 'no-time') {
+                          return (
+                            <div className={`text-xs font-medium mt-1 ${timeStatus.color}`}>
+                              • {timeStatus.label}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
-                    {getStatusBadge(quiz.trangThaiQuiz)}
+                    <div className="flex flex-col gap-1 items-end">
+                      {getStatusBadge(quiz.trangThaiQuiz)}
+                    </div>
                   </div>
 
                   {/* Description */}
@@ -262,26 +428,67 @@ const QuizManagement: React.FC = () => {
                   )}
 
                   {/* Quiz Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{quiz.soCauHoi} câu hỏi</span>
+                  <div className="space-y-3">
+                    {/* Row 1 - Main Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <HelpCircle className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium">{quiz.soCauHoi}</span>
+                        <span>câu hỏi</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock className="w-4 h-4 text-green-600" />
+                        <span className="font-medium">{quiz.thoiGianLamBai}</span>
+                        <span>phút</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4" />
-                      <span>{quiz.thoiGianLamBai} phút</span>
+                    
+                    {/* Row 2 - Points & Progress */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <BarChart3 className="w-4 h-4 text-purple-600" />
+                        <span className="font-medium">{quiz.diemToiDa}</span>
+                        <span>điểm</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Users className="w-4 h-4 text-orange-600" />
+                        <span className="font-medium">{quiz.soSinhVienDaLam}/{quiz.tongSoSinhVien}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <BarChart3 className="w-4 h-4" />
-                      <span>{quiz.diemToiDa} điểm</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Users className="w-4 h-4" />
-                      <span>{quiz.soSinhVienDaLam}/{quiz.tongSoSinhVien}</span>
+                    
+                    {/* Row 3 - Schedule */}
+                    {(quiz.ngayBatDau || quiz.ngayKetThuc) && (
+                      <div className="pt-2 border-t border-gray-100">
+                        <div className="space-y-1">
+                          {quiz.ngayBatDau && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span>Bắt đầu:</span>
+                              <span className="font-medium text-green-700">{formatDate(quiz.ngayBatDau)}</span>
+                            </div>
+                          )}
+                          {quiz.ngayKetThuc && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                              <span>Kết thúc:</span>
+                              <span className="font-medium text-red-700">{formatDate(quiz.ngayKetThuc)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Row 4 - Created Date */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        <span>Tạo:</span>
+                        <span className="font-medium">{formatDate(quiz.ngayTao)}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
+                  {/* Progress Bar
                   {quiz.trangThaiQuiz === 'published' && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
@@ -295,9 +502,10 @@ const QuizManagement: React.FC = () => {
                         ></div>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Action Buttons */}
+                   
                   <div className="flex gap-2 pt-2">
                     <button 
                       onClick={() => navigate(`/teacher/quiz/${quiz.id}`)}
@@ -344,15 +552,23 @@ const QuizManagement: React.FC = () => {
                         Đóng bài thi
                       </button>
                     )}
-                    <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteQuiz(quiz.id)}
-                      className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {quiz.trangThaiQuiz === 'closed' && (
+                      <button
+                        onClick={() => handleDeleteClosedQuiz(quiz.id)}
+                        className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Xóa bài thi
+                      </button>
+                    )}
+                    {quiz.trangThaiQuiz !== 'closed' && (
+                      <button 
+                        onClick={() => handleDeleteQuiz(quiz.id)}
+                        className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </CardContent>

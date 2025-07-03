@@ -4,10 +4,8 @@ export { apiClient, API_BASE_URL, handleApiResponse, handleApiError } from './ap
 // Types
 export * from './types';
 
-// Import services first
 import authService from './auth.service';
 
-// Import simple services
 import { simpleUserService } from './user.service.simple';
 import { simpleCourseService } from './course.service.simple';
 import { simpleClassService } from './class.service.simple';
@@ -15,8 +13,8 @@ import { simpleQuizService } from './quiz.service.simple';
 import { simpleChapterService } from './chapter.service.simple';
 import { simpleLectureService } from './lecture.service.simple';
 import { simpleMaterialService } from './material.service.simple';
+import { classRatingService } from './class-rating.service';
 
-// Export services
 export {
   authService,
 
@@ -27,9 +25,9 @@ export {
   simpleChapterService,
   simpleLectureService,
   simpleMaterialService,
+  classRatingService,
 };
 
-// Service collection object
 export const services = {
   auth: authService,
   simpleUser: simpleUserService,
@@ -39,7 +37,7 @@ export const services = {
   simpleChapter: simpleChapterService,
   simpleLecture: simpleLectureService,
   simpleMaterial: simpleMaterialService,
+  classRating: classRatingService,
 };
 
-// Default export
 export default services;

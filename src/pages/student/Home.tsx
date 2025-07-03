@@ -498,7 +498,7 @@ export function Home() {
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Hành động nhanh</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button 
                   onClick={() => navigate('/student/quiz')}
                   className="bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-xl flex items-center gap-2 justify-center"

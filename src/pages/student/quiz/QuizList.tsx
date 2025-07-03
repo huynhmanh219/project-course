@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { authService } from '../../../services/auth.service';
-import SimpleQuizService from '../../../services/quiz.service.simple';
+import { simpleQuizService } from '../../../services/quiz.service.simple';
 
 const QuizList: React.FC = () => {
   const navigate = useNavigate();
@@ -32,42 +32,149 @@ const QuizList: React.FC = () => {
       }
 
       // Fetch available quizzes
-      console.log('Fetching quizzes...');
-      const response = await SimpleQuizService.getQuizzes();
-      console.log('Quizzes response:', response);
+      const response = await simpleQuizService.getQuizzes();
       
-      if (response && response.data) {
-        // Process quiz data and determine status
-        const processedQuizzes = response.data.map((quiz: any) => {
-          const now = new Date();
-          const startDate = quiz.start_time ? new Date(quiz.start_time) : null;
-          const endDate = quiz.end_time ? new Date(quiz.end_time) : null;
-          
-          let status = 'available';
-          if (startDate && now < startDate) {
-            status = 'upcoming';
-          } else if (endDate && now > endDate) {
-            status = 'expired';
-          } else if (quiz.status === 'draft') {
-            status = 'upcoming';
-          }
+      if (response && (response.results || response.data)) {
+        const quizData = response.results || response.data;
+        
+        // Process quiz data and check attempt status for each quiz
+        const processedQuizzes = await Promise.all(
+          quizData.map(async (quiz: any) => {
+            const now = new Date();
+            const startDate = quiz.start_time ? new Date(quiz.start_time) : null;
+            const endDate = quiz.end_time ? new Date(quiz.end_time) : null;
+            
+            let status = 'available';
+            let hasInProgress = false;
+            let hasCompleted = false;
+            let questionCount = quiz.question_count || quiz.total_questions || 0;
+            
+            // Try to fetch question count separately if not available
+            if (questionCount === 0) {
+              try {
+                const quizId = quiz.quiz_id || quiz.id;
+                const questionsResponse = await simpleQuizService.getQuizQuestions(quizId, false);
+                if (questionsResponse && questionsResponse.length) {
+                  questionCount = questionsResponse.length;
+                }
+              } catch (questionError) {
+                // Silently continue if question count fetch fails
+              }
+            }
+            
+            // Check time-based availability first
+            if (startDate && now < startDate) {
+              status = 'upcoming';
+            } else if (endDate && now > endDate) {
+              status = 'expired';
+            } else if (quiz.status !== 'published') {
+              status = 'upcoming';
+            }
+            
+            // Check student's attempt status for this quiz using proper API
+            try {
+              const quizId = quiz.quiz_id || quiz.id;
+              
+              let allAttemptsResponse;
+              
+              // Try main API first, then fallback to direct debug route
+              try {
+                allAttemptsResponse = await simpleQuizService.getMyAttempts({
+                  quiz_id: quizId,
+                  page: 1,
+                  size: 20 // Use size parameter which is now supported
+                });
+              } catch (mainApiError) {
+                console.warn(`Main API failed for quiz ${quizId}, trying debug route:`, mainApiError);
+                
+                // Fallback to debug route - completely bypass middleware
+                try {
+                  const response = await fetch(`http://localhost:3000/api/debug-direct?quiz_id=${quizId}`, {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    }
+                  });
+                  const result = await response.json();
+                  if (result.success) {
+                    allAttemptsResponse = { data: result.data };
+                  } else {
+                    allAttemptsResponse = { data: [] };
+                  }
+                } catch (debugError) {
+                  console.error(`Debug route also failed for quiz ${quizId}:`, debugError);
+                  allAttemptsResponse = { data: [] }; // Continue with empty data
+                }
+              }
+              
+              // handleResponse unwraps the data, so allAttemptsResponse is the pagination object
+              // which contains results/data field with the actual attempts array
+              if (allAttemptsResponse && (allAttemptsResponse.results || allAttemptsResponse.data)) {
+                const attempts = allAttemptsResponse.results || allAttemptsResponse.data;
+                
+                if (attempts.length > 0) {
+                  // Check for completed attempts (submitted or graded)
+                  const completedAttempts = attempts.filter((attempt: any) => 
+                    attempt.status === 'submitted' || attempt.status === 'graded'
+                  );
+                  
+                  // Check for in-progress attempts
+                  const inProgressAttempts = attempts.filter((attempt: any) => 
+                    attempt.status === 'in_progress'
+                  );
+                  
+                  hasCompleted = completedAttempts.length > 0;
+                  hasInProgress = inProgressAttempts.length > 0;
+                  
+                  const validAttempts = attempts.filter((attempt: any) => 
+                    ['in_progress', 'submitted', 'graded'].includes(attempt.status)
+                  );
+                  
+                  // FIXED: Prioritize completed status over in-progress
+                  // Only show in-progress if there are NO completed attempts
+                  if (hasCompleted) {
+                    // If has any completed attempts, show as completed
+                    status = 'completed';
+                  } else if (hasInProgress) {
+                    // Only show in-progress if no completed attempts exist
+                    status = 'in_progress';
+                  } else if (validAttempts.length >= (quiz.attempts_allowed || 3)) {
+                    status = 'completed';    // Max attempts reached, show results only
+                  }
+                  
+                  // If no completed/in-progress but has other attempts, keep 'available'
+                }
+              }
+            } catch (attemptError) {
+              console.error(`Error checking attempts for quiz ${quiz.quiz_id || quiz.id}:`, attemptError);
+              // Continue without attempt info if API fails
+            }
 
-          return {
-            id: quiz.quiz_id || quiz.id,
-            tenBaiKiemTra: quiz.title || quiz.quiz_title || 'Bài kiểm tra',
-            moTa: quiz.description || quiz.instructions || '',
-            thoiGianLamBai: quiz.duration || quiz.time_limit || 60,
-            soCauHoi: quiz.question_count || quiz.total_questions || 0,
-            ngayBatDau: quiz.start_time || new Date().toISOString(),
-            ngayKetThuc: quiz.end_time || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            trangThai: status,
-            lopHoc: quiz.subject_name || quiz.class_name || 'Chưa xác định',
-            diemToiDa: quiz.max_score || quiz.total_marks || quiz.soCauHoi || 10,
-            isPublished: quiz.status === 'published'
-          };
-        }).filter((quiz: any) => quiz.isPublished); // Only show published quizzes to students
+            return {
+              id: quiz.quiz_id || quiz.id,
+              tenBaiKiemTra: quiz.title || quiz.quiz_title || 'Bài kiểm tra',
+              moTa: quiz.description || quiz.instructions || '',
+              thoiGianLamBai: quiz.duration || quiz.time_limit || 60,
+              soCauHoi: questionCount,
+              ngayBatDau: quiz.start_time || new Date().toISOString(),
+              ngayKetThuc: quiz.end_time || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+              trangThai: status,
+              lopHoc: quiz.courseSection?.section_name || quiz.subject?.subject_name || 
+                     quiz.course_section_name || quiz.courseSectionName || quiz.course_name || quiz.courseName || 
+                     quiz.subject_name || quiz.subjectName || quiz.class_code || quiz.classCode || 
+                     quiz.class_name || quiz.className || quiz.section_name || quiz.sectionName || 
+                     quiz.course?.name || quiz.subject?.name || quiz.courseSection?.name || 'Chưa xác định',
+              diemToiDa: quiz.max_score || quiz.total_marks || quiz.total_points || questionCount || 10,
+              isPublished: quiz.status === 'published',
+              hasInProgress,
+              hasCompleted
+            };
+          })
+        );
 
-        setQuizzes(processedQuizzes);
+        // Only show published quizzes to students
+        const publishedQuizzes = processedQuizzes.filter((quiz: any) => quiz.isPublished);
+        setQuizzes(publishedQuizzes);
       } else {
         setQuizzes([]);
       }
@@ -86,7 +193,9 @@ const QuizList: React.FC = () => {
       case 'upcoming':
         return <Badge className="bg-blue-100 text-blue-700">Sắp diễn ra</Badge>;
       case 'completed':
-        return <Badge className="bg-gray-100 text-gray-700">Đã hoàn thành</Badge>;
+        return <Badge className="bg-purple-100 text-purple-700">Đã hoàn thành</Badge>;
+      case 'in_progress':
+        return <Badge className="bg-yellow-100 text-yellow-700">Đang làm</Badge>;
       case 'expired':
         return <Badge className="bg-red-100 text-red-700">Hết hạn</Badge>;
       default:
@@ -184,9 +293,9 @@ const QuizList: React.FC = () => {
                 <Clock className="w-8 h-8 opacity-80" />
                 <div>
                   <div className="text-2xl font-bold">
-                    {quizzes.filter(q => q.trangThai === 'upcoming').length}
+                    {quizzes.filter(q => q.trangThai === 'in_progress').length}
                   </div>
-                  <div className="text-yellow-100 text-sm">Sắp diễn ra</div>
+                  <div className="text-yellow-100 text-sm">Đang làm</div>
                 </div>
               </div>
             </CardContent>
@@ -263,20 +372,33 @@ const QuizList: React.FC = () => {
                           <Play className="w-4 h-4 mr-2" />
                           Làm bài ngay
                         </Button>
+                      ) : quiz.trangThai === 'in_progress' ? (
+                        <Button
+                          onClick={() => navigate(`/student/quiz/${quiz.id}/take`)}
+                          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Tiếp tục làm bài
+                        </Button>
                       ) : quiz.trangThai === 'upcoming' ? (
                         <Button disabled className="w-full" variant="outline">
                           <Clock className="w-4 h-4 mr-2" />
                           Chưa đến giờ làm bài
                         </Button>
                       ) : quiz.trangThai === 'completed' ? (
-                        <Button
-                          onClick={() => navigate(`/student/quiz/${quiz.id}/result`)}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          Xem kết quả
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => navigate(`/student/quiz/${quiz.id}/result`)}
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Xem kết quả
+                          </Button>
+                          {/* Optionally allow retake if quiz allows multiple attempts */}
+                        </div>
                       ) : (
                         <Button disabled className="w-full" variant="outline">
+                          <AlertCircle className="w-4 h-4 mr-2" />
                           Hết thời gian làm bài
                         </Button>
                       )}
@@ -313,13 +435,13 @@ const QuizList: React.FC = () => {
                   <p className="text-sm text-blue-700">Xem lại các bài kiểm tra đã hoàn thành và kết quả</p>
                 </div>
               </div>
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => navigate('/student/quiz/history')}
                 className="border-blue-300 text-blue-700 hover:bg-blue-100"
               >
                 Xem lịch sử
-              </Button>
+              </Button> */}
             </div>
           </CardContent>
         </Card>

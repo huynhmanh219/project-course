@@ -198,6 +198,7 @@ const Materials: React.FC = () => {
       case 'document': return 'Tài liệu';
       case 'video': return 'Video';
       case 'image': return 'Hình ảnh';
+      case 'link': return 'Liên kết';
       default: return type;
     }
   };
@@ -207,6 +208,7 @@ const Materials: React.FC = () => {
       case 'document': return 'bg-blue-100 text-blue-800';
       case 'video': return 'bg-indigo-100 text-indigo-800';
       case 'image': return 'bg-green-100 text-green-800';
+      case 'link': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -217,6 +219,7 @@ const Materials: React.FC = () => {
       case 'document': return FileText;
       case 'video': return Video;
       case 'image': return Image;
+      case 'link': return Link;
       default: return Archive;
     }
   };
@@ -226,6 +229,7 @@ const Materials: React.FC = () => {
       case 'document': return 'from-blue-500 to-indigo-500';
       case 'video': return 'from-indigo-500 to-purple-500';
       case 'image': return 'from-green-500 to-teal-500';
+      case 'link': return 'from-orange-500 to-red-500';
       default: return 'from-gray-500 to-gray-600';
     }
   };
@@ -503,6 +507,10 @@ const Materials: React.FC = () => {
                 <div className="text-center">
                   <div className="text-2xl font-bold">{stats.by_type.image || 0}</div>
                   <div className="text-blue-100 text-sm">🖼️ Hình ảnh</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{stats.by_type.link || 0}</div>
+                  <div className="text-blue-100 text-sm">🔗 Liên kết</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">{stats.total || 0}</div>
