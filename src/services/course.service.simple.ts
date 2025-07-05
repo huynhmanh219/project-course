@@ -349,6 +349,31 @@ class SimpleCourseService {
     }
   }
 
+  async bulkEnrollStudents(classId: number, studentIds: (number | string)[]): Promise<any> {
+    try {
+      const enrollments = studentIds.map(studentId => ({
+        student_id: studentId,
+        course_section_id: classId
+      }));
+      
+      const response = await fetch(`${API_BASE_URL}/courses/enrollment/bulk`, {
+        method: 'POST',
+        headers: await this.getHeaders(),
+        body: JSON.stringify({ enrollments })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        return result.data || result;
+      } else {
+        throw new Error(result.message || 'Failed to bulk enroll students');
+      }
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
 
   async removeStudentFromClass(classId: number, studentId: number): Promise<any> {
     try {

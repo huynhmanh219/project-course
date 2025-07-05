@@ -1,10 +1,11 @@
 // src/pages/TeacherManageStudents.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Search, GraduationCap, Mail, Phone, UserCheck, UserX, Loader2 } from "lucide-react";
+import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Search, GraduationCap, Mail, Phone, UserCheck, UserX, Loader2, Calendar, Plus, AlertCircle, RefreshCw, Upload } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleCourseService } from '../../../services';
+import Papa from 'papaparse';
 
 interface Student {
   id: number;
@@ -44,9 +45,12 @@ const ManageStudent: React.FC = () => {
     total: 0,
     totalPages: 0
   });
+  const [showImport, setShowImport] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{successful:number;failed:number}>({successful:0,failed:0});
   const navigate = useNavigate();
 
-  // Load class students from API
   const loadClassStudents = async (page = 1, search = '') => {
     if (!classId) {
       setError('Không tìm thấy ID lớp học');
@@ -131,6 +135,235 @@ const ManageStudent: React.FC = () => {
         alert(`Lỗi khi xóa sinh viên: ${error.message}`);
       }
     }
+  };
+
+  const handleImportStudents = () => {
+    if (!importFile) {
+      alert('Vui lòng chọn file CSV');
+      return;
+    }
+
+    console.log('Parsing CSV file:', importFile.name);
+    
+    // Function to process CSV results
+    const processResults = async (results: any, hasHeader: boolean) => {
+      console.log('CSV parsing results:', results);
+      
+      // Check for critical parsing errors (not just warnings)
+      if (results.errors && results.errors.length > 0) {
+        const criticalErrors = results.errors.filter((e: any) => e.type === 'Quotes' || e.type === 'Delimiter');
+        if (criticalErrors.length > 0) {
+          console.error('Critical CSV parsing errors:', criticalErrors);
+          alert('Lỗi đọc file CSV: ' + criticalErrors.map((e: any) => e.message).join(', '));
+          return;
+        }
+        // Log warnings but continue processing
+        console.warn('CSV parsing warnings (non-critical):', results.errors);
+      }
+
+      if (!results.data || results.data.length === 0) {
+        alert('File CSV trống hoặc không có dữ liệu hợp lệ');
+        return;
+      }
+
+      console.log('First few rows:', results.data.slice(0, 3));
+      console.log('Parse mode:', hasHeader ? 'with header' : 'without header');
+
+      // Extract student IDs with improved logic
+      const rawIds: any[] = [];
+      
+      results.data.forEach((row: any, index: number) => {
+        console.log(`Processing row ${index + 1}:`, row);
+        
+        if (!row) {
+          console.log(`Row ${index + 1}: Empty row, skipping`);
+          return;
+        }
+
+        let studentId = null;
+        
+        if (!hasHeader || Array.isArray(row)) {
+          // No header mode or array format - use first element
+          const firstValue = Array.isArray(row) ? row[0] : row;
+          studentId = firstValue;
+          console.log(`Row ${index + 1}: No header mode, using first value:`, studentId);
+        } else if (typeof row === 'object') {
+          // Object format (normal CSV with headers)
+          const possibleKeys = ['student_id', 'id', 'mssv', 'studentid'];
+          for (const key of possibleKeys) {
+            if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
+              studentId = row[key];
+              console.log(`Row ${index + 1}: Found via key '${key}':`, studentId);
+              break;
+            }
+          }
+
+          // If no header match, try the first non-empty value
+          if (!studentId) {
+            const values = Object.values(row).filter(v => 
+              v !== null && v !== undefined && String(v).trim() !== ''
+            );
+            if (values.length > 0) {
+              studentId = values[0];
+              console.log(`Row ${index + 1}: Using first non-empty value:`, studentId);
+            }
+          }
+        } else {
+          // Primitive value
+          studentId = row;
+          console.log(`Row ${index + 1}: Primitive value:`, studentId);
+        }
+
+        if (studentId !== null && studentId !== undefined) {
+          const cleanId = String(studentId).trim();
+          if (cleanId !== '' && cleanId.toLowerCase() !== 'student_id' && cleanId.toLowerCase() !== 'mssv' && cleanId.toLowerCase() !== 'id') {
+            console.log(`Row ${index + 1}: Adding ID:`, cleanId);
+            rawIds.push(cleanId);
+          } else {
+            console.log(`Row ${index + 1}: Skipping header or empty ID:`, cleanId);
+          }
+        } else {
+          console.log(`Row ${index + 1}: No valid student ID found`, row);
+        }
+      });
+
+      console.log('Raw IDs extracted:', rawIds);
+
+      // Process and filter valid IDs (support both numeric and string IDs)
+      const validIds = Array.from(
+        new Set(
+          rawIds
+            .map((v: any) => {
+              const cleanId = String(v).trim();
+              // Accept numeric IDs
+              const numericId = parseInt(cleanId);
+              if (!isNaN(numericId) && numericId > 0) {
+                return numericId;
+              }
+              // Accept string IDs (alphanumeric, at least 3 characters)
+              if (cleanId.length >= 3 && /^[A-Za-z0-9]+$/.test(cleanId)) {
+                return cleanId;
+              }
+              return null;
+            })
+            .filter((id: any) => id !== null)
+        )
+      );
+
+      console.log('Valid student IDs:', validIds);
+
+      if (validIds.length === 0) {
+        alert(`Không tìm thấy student_id hợp lệ trong file.\n\nFile cần có cột 'student_id', 'id', 'mssv' hoặc 'studentid' với ID hợp lệ (số hoặc chuỗi ít nhất 3 ký tự).\n\nSố dòng đã đọc: ${results.data.length}\nSố ID thô: ${rawIds.length}`);
+        return;
+      }
+
+      const confirmMessage = `Tìm thấy ${validIds.length} student ID hợp lệ.\n\nBạn có muốn tiếp tục import không?\n\nDanh sách ID: ${validIds.slice(0, 10).join(', ')}${validIds.length > 10 ? '...' : ''}`;
+      
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+
+      setImporting(true);
+      let successful = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      try {
+        console.log(`Starting import for ${validIds.length} students in chunks of 100`);
+        
+        // Process in chunks of 100 students (bulkEnrollment API limit)
+        for (let i = 0; i < validIds.length; i += 100) {
+          const chunk = validIds.slice(i, i + 100);
+          console.log(`Processing chunk ${Math.floor(i / 100) + 1}: IDs ${chunk[0]} to ${chunk[chunk.length - 1]}`);
+          
+          try {
+            const result = await simpleCourseService.bulkEnrollStudents(Number(classId), chunk as (number | string)[]);
+            console.log(`Chunk ${Math.floor(i / 100) + 1} result:`, result);
+            
+            // The bulkEnrollment API returns detailed results
+            if (result && result.results) {
+              successful += result.results.successful?.length || 0;
+              failed += result.results.failed?.length || 0;
+              
+              // Add specific error details if any students failed
+              if (result.results.failed?.length > 0) {
+                const chunkErrors = result.results.failed.map((failure: any) => 
+                  `ID ${failure.enrollment?.student_id || 'unknown'}: ${failure.error}`
+                );
+                errors.push(`Chunk ${Math.floor(i / 100) + 1}: ${chunkErrors.join(', ')}`);
+              }
+            } else {
+              successful += chunk.length;
+            }
+          } catch (chunkError: any) {
+            console.error(`Error in chunk ${Math.floor(i / 100) + 1}:`, chunkError);
+            failed += chunk.length;
+            errors.push(`Chunk ${Math.floor(i / 100) + 1}: ${chunkError.message}`);
+          }
+        }
+
+        let message = `Import hoàn thành!\n\nThành công: ${successful} sinh viên\nThất bại: ${failed} sinh viên`;
+        if (errors.length > 0) {
+          message += `\n\nLỗi:\n${errors.join('\n')}`;
+        }
+        
+        alert(message);
+        setImportResult({ successful, failed });
+        
+        if (successful > 0) {
+          loadClassStudents(); // Reload the student list
+        }
+        
+        setShowImport(false);
+      } catch (err: any) {
+        console.error('Import error:', err);
+        alert('Có lỗi khi import: ' + err.message);
+      } finally {
+        setImporting(false);
+      }
+    };
+
+    // Try parsing with header first
+    const parseWithHeader = () => {
+      Papa.parse(importFile, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (header: string) => {
+          // Normalize header names
+          const normalized = header.trim().toLowerCase();
+          if (normalized === 'student_id' || normalized === 'id' || normalized === 'mssv' || normalized === 'studentid') {
+            return 'student_id';
+          }
+          return normalized;
+        },
+        complete: async (results: any) => {
+          await processResults(results, true);
+        },
+        error: (error: any) => {
+          console.error('Papa Parse error (with header):', error);
+          console.log('Trying without header...');
+          parseWithoutHeader();
+        }
+      });
+    };
+
+    // Fallback: parse without header
+    const parseWithoutHeader = () => {
+      Papa.parse(importFile, {
+        header: false,
+        skipEmptyLines: true,
+        complete: async (results: any) => {
+          await processResults(results, false);
+        },
+        error: (error: any) => {
+          console.error('Papa Parse error (without header):', error);
+          alert('Lỗi đọc file CSV: ' + error.message);
+        }
+      });
+    };
+
+    // Start parsing
+    parseWithHeader();
   };
 
   const StudentCard: React.FC<{ student: Student }> = ({ student }) => {
@@ -278,6 +511,12 @@ const ManageStudent: React.FC = () => {
                 >
                   <UserPlus className="w-4 h-4 mr-2" /> Thêm sinh viên
                 </Button>
+                <Button
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
+                  onClick={() => setShowImport(true)}
+                >
+                  <Upload className="w-4 h-4 mr-2"/> Nhập CSV
+                </Button>
               </div>
             </div>
           </div>
@@ -378,6 +617,117 @@ const ManageStudent: React.FC = () => {
             ← Quay về quản lý lớp học
           </Button>
         </div>
+
+        {showImport && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Upload className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Nhập danh sách sinh viên</h3>
+                    <p className="text-sm text-gray-600">Tải lên file CSV với danh sách MSSV</p>
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-blue-900 mb-2">Hướng dẫn định dạng file CSV:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• File phải có cột với tên: <code className="bg-blue-100 px-1 rounded">student_id</code>, <code className="bg-blue-100 px-1 rounded">id</code>, <code className="bg-blue-100 px-1 rounded">mssv</code> hoặc <code className="bg-blue-100 px-1 rounded">studentid</code></li>
+                    <li>• Mỗi dòng chứa một MSSV (số nguyên dương)</li>
+                    <li>• Ví dụ: 20200001, 20200002, 20200003</li>
+                    <li>• <strong>Hệ thống tự động tạo tài khoản cho sinh viên chưa có:</strong></li>
+                    <li className="ml-4">- Email: <code className="bg-blue-100 px-1 rounded">[MSSV]@lms.com</code></li>
+                    <li className="ml-4">- Mật khẩu mặc định: <code className="bg-blue-100 px-1 rounded">[MSSV]</code></li>
+                    <li>• Tối đa 100 sinh viên mỗi lần import</li>
+                  </ul>
+                </div>
+
+                {/* Sample download */}
+                <div className="mb-6">
+                  <p className="text-sm text-gray-600 mb-2">Tải file mẫu:</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const csvContent = "student_id\n20200001\n20200002\n20200003\n20200004\n20200005";
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'sample_student_import.csv';
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    }}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    📄 Tải file mẫu CSV
+                  </Button>
+                </div>
+
+                {/* File input */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Chọn file CSV
+                  </label>
+                  <input 
+                    type="file" 
+                    accept=".csv,.txt" 
+                    onChange={e => setImportFile(e.target.files?.[0] || null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {importFile && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✓ Đã chọn: {importFile.name} ({(importFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                </div>
+
+                {/* Import result */}
+                {importResult.successful > 0 || importResult.failed > 0 ? (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-2">Kết quả import gần nhất:</h4>
+                    <div className="text-sm space-y-1">
+                      <div className="text-green-600">✓ Thành công: {importResult.successful} sinh viên</div>
+                      <div className="text-red-600">✗ Thất bại: {importResult.failed} sinh viên</div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Actions */}
+                <div className="flex gap-3 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowImport(false)}
+                    disabled={importing}
+                  >
+                    Hủy
+                  </Button>
+                  <Button 
+                    disabled={importing || !importFile} 
+                    onClick={handleImportStudents}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {importing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Đang nhập...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Bắt đầu nhập
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

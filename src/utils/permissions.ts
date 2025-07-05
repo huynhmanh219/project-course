@@ -5,31 +5,23 @@ export class PermissionUtils {
   static canAccessQuiz(quiz: any): { canAccess: boolean; reason?: string } {
     const currentUser = authService.getCurrentUser();
     
-    console.log('🔍 [PermissionUtils] Simple permission check');
-    console.log('Current User:', currentUser);
-    console.log('Quiz Data:', quiz);
     
     if (!currentUser) {
-      console.log('❌ No current user found');
       return { canAccess: false, reason: 'Không tìm thấy thông tin người dùng' };
     }
 
     if (currentUser.role === 'admin') {
-      console.log('✅ Admin access granted');
       return { canAccess: true };
     }
 
     if (currentUser.role !== 'lecturer') {
-      console.log('❌ User is not lecturer, role:', currentUser.role);
       return { canAccess: false, reason: 'Chỉ giảng viên mới có quyền truy cập bài kiểm tra' };
     }
 
     if (!quiz) {
-      console.log('❌ Quiz missing');
       return { canAccess: false, reason: 'Không tìm thấy thông tin bài kiểm tra' };
     }
 
-    console.log('✅ [DEBUG] Allowing access for all lecturers temporarily');
     return { canAccess: true };
   }
 

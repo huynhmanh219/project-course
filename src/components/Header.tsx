@@ -41,16 +41,13 @@ export function Header() {
   };
 
   const handleLogout = async () => {
-    // AuthService logout will handle redirect automatically
     await authService.logout();
   };
 
-  // Get user display info
   const userName = user?.userName || user?.email || 'User';
   const userEmail = user?.email || 'user@example.com';
   const userRole = user?.role || '';
-  
-  // Get role display name
+      
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case 'admin': return 'Quản trị viên';
@@ -79,11 +76,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Notification bell - can be implemented later */}
-        {/* <Button variant="ghost" size="icon" className="h-11 w-11 hover:bg-blue-100">
-          <Bell className="h-6 w-6 text-blue-500" />
-        </Button> */}
-        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 border-2 border-blue-200 hover:border-blue-400 transition">

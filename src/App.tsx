@@ -10,7 +10,6 @@ import { People } from "./pages/student/People"
 import { Login } from "./pages/Login"
 import { ChangePassword } from "./pages/ChangePassword"
 import TeacherClasses from "./pages/teacher/my-class/Classes"
-// import TeacherCreateAssignment from "./pages/teacher/CreateAssignment"
 import ManageStudent from "./pages/teacher/my-class/ManageStudent"
 import TeacherGradebook from "./pages/teacher/Gradebook"
 import StudentAddToClass from "./pages/teacher/my-class/StudentAddToClass"
@@ -70,8 +69,9 @@ import LectureRating from "./pages/student/lecture/LectureRating"
 import ClassRatingPage from "./pages/student/ClassRating"
 import TestRating from "./pages/TestRating"
 import TestClassRating from "./pages/TestClassRating"
+import AdminClassRatings from "./pages/admin/ClassRatings"
+import TeacherClassRatings from "./pages/teacher/ClassRatings"
 
-// Test API page
 import TestAPI from "./pages/TestAPI"
 import TestQuizRouting from "./pages/TestQuizRouting"
 
@@ -177,7 +177,7 @@ export function App() {
                 {/* Teacher routes group */}
                 <Route path="/teacher">
                     <Route path="my-classes" element={
-                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                      <ProtectedRoute requiredRole={['lecturer']}>
                         <ClassManagement />
                       </ProtectedRoute>
                     } />
@@ -302,7 +302,7 @@ export function App() {
                     } />
                     
                     <Route path="classes" element={
-                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                      <ProtectedRoute requiredRole={['lecturer']}>
                         <TeacherClasses />
                       </ProtectedRoute>
                     } />
@@ -412,6 +412,13 @@ export function App() {
                       </ProtectedRoute>
                     } />
                   
+                  {/* Class Ratings */}
+                    <Route path="class-ratings" element={
+                      <ProtectedRoute requiredRole={['lecturer', 'admin']}>
+                        <TeacherClassRatings />
+                      </ProtectedRoute>
+                    } />
+                  
                   {/* Profile */}
                     <Route path="profile" element={
                       <ProtectedRoute requiredRole={['lecturer', 'admin']}>
@@ -449,6 +456,9 @@ export function App() {
                   <Route path="quiz/:id/results" element={<QuizResults />} />
                   <Route path="quiz/:id/questions/add" element={<QuestionAdd />} />
                   <Route path="quiz/:quizId/questions/:questionId/edit" element={<QuestionEdit />} />
+                  
+                  {/* Class Ratings */}
+                  <Route path="class-ratings" element={<AdminClassRatings />} />
                   
                   {/* Profile */}
                   <Route path="profile" element={<Profile />} />

@@ -41,7 +41,20 @@ const TeacherClasses: React.FC = () => {
         return;
       }
 
-      const response = await simpleClassService.getMyClasses();
+      let response;
+      if(currentUser.role==='admin'){
+        // Check if admin account also has lecturer profile
+        try {
+          const profile = await simpleClassService.getCurrentLecturerProfile();
+          // If lecturer profile exists, get classes by lecturer_id
+          response = await simpleClassService.getClasses({ lecturer_id: profile.lecturer_id, limit: 100 });
+        } catch {
+          // Admin without lecturer profile – fetch all classes
+          response = await simpleClassService.getClasses({ limit: 100 });
+        }
+      } else {
+        response = await simpleClassService.getMyClasses();
+      }
       console.log('📥 Classes response:', response);
       
       // Backend returns: { data: [...], pagination: {...} }

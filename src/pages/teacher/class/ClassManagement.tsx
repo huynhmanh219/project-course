@@ -36,13 +36,13 @@ const ClassManagement: React.FC = () => {
       const response = await simpleClassService.getClasses();
       console.log('Classes response:', response);
       
-      // Backend returns: { data: [...], pagination: {...} }
+     
       let classesData = response.data || [];
       
       console.log('Classes data to process:', classesData);
       
       if (classesData && classesData.length > 0) {
-        // Process class data
+    
         const processedClasses = classesData.map((classItem: any) => ({
           id: classItem.id,
           name: classItem.section_name || 'Chưa có tên',
@@ -56,7 +56,7 @@ const ClassManagement: React.FC = () => {
           startDate: classItem.start_date || '',
           endDate: classItem.end_date || '',
           schedule: classItem.schedule || '',
-          status: true, // Default to active for now
+          status: true, 
           createdAt: classItem.created_at || new Date().toISOString()
         }));
         
@@ -78,14 +78,12 @@ const ClassManagement: React.FC = () => {
     const classItem = classes.find(c => c.id === classId);
     if (!classItem) return;
 
-    // Prevent deleting if already deleting another class
     if (deletingClassId !== null) {
       alert('Vui lòng đợi quá trình xóa hiện tại hoàn thành');
       return;
     }
 
     try {
-      // Check if class has enrolled students
       console.log('Checking students for class:', classId);
       const studentsResponse = await simpleClassService.getClassStudents(classId);
       
@@ -98,27 +96,26 @@ const ClassManagement: React.FC = () => {
         return;
       }
 
-      // If no students, proceed with normal delete confirmation
       const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học phần "${classItem.name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
       
       if (window.confirm(confirmMessage)) {
         setDeletingClassId(classId);
         console.log('Deleting class:', classId);
         
-        // Call delete API
+       
         await simpleClassService.deleteClass(classId);
         
-        // Remove from local state
+       
         setClasses(classes.filter((c) => c.id !== classId));
         alert("Đã xóa lớp học phần thành công!");
         
-        // Refresh the list to ensure consistency
+       
         fetchClasses();
       }
     } catch (error: any) {
       console.error('Error deleting class:', error);
       
-      // Handle specific error messages
+     
       let errorMessage = 'Lỗi khi xóa lớp học phần: ';
       if (error.message.includes('Cannot delete class with enrolled students')) {
         errorMessage = `Không thể xóa lớp học phần "${classItem.name}"!\n\nLớp học phần này vẫn còn có sinh viên đang học. Vui lòng xóa tất cả sinh viên khỏi lớp trước khi xóa lớp học phần.`;
@@ -139,11 +136,11 @@ const ClassManagement: React.FC = () => {
           className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
         
         >
-          {/* Header gradient bar */}
+         
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           
           <CardContent className="flex-1 flex flex-col p-6">
-            {/* Header */}
+          
             <div className="flex items-start gap-4 mb-4">
               <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
                 <Users className="text-white w-6 h-6" />
@@ -174,7 +171,7 @@ const ClassManagement: React.FC = () => {
               </div>
             </div>
 
-            {/* Class Info */}
+           
             <div className="space-y-3 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <GraduationCap className="w-4 h-4 text-indigo-500 flex-shrink-0" />
@@ -197,7 +194,7 @@ const ClassManagement: React.FC = () => {
               )}
             </div>
 
-            {/* Description */}
+           
             <div className="flex-1">
               <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
                 {cls.description}
@@ -289,13 +286,13 @@ const ClassManagement: React.FC = () => {
                   <div className="text-2xl font-bold">{classes.length}</div>
                   <div className="text-blue-100 text-sm">Tổng lớp học phần</div>
                 </div>
-                {/* <Button
+                <Button
                   className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-6 py-3"
                   onClick={() => navigate('/teacher/my-classes/add')}
                 >
                   <Plus className="w-4 h-4 mr-2" /> Thêm lớp học phần
                 </Button>
-                <Button
+                {/* <Button
                     className="bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50 font-semibold px-4 py-2 rounded-xl transition-all duration-200"
                     onClick={() => navigate('/teacher/classes/add')}
                   >

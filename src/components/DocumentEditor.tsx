@@ -34,7 +34,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
 }) => {
   const [sections, setSections] = useState<ContentSection[]>([]);
 
-  // Parse initial content into sections
   useEffect(() => {
     if (initialContent && sections.length === 0) {
       const parsedSections = parseContentToSections(initialContent);
@@ -42,7 +41,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
     }
   }, [initialContent]);
 
-  // Convert sections to text format
   useEffect(() => {
     const textContent = sectionsToText(sections);
     onChange(textContent);
@@ -156,7 +154,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
     
     [newSections[index], newSections[targetIndex]] = [newSections[targetIndex], newSections[index]];
     
-    // Update order
     newSections.forEach((section, idx) => {
       section.order = idx;
     });
@@ -165,10 +162,9 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
   };
 
   const deleteSection = (id: string) => {
-    if (sections.length === 1) return; // Keep at least one section
+    if (sections.length === 1) return;
     
     const filtered = sections.filter(s => s.id !== id);
-    // Update order
     filtered.forEach((section, idx) => {
       section.order = idx;
     });
@@ -207,7 +203,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Add Section Toolbar */}
       <Card className="bg-gray-50">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 flex-wrap">
@@ -271,13 +266,11 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
         </CardContent>
       </Card>
 
-      {/* Sections */}
       <div className="space-y-4">
         {sections.map((section, index) => (
           <Card key={section.id} className="border-l-4 border-blue-500">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                {/* Section Type & Controls */}
                 <div className="flex flex-col gap-2 pt-2">
                   <div className="flex items-center gap-1">
                     {getSectionIcon(section.type)}
@@ -329,7 +322,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
                   </div>
                 </div>
 
-                {/* Content Input */}
                 <div className="flex-1">
                   {section.type === 'paragraph' ? (
                     <textarea
@@ -362,7 +354,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
         ))}
       </div>
 
-      {/* Add First Section if empty */}
       {sections.length === 0 && (
         <Card className="border-dashed border-2 border-gray-300">
           <CardContent className="p-8 text-center">

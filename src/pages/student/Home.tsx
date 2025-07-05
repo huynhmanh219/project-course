@@ -399,7 +399,7 @@ export function Home() {
             {/* Danh sách lớp học */}
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Lớp học của bạn</h2>
+                <h2 className="text-3xl font-bold text-gray-800">Lớp học phần của tôi</h2>
                 <Button 
                   onClick={() => navigate('/student/classes')} 
                   className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg px-6 py-3 rounded-xl"

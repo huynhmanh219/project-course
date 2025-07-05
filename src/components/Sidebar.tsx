@@ -23,7 +23,8 @@ import { Home,
   GraduationCap,
   UserCheck,
   PlusCircle,
-  Presentation
+  Presentation,
+  Star
 } from "lucide-react";
 import { authService } from "../services/auth.service";
 
@@ -90,15 +91,19 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/admin/users" className={navLinkClass}>
               <UserCog className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Quản lý người dùng</span>
+              <span className="truncate">Quản lý giảng viên</span>
             </NavLink>
             <NavLink to="/admin/roles" className={navLinkClass}>
               <Shield className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Quản lý vai trò</span>
+              <span className="truncate">Thông tin vai trò</span>
             </NavLink>
             <NavLink to="/admin/statistics" className={navLinkClass}>
               <FileBarChart2 className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Thống kê hệ thống</span>
+            </NavLink>
+            <NavLink to="/admin/class-ratings" className={navLinkClass}>
+              <Star className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Đánh giá lớp học</span>
             </NavLink>
 
           </>
@@ -114,10 +119,12 @@ export function Sidebar() {
               <BookOpen className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Môn học</span>
             </NavLink>
+            {isTeacher() && (
             <NavLink to="/teacher/my-classes" className={navLinkClass}>
               <Layers className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Danh Sách lớp học phần</span>
             </NavLink>
+            )}
             <NavLink to="/teacher/materials" className={navLinkClass}>
               <FileText className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Tài liệu</span>
@@ -125,6 +132,10 @@ export function Sidebar() {
             <NavLink to="/teacher/quiz" className={navLinkClass}>
               <CheckSquare className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Quản lý câu hỏi</span>
+            </NavLink>
+            <NavLink to="/teacher/class-ratings" className={navLinkClass}>
+              <Star className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Đánh giá lớp học của tôi</span>
             </NavLink>
             
             <div className={sectionTitleClass}>
@@ -135,10 +146,12 @@ export function Sidebar() {
               <Users className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Quản lý sinh viên</span>
             </NavLink>
+            {isTeacher() && (
             <NavLink to="/teacher/classes" className={navLinkClass}>
               <ClipboardList className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Lớp học phần của tôi</span>
             </NavLink>
+            )}
             {/* <NavLink to="/teacher/gradebook" className={navLinkClass}>
               <BarChart2 className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Sổ điểm</span>

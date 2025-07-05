@@ -12,6 +12,9 @@ export interface ClassRating {
     id: number;
     first_name: string;
     last_name: string;
+    account: {
+      email: string;
+    };
   };
 }
 
@@ -43,13 +46,21 @@ class ClassRatingService {
 
   async getClassRatings(classId: number): Promise<{
     success: boolean;
-    data: ClassRating[];
-    stats: ClassRatingStats;
+    data: {
+      ratings: ClassRating[];
+      statistics: {
+        average_rating: number;
+        total_ratings: number;
+        distribution: { [key: string]: number };
+      };
+      pagination?: any;
+    };
   }> {
     try {
       const response = await apiClient.get(`${this.baseURL}/class/${classId}/ratings`);
       return response;
     } catch (error: any) {
+      console.error('Error fetching class ratings:', error);
       throw new Error(error.response?.data?.message || 'Không thể tải đánh giá lớp học');
     }
   }
@@ -59,6 +70,7 @@ class ClassRatingService {
       const response = await apiClient.get(`${this.baseURL}/class/${classId}/stats`);
       return response.data || response;
     } catch (error: any) {
+      console.error('Error fetching class rating stats:', error);
       throw new Error(error.response?.data?.message || 'Không thể tải thống kê đánh giá');
     }
   }
@@ -69,8 +81,9 @@ class ClassRatingService {
       return response.data || response;
     } catch (error: any) {
       if (error.response?.status === 404) {
-        return null; 
+        return null;
       }
+      console.error('Error fetching student class rating:', error);
       throw new Error(error.response?.data?.message || 'Không thể tải đánh giá của bạn');
     }
   }
@@ -80,6 +93,7 @@ class ClassRatingService {
       const response = await apiClient.post(this.baseURL, ratingData);
       return response.data || response;
     } catch (error: any) {
+      console.error('Error creating class rating:', error);
       throw new Error(error.response?.data?.message || 'Không thể tạo đánh giá');
     }
   }
@@ -89,15 +103,30 @@ class ClassRatingService {
       const response = await apiClient.put(`${this.baseURL}/${ratingId}`, ratingData);
       return response.data || response;
     } catch (error: any) {
+      console.error('Error updating class rating:', error);
       throw new Error(error.response?.data?.message || 'Không thể cập nhật đánh giá');
     }
   }
-  
+
   async deleteClassRating(ratingId: number): Promise<void> {
     try {
       await apiClient.delete(`${this.baseURL}/${ratingId}`);
     } catch (error: any) {
+      console.error('Error deleting class rating:', error);
       throw new Error(error.response?.data?.message || 'Không thể xóa đánh giá');
+    }
+  }
+      
+  async getTopRatedClasses(limit: number = 10): Promise<{
+    success: boolean;
+    data: any[];
+  }> {
+    try {
+      const response = await apiClient.get(`${this.baseURL}/top-rated?limit=${limit}`);
+      return response;
+    } catch (error: any) {
+      console.error('Error fetching top rated classes:', error);
+      throw new Error(error.response?.data?.message || 'Không thể tải danh sách lớp học được đánh giá cao');
     }
   }
 }

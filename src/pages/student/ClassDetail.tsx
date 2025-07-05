@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { BookOpen, User2, FileText, Users, Info, CheckCircle, XCircle, FileDown, Play, Clock, ChevronRight, AlertCircle, ChevronDown, ChevronUp, Star, MessageSquare, Menu, X, Eye, EyeOff } from "lucide-react";
 import { simpleClassService } from "../../services";
 import StarRating from "../../components/StarRating";
+import { API_BASE_URL } from "../../services/api";
 
 interface ClassInfo {
   id: number;
@@ -269,10 +270,38 @@ const ClassDetail: React.FC = () => {
     }
   };
 
-  const downloadMaterial = (material: Material) => {
-    if (material.file_path) {
-      const downloadUrl = `http://localhost:3000/uploads/${material.file_path}`;
-      window.open(downloadUrl, '_blank');
+  const downloadMaterial = async (material: Material) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Bạn chưa đăng nhập');
+        return;
+      }
+
+      // Use dedicated download endpoint to get file with proper headers
+      const response = await fetch(`${API_BASE_URL}/materials/${material.id}/download`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tải tài liệu');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = material.file_name || material.title;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error: any) {
+      console.error('Download error:', error);
+      alert(error.message || 'Có lỗi khi tải tài liệu');
     }
   };
 
@@ -373,9 +402,9 @@ const ClassDetail: React.FC = () => {
               <Star className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-1">Đánh giá bài giảng & lớp học</h3>
+              <h3 className="font-semibold mb-1">Đánh giá lớp học</h3>
               <p className="text-blue-100 text-sm">
-                Bạn có thể đánh giá từng bài giảng và tổng thể lớp học để giúp cải thiện chất lượng!
+                Bạn có thể đánh giá tổng thể lớp học để giúp cải thiện chất lượng!
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -387,24 +416,6 @@ const ClassDetail: React.FC = () => {
               >
                 <Star className="w-4 h-4 mr-1" />
                 Đánh giá lớp học
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                onClick={() => navigate('/test-class-rating')}
-              >
-                <MessageSquare className="w-4 h-4 mr-1" />
-                Demo lớp học
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                onClick={() => navigate('/test-rating')}
-              >
-                <MessageSquare className="w-4 h-4 mr-1" />
-                Demo bài giảng
               </Button>
             </div>
           </div>

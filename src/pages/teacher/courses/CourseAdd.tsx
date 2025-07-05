@@ -158,7 +158,7 @@ const CourseAdd: React.FC = () => {
           }
         } catch (profileError) {
           console.log('⚠️ Profile API error, using currentUser.id:', profileError);
-          setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
+        setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
         }
       }
     } catch (error: any) {
