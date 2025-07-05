@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { BookOpen, Info } from 'lucide-react';
 
 const initialGrades = [
@@ -15,7 +14,6 @@ const statusBadge = (active: boolean) => (
 );
 
 const Gradebook: React.FC = () => {
-  const navigate = useNavigate();
   const grades = initialGrades;
 
   return (

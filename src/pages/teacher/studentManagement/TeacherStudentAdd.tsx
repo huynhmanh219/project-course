@@ -9,6 +9,8 @@ const TeacherStudentAdd: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  void showPassword;
+  void setShowPassword;
   const [form, setForm] = useState({
     student_id: "",           // MSSV
     first_name: "",           // Họ đệm

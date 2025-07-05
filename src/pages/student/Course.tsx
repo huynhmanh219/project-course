@@ -79,23 +79,7 @@ export function Course() {
     );
   }
 
-  // Dữ liệu mẫu cho các tab (có thể tuỳ biến theo course.ID)
-  const announcements = [
-    {
-      id: 1,
-      title: "Chào mừng đến với lớp học!",
-      content: "Hãy đọc kỹ tài liệu và chuẩn bị cho buổi học đầu tiên.",
-      time: "2 ngày trước",
-      author: course.teacher,
-    },
-    {
-      id: 2,
-      title: "Nộp bài tập 1",
-      content: "Hạn nộp bài tập 1 là ngày 15/06/2024.",
-      time: "1 ngày trước",
-      author: course.teacher,
-    },
-  ];
+  
   const assignments = [
     {
       id: 1,
@@ -138,7 +122,7 @@ export function Course() {
     status: a.status,
     grade: a.grade,
   }));
-
+  void myGrades;
   // Dữ liệu mẫu cho bài giảng
   const lectures = [
     {

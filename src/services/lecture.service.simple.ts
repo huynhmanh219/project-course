@@ -161,8 +161,8 @@ class SimpleLectureService {
         }
         
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         
         throw new Error(result.message || 'Failed to create lecture');
@@ -194,8 +194,8 @@ class SimpleLectureService {
         }
         
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         
         throw new Error(result.message || 'Failed to update lecture');
@@ -399,7 +399,7 @@ class SimpleLectureService {
   }
 
   
-  async reorderLectures(chapterId: number, lectureOrders: { id: number; order_index: number }[]): Promise<any> {
+  async reorderLectures( lectureOrders: { id: number; order_index: number }[]): Promise<any> {
     try {
       
       const updatePromises = lectureOrders.map(({ id, order_index }) => 

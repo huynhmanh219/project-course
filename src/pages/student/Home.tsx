@@ -59,7 +59,7 @@ export function Home() {
     completedLectures: 0,
     averageGrade: 0
   });
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]); void notifications;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -233,7 +233,7 @@ export function Home() {
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
     return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
   };
-
+  void timeAgo;
   // Convert class data for display
   const formatClassForDisplay = (classData: ClassData) => {
     const colors = [
@@ -273,7 +273,7 @@ export function Home() {
         return <Bell className="w-4 h-4 text-blue-500" />;
     }
   };
-
+  void getPriorityIcon;
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">

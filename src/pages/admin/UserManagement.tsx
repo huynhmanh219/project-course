@@ -27,9 +27,13 @@ const UserManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
+  void user;
   const [searchTerm, setSearchTerm] = useState('');
+  void setSearchTerm;
   const [statusFilter, setStatusFilter] = useState('all');
+  void setStatusFilter;
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  void setDepartmentFilter;
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const navigate = useNavigate();
@@ -154,7 +158,7 @@ const UserManagement: React.FC = () => {
   });
 
   const departments = [...new Set(teachers.map(t => t.department).filter(d => d && d !== 'Chưa phân khoa'))];
-
+  void departments;
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -172,7 +176,7 @@ const UserManagement: React.FC = () => {
 
   const activeTeachers = teachers.filter(t => t.isActive).length;
   const inactiveTeachers = teachers.filter(t => !t.isActive).length;
-
+  void inactiveTeachers;
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-[1600px] mx-auto space-y-8">

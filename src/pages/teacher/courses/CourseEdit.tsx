@@ -43,7 +43,7 @@ const CourseEdit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lecturers, setLecturers] = useState<Lecturer[]>([]);
   const [course, setCourse] = useState<Course | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null); void user;
   const [isAdmin, setIsAdmin] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   

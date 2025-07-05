@@ -303,7 +303,7 @@ class SimpleChapterService {
     }
   }
 
-  async reorderChapters(subjectId: number, chapterOrders: { id: number; order_index: number }[]): Promise<any> {
+  async reorderChapters( chapterOrders: { id: number; order_index: number }[]): Promise<any> {
     try {
         
       const updatePromises = chapterOrders.map(({ id, order_index }) => 

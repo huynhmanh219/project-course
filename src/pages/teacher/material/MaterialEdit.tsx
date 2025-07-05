@@ -249,7 +249,7 @@ const MaterialEdit: React.FC = () => {
       default: return FileText;
     }
   };
-
+  void getMaterialTypeIcon;
   const getAcceptedFileTypes = (type: string): string => {
     switch (type) {
       case 'document': return '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt';

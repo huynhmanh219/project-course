@@ -16,6 +16,7 @@ const Materials: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  void isAuthenticated;
   const [stats, setStats] = useState({
     total: 0,
     by_type: {

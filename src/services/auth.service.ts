@@ -22,8 +22,8 @@ class AuthService {
 
       
       if (result.errors && Array.isArray(result.errors)) {
-        result.errors.forEach((error: string, index: number) => {
-        });
+        // result.errors.forEach((error: string, index: number) => {
+        // });
       }
 
   
@@ -186,7 +186,7 @@ class AuthService {
       try {
         const user = JSON.parse(userString);
         const token = this.getToken();
- 
+        void token;
         return user;
       } catch (error) {
         console.error('❌ [getCurrentUser] Error parsing user:', error);
@@ -282,7 +282,7 @@ class AuthService {
         const freshUserData = result.data.user;
         
         const localUser = this.getCurrentUser();
-
+        void localUser;
         
         localStorage.setItem('user', JSON.stringify(freshUserData));
         

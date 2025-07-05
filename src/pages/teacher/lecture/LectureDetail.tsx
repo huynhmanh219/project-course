@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, User, Eye, Download, Share2, Bookmark, GraduationCap, Star } from 'lucide-react';
+import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, GraduationCap, Star } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleLectureService, simpleChapterService, simpleCourseService } from '../../../services';
@@ -41,6 +41,8 @@ const LectureDetail: React.FC = () => {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  void isBookmarked;
+  void setIsBookmarked;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

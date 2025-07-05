@@ -100,7 +100,7 @@ const QuizManagement: React.FC = () => {
   const getProgressPercentage = (daLam: number, tongSo: number) => {
     return tongSo > 0 ? Math.round((daLam / tongSo) * 100) : 0;
   };
-
+  void getProgressPercentage;
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);

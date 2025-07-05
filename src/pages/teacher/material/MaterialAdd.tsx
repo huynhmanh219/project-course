@@ -207,7 +207,7 @@ const MaterialAdd: React.FC = () => {
       default: return FileText;
     }
   };
-
+  void getMaterialTypeIcon;
   const getMaterialTypeColor = (type: string) => {
     switch (type) {
       case 'document': return 'text-blue-600 bg-blue-50 border-blue-200';
@@ -217,6 +217,7 @@ const MaterialAdd: React.FC = () => {
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
+  void getMaterialTypeColor;
 
   const getAcceptedFileTypes = (type: string): string => {
     switch (type) {

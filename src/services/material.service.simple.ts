@@ -118,13 +118,12 @@ class SimpleMaterialService {
     };
   }
 
-  private getUploadHeaders(): Record<string, string> {
-    const token = authService.getToken();
-    return {
-      'Authorization': token ? `Bearer ${token}` : ''
-    };
-  }
-
+  // private getUploadHeaders(): Record<string, string> {
+  //   const token = authService.getToken();
+  //   return {
+  //     'Authorization': token ? `Bearer ${token}` : ''
+  //   };
+  // }
   private handleAuthError(response: Response) {
     if (response.status === 401) {
       authService.logout();
@@ -135,8 +134,8 @@ class SimpleMaterialService {
 
   private logValidationErrors(result: any) {
     if (result.errors && Array.isArray(result.errors)) {
-      result.errors.forEach((error: any, index: number) => {
-      });
+      // result.errors.forEach((error: any, index: number) => {
+      // });
     }
   }
 

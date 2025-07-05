@@ -89,6 +89,7 @@ const ClassDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingLectures, setLoadingLectures] = useState(false);
   const [loadingMaterials, setLoadingMaterials] = useState(false);
+  void loadingMaterials;
   const [error, setError] = useState<string | null>(null);
 
   // Toggle chapter collapse

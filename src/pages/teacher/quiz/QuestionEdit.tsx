@@ -13,7 +13,7 @@ const QuestionEdit: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [quiz, setQuiz] = useState<any>(null);
   const [originalQuestion, setOriginalQuestion] = useState<any>(null);
-  
+  void originalQuestion;
   // Form data
   const [formData, setFormData] = useState({
     question_text: '',
