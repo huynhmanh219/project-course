@@ -231,14 +231,14 @@ class SimpleMaterialService {
 
     } catch (error: any) {
       
-      const errorResponse = {
-        items: [],
-        totalPages: 1,
-        totalItems: 0,
-        currentPage: params?.page || 1,
-        size: params?.size || 20,
-        error: error.message
-      };
+      // const errorResponse = {
+      //   items: [],
+      //   totalPages: 1,
+      //   totalItems: 0,
+      //   currentPage: params?.page || 1,
+      //   size: params?.size || 20,
+      //   error: error.message
+      // };
       
       throw error;
     }

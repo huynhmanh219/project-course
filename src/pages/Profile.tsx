@@ -60,7 +60,6 @@ const Profile: React.FC = () => {
   
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useEffect(() => {
@@ -496,7 +495,6 @@ const Profile: React.FC = () => {
     }
     
     if (userData.role === "lecturer") {
-      const teacherData = userData as Teacher
       return (
         <>
           {/* Teacher ID */}

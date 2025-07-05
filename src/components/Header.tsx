@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu"
 import { Button } from "../components/ui/button"
-import { Search, Bell, User, LogOut } from "lucide-react"
+import { Search,  User, LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { authService } from "../services/auth.service"

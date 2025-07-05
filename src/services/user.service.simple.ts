@@ -78,8 +78,8 @@ class SimpleUserService {
         return result.data || result;
       } else {
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         
         throw new Error(result.message || 'Failed to create teacher');
@@ -106,8 +106,8 @@ class SimpleUserService {
         return result.data || result;
       } else {
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         throw new Error(result.message || 'Failed to update teacher');
       }
@@ -206,8 +206,8 @@ class SimpleUserService {
         return result.data || result;
       } else {
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         throw new Error(result.message || 'Failed to create student');
       }
@@ -233,8 +233,8 @@ class SimpleUserService {
         return result.data || result;
       } else {
         if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error: any, index: number) => {
-          });
+          // result.errors.forEach((error: any, index: number) => {
+          // });
         }
         throw new Error(result.message || 'Failed to update student');
       }

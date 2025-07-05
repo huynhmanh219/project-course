@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { 
-  Users, Target, TrendingUp, Clock, Award, BarChart3, CheckCircle, XCircle 
+  Users, Target, TrendingUp, Clock, Award, BarChart3,  XCircle 
 } from 'lucide-react';
 
 interface QuizStatistics {

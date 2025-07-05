@@ -10,7 +10,6 @@ interface ClassCardProps {
 }
 
 export const ClassCard: React.FC<ClassCardProps> = ({
-  id,
   title,
   description,
   teacher,

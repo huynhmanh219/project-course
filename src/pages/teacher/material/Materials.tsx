@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, FileText, Download, Edit, Trash2, Filter, Calendar, BookOpen, RefreshCw, AlertCircle, LogIn, Video, Headphones, Image, Link, Archive, Eye, ExternalLink } from "lucide-react";
+import { Plus, Search, FileText, Download, Edit, Trash2, Calendar, BookOpen, RefreshCw, AlertCircle,Video, Image, Link, Archive, Eye, ExternalLink } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { simpleMaterialService, type Material, type  MaterialQueryParams } from "../../../services/material.service.simple";

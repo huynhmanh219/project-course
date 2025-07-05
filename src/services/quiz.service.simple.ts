@@ -463,7 +463,7 @@ class SimpleQuizService {
     }
   }
 
-  async getQuizResult(quizId: number, submissionId: number): Promise<any> {
+  async getQuizResult(submissionId: number): Promise<any> {
     try {
       
       const headers = await this.getHeaders();
@@ -480,7 +480,7 @@ class SimpleQuizService {
     }
   }
 
-  async submitQuiz(quizId: number, data: any): Promise<any> {
+  async submitQuiz(data: any): Promise<any> {
     try {
       
       const headers = await this.getHeaders();

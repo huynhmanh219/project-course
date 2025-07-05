@@ -2,28 +2,21 @@ import { useState, useEffect } from "react"
 import { NavLink } from "react-router-dom"
 import { Home, 
   BookOpen,
-  Calendar,
   Users,
   Settings,
   ClipboardList,
-  UserPlus,
-  BarChart2,
+
   LayoutDashboard,
   UserCog,
   Layers,
   FileBarChart2,
   User,
   Shield,
-  Briefcase,
   FileText,
-  BookOpenCheck,
-  Building,
   CheckSquare,
   Crown,
   GraduationCap,
   UserCheck,
-  PlusCircle,
-  Presentation,
   Star
 } from "lucide-react";
 import { authService } from "../services/auth.service";

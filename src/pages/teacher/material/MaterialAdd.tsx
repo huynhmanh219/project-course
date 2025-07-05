@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, FileText, BookOpen, Upload, Tag, Video, Image, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
-import { simpleMaterialService, type CreateMaterialData, type UploadMaterialData } from '../../../services/material.service.simple';
+import { simpleMaterialService, type UploadMaterialData } from '../../../services/material.service.simple';
 import { simpleChapterService } from '../../../services/chapter.service.simple';
 import { simpleCourseService } from '../../../services/course.service.simple';
 
