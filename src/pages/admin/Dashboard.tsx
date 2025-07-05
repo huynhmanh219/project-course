@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "../../components/ui/button"
-import { Users, BookOpen, Award, TrendingUp, Plus, Settings, BarChart3, UserPlus, GraduationCap, AlertCircle } from "lucide-react"
+import { Users, BookOpen, Award, TrendingUp, Settings, BarChart3, UserPlus, GraduationCap, AlertCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/auth.service"
 import SimpleUserService from "../../services/user.service.simple"

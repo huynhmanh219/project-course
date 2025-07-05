@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, HelpCircle, FileText, Hash, Clock } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, HelpCircle, FileText, Hash } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleQuizService } from '../../../services/quiz.service.simple';
@@ -64,10 +64,9 @@ const QuestionAdd: React.FC = () => {
       ...prev,
       answers: prev.answers.map((answer, i) => {
         if (field === 'is_correct' && value === true) {
-          // For multiple choice, only one answer can be correct
           return { ...answer, is_correct: i === index };
         } else if (field === 'answer_text' && i === index) {
-          return { ...answer, [field]: value };
+          return { ...answer, [field]: value as string };
         }
         return answer;
       })

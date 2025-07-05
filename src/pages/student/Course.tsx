@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
-import { Progress } from "../../components/ui/progress";
-import { AnnouncementCard } from "../../components/course/AnnouncementCard";
-import { AssignmentCard } from "../../components/course/AssignmentCard";
+// import { Progress } from "../../components/ui/progress";
+// import { AnnouncementCard } from "../../components/course/AnnouncementCard";
+// import { AssignmentCard } from "../../components/course/AssignmentCard";
 import { Button } from "../../components/ui/button";
 import { Star, FileText, FileDown, CheckCircle, Clock } from "lucide-react";
 

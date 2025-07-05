@@ -3,8 +3,8 @@ import { Button } from "../../components/ui/button"
 import { BookOpen, Users, Calendar, Clock, Award, ChevronRight, CheckCircle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/auth.service"
-import { courseService } from "../../services/course.service.simple"
-import { quizService } from "../../services/quiz.service.simple"
+import SimpleCourseService from "../../services/course.service.simple"
+import SimpleQuizService from "../../services/quiz.service.simple"
 
 export function StudentDashboard() {
   const navigate = useNavigate();
@@ -38,10 +38,7 @@ export function StudentDashboard() {
         return;
       }
 
-      // Fetch student's classes
-      console.log('Fetching student classes...');
-      const classesResponse = await courseService.getStudentClasses();
-      console.log('Classes response:', classesResponse);
+      const classesResponse = await SimpleCourseService.getStudentClasses(currentUser.id);
       
       if (classesResponse && classesResponse.data) {
         const studentClasses = classesResponse.data;
@@ -59,7 +56,7 @@ export function StudentDashboard() {
       // Fetch quiz statistics
       try {
         console.log('Fetching quiz statistics...');
-        const quizzesResponse = await quizService.getQuizzes();
+        const quizzesResponse = await SimpleQuizService.getQuizzes();
         console.log('Quizzes response:', quizzesResponse);
         
         if (quizzesResponse && quizzesResponse.data) {

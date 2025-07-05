@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { UserPlus, User, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { UserPlus, User, Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../../components/ui/button";
 import { authService } from "../../../services/auth.service";
 import SimpleUserService from "../../../services/user.service.simple";
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BookOpen, Edit2, Layers, FileText, X, Loader2, Trash2, AlertCircle } from "lucide-react";
+import { BookOpen, Edit2,  Loader2, Trash2 } from "lucide-react";
 import { simpleCourseService } from "../../../services/course.service.simple";
 import { authService } from "../../../services/auth.service";
 

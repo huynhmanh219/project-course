@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Calendar, User2, GraduationCap, BookOpen, CheckCircle, Clock } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { Card, CardContent } from "../../components/ui/card";
 
 // Danh sách khoá học mẫu
 const sampleCourses = [

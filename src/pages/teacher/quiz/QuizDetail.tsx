@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Edit, 
-  Play, 
   BarChart3, 
   Plus, 
   BookOpen, 
@@ -45,7 +44,6 @@ const QuizDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Debug current user info
       const currentUser = authService.getCurrentUser();
       console.log('🔍 [QuizDetail] Current user from auth:', currentUser);
       console.log('🔍 [QuizDetail] Current user ID:', currentUser?.id);
@@ -56,7 +54,6 @@ const QuizDetail: React.FC = () => {
       console.log('🔍 [QuizDetail] Quiz lecturer_id:', quizData?.lecturer_id);
       console.log('🔍 [QuizDetail] Quiz lecturer object:', quizData?.lecturer);
       
-            // Check permission to access this quiz  
       const permissionCheck = PermissionUtils.canAccessQuiz(quizData);
       if (!permissionCheck.canAccess) {
         console.log('Permission denied:', permissionCheck.reason);
@@ -101,7 +98,6 @@ const QuizDetail: React.FC = () => {
       
       await simpleQuizService.deleteQuestion(questionId);
       
-      // Refresh questions list
       await loadQuestions();
       
       alert('Xóa câu hỏi thành công!');
@@ -181,7 +177,6 @@ const QuizDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

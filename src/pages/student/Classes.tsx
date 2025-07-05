@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { BookOpen, User2, Info, CheckCircle, XCircle, GraduationCap, AlertCircle } from "lucide-react";
+import { BookOpen, User2,  CheckCircle, XCircle, GraduationCap, AlertCircle } from "lucide-react";
 import { simpleClassService } from "../../services";
 
 interface ClassData {

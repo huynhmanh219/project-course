@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
-  Plus, BookOpen, FileText, Video, Users, Calendar, 
+  Plus, BookOpen, FileText, Video, Calendar, 
   Edit, Trash2, ChevronDown, ChevronRight, Upload,
-  PlayCircle, Download, Eye, Settings
+  PlayCircle, Download, Eye
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Card, CardContent, CardHeader } from "../../../components/ui/card";
 
 // Mock data structure - replace with actual API calls
 interface Chapter {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const fakeDepartment = {
   name: 'Công nghệ thông tin',
@@ -9,7 +9,7 @@ const fakeDepartment = {
 
 const DepartmentEdit: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  // const { id } = useParams();
   const [form, setForm] = useState(fakeDepartment);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

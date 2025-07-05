@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Users, UserPlus, Check, X, Search, GraduationCap, Mail, User, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { UserPlus, Check, Search, GraduationCap, Mail, User, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleCourseService, simpleUserService } from '../../../services';

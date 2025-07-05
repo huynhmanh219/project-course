@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../components/ui/button";
-import { BookOpen, User2, FileText, Users, Info, CheckCircle, XCircle, FileDown, Play, Clock, ChevronRight, AlertCircle, ChevronDown, ChevronUp, Star, MessageSquare, Menu, X, Eye, EyeOff } from "lucide-react";
+import { BookOpen, User2, FileText, Users, Info, CheckCircle, FileDown, Play, Clock, ChevronRight, AlertCircle, ChevronDown, ChevronUp, Star, Eye, EyeOff } from "lucide-react";
 import { simpleClassService } from "../../services";
-import StarRating from "../../components/StarRating";
+// import StarRating from "../../components/StarRating";
 import { API_BASE_URL } from "../../services/api";
 
 interface ClassInfo {

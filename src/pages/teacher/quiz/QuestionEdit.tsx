@@ -100,10 +100,9 @@ const QuestionEdit: React.FC = () => {
       ...prev,
       answers: prev.answers.map((answer, i) => {
         if (field === 'is_correct' && value === true) {
-          // For multiple choice, only one answer can be correct
-          return { ...answer, is_correct: i === index };
+            return { ...answer, is_correct: i === index };
         } else if (field === 'answer_text' && i === index) {
-          return { ...answer, [field]: value };
+          return { ...answer, [field]: value as string };
         }
         return answer;
       })

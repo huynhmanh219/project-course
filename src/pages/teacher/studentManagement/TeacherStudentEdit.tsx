@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Edit2, User, Loader2, AlertCircle } from "lucide-react";
-import { authService } from "../../../services/auth.service";
 import SimpleUserService from "../../../services/user.service.simple";
 
 const TeacherStudentEdit: React.FC = () => {
   const navigate = useNavigate();
   const { studentId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);  
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     email: "",

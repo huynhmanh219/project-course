@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import StarRating from '../../components/StarRating';
 import { classRatingService } from '../../services/class-rating.service';
-import { Search, Download, Eye, TrendingUp, Users, BookOpen } from 'lucide-react';
+import { Search, Download, TrendingUp, Users, BookOpen } from 'lucide-react';
 import { apiClient } from '../../services/api';
 
 interface ClassRating {

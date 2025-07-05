@@ -1,4 +1,3 @@
-// src/pages/TeacherGradebook.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Info } from 'lucide-react';

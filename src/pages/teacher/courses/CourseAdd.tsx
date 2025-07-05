@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Plus, Layers, FileText, X, AlertCircle } from "lucide-react";
+import { BookOpen, Plus, AlertCircle } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { authService } from "../../../services/auth.service";

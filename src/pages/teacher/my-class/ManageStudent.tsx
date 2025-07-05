@@ -1,7 +1,7 @@
 // src/pages/TeacherManageStudents.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Users, UserPlus, Edit, Trash2, CheckCircle, XCircle, Search, GraduationCap, Mail, Phone, UserCheck, UserX, Loader2, Calendar, Plus, AlertCircle, RefreshCw, Upload } from "lucide-react";
+import {  UserPlus, Edit, Trash2,  Search, GraduationCap, Mail, Phone, UserCheck, UserX, Loader2, Upload } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleCourseService } from '../../../services';

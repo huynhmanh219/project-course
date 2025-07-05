@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, CheckCircle, XCircle, Users, Edit, Trash2, UserPlus, Search, GraduationCap, Calendar, Plus, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { BookOpen, CheckCircle, XCircle, Users, Edit, Trash2, Search, GraduationCap, Calendar, Plus, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { authService } from '../../../services/auth.service';
