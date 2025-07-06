@@ -145,11 +145,9 @@ const ManageStudent: React.FC = () => {
 
     console.log('Parsing CSV file:', importFile.name);
     
-    // Function to process CSV results
     const processResults = async (results: any, hasHeader: boolean) => {
       console.log('CSV parsing results:', results);
       
-      // Check for critical parsing errors (not just warnings)
       if (results.errors && results.errors.length > 0) {
         const criticalErrors = results.errors.filter((e: any) => e.type === 'Quotes' || e.type === 'Delimiter');
         if (criticalErrors.length > 0) {
@@ -157,8 +155,6 @@ const ManageStudent: React.FC = () => {
           alert('Lỗi đọc file CSV: ' + criticalErrors.map((e: any) => e.message).join(', '));
           return;
         }
-        // Log warnings but continue processing
-        console.warn('CSV parsing warnings (non-critical):', results.errors);
       }
 
       if (!results.data || results.data.length === 0) {
@@ -166,39 +162,27 @@ const ManageStudent: React.FC = () => {
         return;
       }
 
-      console.log('First few rows:', results.data.slice(0, 3));
-      console.log('Parse mode:', hasHeader ? 'with header' : 'without header');
-
-      // Extract student IDs with improved logic
       const rawIds: any[] = [];
       
       results.data.forEach((row: any, index: number) => {
-        console.log(`Processing row ${index + 1}:`, row);
-        
         if (!row) {
-          console.log(`Row ${index + 1}: Empty row, skipping`);
           return;
         }
 
         let studentId = null;
         
         if (!hasHeader || Array.isArray(row)) {
-          // No header mode or array format - use first element
           const firstValue = Array.isArray(row) ? row[0] : row;
           studentId = firstValue;
-          console.log(`Row ${index + 1}: No header mode, using first value:`, studentId);
         } else if (typeof row === 'object') {
-          // Object format (normal CSV with headers)
           const possibleKeys = ['student_id', 'id', 'mssv', 'studentid'];
           for (const key of possibleKeys) {
             if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
               studentId = row[key];
-              console.log(`Row ${index + 1}: Found via key '${key}':`, studentId);
               break;
             }
           }
 
-          // If no header match, try the first non-empty value
           if (!studentId) {
             const values = Object.values(row).filter(v => 
               v !== null && v !== undefined && String(v).trim() !== ''
@@ -229,18 +213,15 @@ const ManageStudent: React.FC = () => {
 
       console.log('Raw IDs extracted:', rawIds);
 
-      // Process and filter valid IDs (support both numeric and string IDs)
       const validIds = Array.from(
         new Set(
           rawIds
             .map((v: any) => {
               const cleanId = String(v).trim();
-              // Accept numeric IDs
               const numericId = parseInt(cleanId);
               if (!isNaN(numericId) && numericId > 0) {
                 return numericId;
               }
-              // Accept string IDs (alphanumeric, at least 3 characters)
               if (cleanId.length >= 3 && /^[A-Za-z0-9]+$/.test(cleanId)) {
                 return cleanId;
               }
@@ -271,7 +252,6 @@ const ManageStudent: React.FC = () => {
       try {
         console.log(`Starting import for ${validIds.length} students in chunks of 100`);
         
-        // Process in chunks of 100 students (bulkEnrollment API limit)
         for (let i = 0; i < validIds.length; i += 100) {
           const chunk = validIds.slice(i, i + 100);
           console.log(`Processing chunk ${Math.floor(i / 100) + 1}: IDs ${chunk[0]} to ${chunk[chunk.length - 1]}`);
@@ -280,12 +260,10 @@ const ManageStudent: React.FC = () => {
             const result = await simpleCourseService.bulkEnrollStudents(Number(classId), chunk as (number | string)[]);
             console.log(`Chunk ${Math.floor(i / 100) + 1} result:`, result);
             
-            // The bulkEnrollment API returns detailed results
             if (result && result.results) {
               successful += result.results.successful?.length || 0;
               failed += result.results.failed?.length || 0;
               
-              // Add specific error details if any students failed
               if (result.results.failed?.length > 0) {
                 const chunkErrors = result.results.failed.map((failure: any) => 
                   `ID ${failure.enrollment?.student_id || 'unknown'}: ${failure.error}`
@@ -323,13 +301,11 @@ const ManageStudent: React.FC = () => {
       }
     };
 
-    // Try parsing with header first
     const parseWithHeader = () => {
       Papa.parse(importFile, {
         header: true,
         skipEmptyLines: true,
         transformHeader: (header: string) => {
-          // Normalize header names
           const normalized = header.trim().toLowerCase();
           if (normalized === 'student_id' || normalized === 'id' || normalized === 'mssv' || normalized === 'studentid') {
             return 'student_id';
@@ -347,7 +323,6 @@ const ManageStudent: React.FC = () => {
       });
     };
 
-    // Fallback: parse without header
     const parseWithoutHeader = () => {
       Papa.parse(importFile, {
         header: false,
@@ -362,7 +337,6 @@ const ManageStudent: React.FC = () => {
       });
     };
 
-    // Start parsing
     parseWithHeader();
   };
 
@@ -373,13 +347,11 @@ const ManageStudent: React.FC = () => {
       <div className="group h-full">
         <Card 
           className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
-          onClick={() => navigate(`/teacher/students/${student.account.id}`)}
+          
         >
-          {/* Header gradient bar */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           
           <CardContent className="flex-1 flex flex-col p-6">
-            {/* Header */}
             <div className="flex items-start gap-4 mb-4">
               <div className="rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 p-3 shadow-lg flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold text-sm">
@@ -415,7 +387,6 @@ const ManageStudent: React.FC = () => {
               </div>
             </div>
 
-            {/* Student Info */}
             <div className="space-y-3 mb-4 flex-1">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Mail className="w-4 h-4 text-indigo-500 flex-shrink-0" />
@@ -434,7 +405,6 @@ const ManageStudent: React.FC = () => {
               )}
             </div>
 
-            {/* Footer */}
             <div className="mt-auto pt-4 border-t border-gray-100 flex gap-2">
               <Button 
                 variant="default" 
