@@ -56,6 +56,7 @@ const ClassManagement: React.FC = () => {
           course: classItem.subject?.subject_name || 'Chưa có môn học',
           courseCode: classItem.subject?.subject_code || '',
           lecturer: classItem.lecturer ? `${classItem.lecturer.first_name} ${classItem.lecturer.last_name}` : 'Chưa phân công',
+          lecturerAccountId: classItem.lecturer?.account_id || null,
           room: classItem.room || '',
           maxStudents: classItem.max_students || 0,
           enrollmentCount: classItem.enrollmentCount || 0,
@@ -63,7 +64,8 @@ const ClassManagement: React.FC = () => {
           endDate: classItem.end_date || '',
           schedule: classItem.schedule || '',
           status: true, 
-          createdAt: classItem.created_at || new Date().toISOString()
+          createdAt: classItem.created_at || new Date().toISOString(),
+          canEdit: currentUser.role === 'admin' || (classItem.lecturer?.account_id === currentUser.id)
         }));
         
         console.log('Processed classes:', processedClasses);
@@ -208,37 +210,43 @@ const ClassManagement: React.FC = () => {
 
             {/* Footer */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/teacher/my-classes/edit/${cls.id}`);
-                }}
-              >
-                <Edit className="w-3 h-3 mr-1" /> Sửa
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
-                disabled={deletingClassId === cls.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(cls.id);
-                }}
-              >
-                {deletingClassId === cls.id ? (
-                  <>
-                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-3 h-3 mr-1" /> Xóa
-                  </>
+              <div className="grid grid-cols-2 gap-2">
+                {cls.canEdit && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100 font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/teacher/my-classes/edit/${cls.id}`);
+                  }}
+                >
+                  <Edit className="w-3 h-3 mr-1" /> Sửa
+                </Button>
                 )}
-              </Button>
+                {cls.canEdit && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-700 hover:from-red-100 hover:to-rose-100 font-medium"
+                  disabled={deletingClassId === cls.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(cls.id);
+                  }}
+                >
+                  {deletingClassId === cls.id ? (
+                    <>
+                      <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Đang xóa...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3 h-3 mr-1" /> Xóa
+                    </>
+                  )}
+                </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

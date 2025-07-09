@@ -17,10 +17,12 @@ import {
   MapPin,
   Calendar,
   Star,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 import { authService } from '../../services/auth.service';
 import SimpleUserService from '../../services/user.service.simple';
+import { Pagination } from '../../components/ui/pagination';
 
 const UserManagement: React.FC = () => {
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -37,12 +39,18 @@ const UserManagement: React.FC = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const navigate = useNavigate();
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 6,
+    total: 0,
+    totalPages: 0
+  });
 
   useEffect(() => {
-    fetchTeachers();
+    fetchTeachers(1);
   }, []);
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = async (page = 1) => {
     try {
       setLoading(true);
       setError('');
@@ -56,7 +64,11 @@ const UserManagement: React.FC = () => {
       }
 
       console.log('🔄 Fetching teachers...');
-      const teachersData = await SimpleUserService.getTeachers();
+      const params: any = {
+        page: page.toString(),
+        limit: pagination.limit.toString()
+      };
+      const teachersData = await SimpleUserService.getTeachers(params);
       
       console.log('📥 Teachers response:', teachersData);
       
@@ -78,6 +90,14 @@ const UserManagement: React.FC = () => {
         
         console.log('✅ Processed teachers:', processedTeachers);
         setTeachers(processedTeachers);
+        if (teachersData.pagination) {
+          setPagination({
+            page: teachersData.pagination.page,
+            limit: teachersData.pagination.limit,
+            total: teachersData.pagination.total,
+            totalPages: teachersData.pagination.totalPages
+          });
+        }
       } else {
         console.warn('⚠️ No teachers data received or incorrect format');
         setTeachers([]);
@@ -207,7 +227,7 @@ const UserManagement: React.FC = () => {
                 </Card>
                 <Card className="bg-white/20 backdrop-blur border-white/30 text-white">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold">{teachers.length}</div>
+                    <div className="text-2xl font-bold">{pagination.total}</div>
                     <div className="text-blue-100 text-sm">Tổng số</div>
                   </CardContent>
                 </Card>
@@ -320,8 +340,9 @@ const UserManagement: React.FC = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredTeachers.map((teacher) => (
+            <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredTeachers.map((teacher) => (
                 <Card key={teacher.id} className="hover:shadow-xl transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="flex flex-col space-y-4">
@@ -411,8 +432,14 @@ const UserManagement: React.FC = () => {
                 </Card>
               ))}
             </div>
-          )}
-        </div>
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} onPageChange={(p)=>fetchTeachers(p)} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Teacher Details Modal */}
@@ -519,6 +546,7 @@ const UserManagement: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

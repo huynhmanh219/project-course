@@ -39,16 +39,26 @@ export default function Dashboard() {
 
       // Fetch statistics in parallel
       const [teachersResponse, studentsResponse, coursesResponse, quizzesResponse] = await Promise.all([
-        SimpleUserService.getTeachers().catch(() => ({ data: [] })),
-        SimpleUserService.getStudents().catch(() => ({ data: [] })),
-        SimpleCourseService.getCourses().catch(() => ({ data: [] })),
-        SimpleQuizService.getQuizzes().catch(() => ({ data: [] }))
+        SimpleUserService.getTeachers().catch(() => ({})),
+        SimpleUserService.getStudents().catch(() => ({})),
+        SimpleCourseService.getCourses().catch(() => ({})),
+        SimpleQuizService.getQuizzes().catch(() => ({}))
       ]);
 
-      const totalTeachers = teachersResponse.data?.length || 0;
-      const totalStudents = studentsResponse.data?.length || 0;
-      const totalCourses = coursesResponse.data?.length || 0;
-      const totalQuizzes = quizzesResponse.data?.length || 0;
+      // Helpers to extract array length safely
+      const getLength = (resp: any, key: string): number => {
+        if (!resp) return 0;
+        if (Array.isArray(resp)) return resp.length;
+        if (Array.isArray(resp[key])) return resp[key].length;
+        if (resp.data && Array.isArray(resp.data)) return resp.data.length;
+        if (resp.data && Array.isArray(resp.data[key])) return resp.data[key].length;
+        return 0;
+      };
+
+      const totalTeachers = getLength(teachersResponse, 'teachers');
+      const totalStudents = getLength(studentsResponse, 'students');
+      const totalCourses  = getLength(coursesResponse, 'courses');
+      const totalQuizzes  = getLength(quizzesResponse, 'quizzes');
 
       setStats({
         totalUsers: totalTeachers + totalStudents,

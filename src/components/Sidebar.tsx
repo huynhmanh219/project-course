@@ -111,12 +111,10 @@ export function Sidebar() {
               <BookOpen className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Môn học</span>
             </NavLink>
-            {isTeacher() && (
             <NavLink to="/teacher/my-classes" className={navLinkClass}>
               <Layers className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Danh Sách lớp học phần</span>
             </NavLink>
-            )}
             <NavLink to="/teacher/materials" className={navLinkClass}>
               <FileText className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">Tài liệu</span>
