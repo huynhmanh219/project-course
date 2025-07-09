@@ -58,6 +58,13 @@ const ClassRatingPage: React.FC = () => {
   }, [classIdNum]);
 
   const loadData = async () => {
+    // Nếu route thiếu classId sẽ không gọi API, tránh tạo URL /undefined
+    if (!classIdNum || isNaN(classIdNum) || classIdNum <= 0) {
+      console.warn('❌ ClassRatingPage: classId thiếu hoặc không hợp lệ →', classId);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -69,15 +76,16 @@ const ClassRatingPage: React.FC = () => {
 
       // Load real data from API
       try {
-        // Load my rating
+        // Load my rating (có thể null nếu chưa đánh giá)
         const myRatingResponse = await classRatingService.getStudentClassRating(classIdNum);
-        setMyRating(myRatingResponse);
-        
-        if (myRatingResponse) {
+        if (myRatingResponse && (myRatingResponse as any).rating) {
+          setMyRating(myRatingResponse as any);
           setFormData({
-            rating: myRatingResponse.rating,
-            comment: myRatingResponse.comment || ''
+            rating: (myRatingResponse as any).rating,
+            comment: (myRatingResponse as any).comment || ''
           });
+        } else {
+          setMyRating(null);
         }
       } catch (error: any) {
         console.log('No existing rating found or error:', error.message);

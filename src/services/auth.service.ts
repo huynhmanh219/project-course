@@ -180,7 +180,6 @@ class AuthService {
   // Lấy user hiện tại
   getCurrentUser(): any {
     const userString = localStorage.getItem('user');
-    console.log('🔍 [getCurrentUser] Raw user string from localStorage:', userString);
     
     if (userString) {
       try {
@@ -189,11 +188,9 @@ class AuthService {
         void token;
         return user;
       } catch (error) {
-        console.error('❌ [getCurrentUser] Error parsing user:', error);
         return null;
       }
     }
-    console.log('❌ [getCurrentUser] No user found in localStorage');
     return null;
   }
 

@@ -125,20 +125,18 @@ const Materials: React.FC = () => {
     } catch (err: any) {
       console.error('Error loading materials:', err);
       
-      // Handle specific auth errors
       if (err.message && (err.message.includes('Access denied') || err.message.includes('token'))) {
         setError('🔐 Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.');
       } else {
         setError(`⚠️ ${err.message || 'Không thể tải danh sách tài liệu'}`);
       }
       
-      setMaterials([]); // Ensure materials is always an array
+      setMaterials([]); 
     } finally {
       setLoading(false);
     }
   };
 
-  // Load statistics
   const loadStats = async () => {
     try {
       const statsData = await simpleMaterialService.getMaterialStats();
@@ -148,7 +146,6 @@ const Materials: React.FC = () => {
     }
   };
 
-  // Delete material
   const handleDeleteMaterial = async (material: Material) => {
     const confirmMessage = `Bạn có chắc chắn muốn xóa tài liệu "${material.title}" không?\n\nHành động này không thể hoàn tác.`;
     
@@ -156,8 +153,8 @@ const Materials: React.FC = () => {
       try {
         await simpleMaterialService.deleteMaterial(material.id);
         alert("Đã xóa tài liệu thành công!");
-        loadMaterials(); // Reload list
-        loadStats(); // Reload stats
+        loadMaterials(); 
+        loadStats();
       } catch (err: any) {
         console.error('Error deleting material:', err);
         alert(`Lỗi xóa tài liệu: ${err.message}`);
@@ -165,7 +162,6 @@ const Materials: React.FC = () => {
     }
   };
 
-  // Download material
   const handleDownloadMaterial = async (material: Material) => {
     try {
       await simpleMaterialService.downloadMaterial(material.id, material.file_name);
@@ -175,20 +171,17 @@ const Materials: React.FC = () => {
     }
   };
 
-  // Search materials
   const handleSearch = () => {
     setCurrentPage(1);
     loadMaterials();
   };
 
-  // Filter by type
   const handleTypeFilter = (type: string | null) => {
     setSelectedType(type);
     setCurrentPage(1);
     loadMaterials({ material_type: type as any });
   };
 
-  // Pagination
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     loadMaterials();
@@ -214,7 +207,6 @@ const Materials: React.FC = () => {
     }
   };
 
-  // New helper functions for better UI
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'document': return FileText;
@@ -248,7 +240,6 @@ const Materials: React.FC = () => {
   };
 
   const MaterialCard: React.FC<{ material: Material }> = ({ material }) => {
-    // Helper function to get uploader full name
     const getUploaderName = (uploader: any) => {
       if (!uploader) return 'Không xác định';
       if (uploader.first_name && uploader.last_name) {
@@ -257,36 +248,29 @@ const Materials: React.FC = () => {
       return uploader.name || 'Không xác định';
     };
 
-    // Helper function to get subject display name
     const getSubjectName = (subject: any) => {
       if (!subject) return 'Không xác định';
       return subject.subject_name || subject.name || 'Không xác định';
     };
 
-    // Helper function to get subject code
     const getSubjectCode = (subject: any) => {
       if (!subject) return '';
       return subject.subject_code || subject.code || '';
     };
 
-    // Get appropriate icon for material type
     const TypeIcon = getTypeIcon(material.material_type);
     
-    // Check if material is a link
     const isLink = material.material_type === 'link';
     const hasFile = !isLink && (material.file_path || material.file_name);
 
-    // Handle link opening
     const handleOpenLink = () => {
       if (material.file_path) {
         window.open(material.file_path, '_blank');
       }
     };
 
-    // Handle preview for images
     const handlePreview = () => {
       if (material.material_type === 'image' && material.file_path) {
-        // Could implement image preview modal here
         window.open(material.file_path, '_blank');
       }
     };
@@ -509,10 +493,10 @@ const Materials: React.FC = () => {
                   <div className="text-2xl font-bold">{stats.by_type.image || 0}</div>
                   <div className="text-blue-100 text-sm">🖼️ Hình ảnh</div>
                 </div>
-                <div className="text-center">
+                {/* <div className="text-center">
                   <div className="text-2xl font-bold">{stats.by_type.link || 0}</div>
                   <div className="text-blue-100 text-sm">🔗 Liên kết</div>
-                </div>
+                </div> */}
                 <div className="text-center">
                   <div className="text-2xl font-bold">{stats.total || 0}</div>
                   <div className="text-blue-100 text-sm">Tổng cộng</div>
@@ -543,7 +527,7 @@ const Materials: React.FC = () => {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <button
+              {/* <button
                 onClick={() => handleTypeFilter(null)}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                   selectedType === null
@@ -582,7 +566,7 @@ const Materials: React.FC = () => {
                 }`}
               >
                 🖼️ Hình ảnh
-              </button>
+              </button> */}
               <Button
                 variant="outline"
                 onClick={() => {

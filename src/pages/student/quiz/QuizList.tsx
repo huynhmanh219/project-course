@@ -22,7 +22,6 @@ const QuizList: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
@@ -31,13 +30,13 @@ const QuizList: React.FC = () => {
         return;
       }
 
-      // Fetch available quizzes
+     
       const response = await simpleQuizService.getQuizzes();
       
       if (response && (response.results || response.data)) {
         const quizData = response.results || response.data;
         
-        // Process quiz data and check attempt status for each quiz
+       
         const processedQuizzes = await Promise.all(
           quizData.map(async (quiz: any) => {
             const now = new Date();
@@ -49,7 +48,7 @@ const QuizList: React.FC = () => {
             let hasCompleted = false;
             let questionCount = quiz.question_count || quiz.total_questions || 0;
             
-            // Try to fetch question count separately if not available
+           
             if (questionCount === 0) {
               try {
                 const quizId = quiz.quiz_id || quiz.id;
@@ -58,11 +57,11 @@ const QuizList: React.FC = () => {
                   questionCount = questionsResponse.length;
                 }
               } catch (questionError) {
-                // Silently continue if question count fetch fails
+               
               }
             }
             
-            // Check time-based availability first
+           
             if (startDate && now < startDate) {
               status = 'upcoming';
             } else if (endDate && now > endDate) {
@@ -71,23 +70,23 @@ const QuizList: React.FC = () => {
               status = 'upcoming';
             }
             
-            // Check student's attempt status for this quiz using proper API
+           
             try {
               const quizId = quiz.quiz_id || quiz.id;
               
               let allAttemptsResponse;
               
-              // Try main API first, then fallback to direct debug route
+             
               try {
                 allAttemptsResponse = await simpleQuizService.getMyAttempts({
                   quiz_id: quizId,
                   page: 1,
-                  size: 20 // Use size parameter which is now supported
+                  size: 20 
                 });
               } catch (mainApiError) {
                 console.warn(`Main API failed for quiz ${quizId}, trying debug route:`, mainApiError);
                 
-                // Fallback to debug route - completely bypass middleware
+               
                 try {
                   const response = await fetch(`http://localhost:3000/api/debug-direct?quiz_id=${quizId}`, {
                     method: 'GET',
@@ -103,22 +102,20 @@ const QuizList: React.FC = () => {
                   }
                 } catch (debugError) {
                   console.error(`Debug route also failed for quiz ${quizId}:`, debugError);
-                  allAttemptsResponse = { data: [] }; // Continue with empty data
+                  allAttemptsResponse = { data: [] }; 
                 }
               }
               
-              // handleResponse unwraps the data, so allAttemptsResponse is the pagination object
-              // which contains results/data field with the actual attempts array
+             
               if (allAttemptsResponse && (allAttemptsResponse.results || allAttemptsResponse.data)) {
                 const attempts = allAttemptsResponse.results || allAttemptsResponse.data;
                 
                 if (attempts.length > 0) {
-                  // Check for completed attempts (submitted or graded)
+                  
                   const completedAttempts = attempts.filter((attempt: any) => 
                     attempt.status === 'submitted' || attempt.status === 'graded'
                   );
                   
-                  // Check for in-progress attempts
                   const inProgressAttempts = attempts.filter((attempt: any) => 
                     attempt.status === 'in_progress'
                   );
@@ -130,24 +127,21 @@ const QuizList: React.FC = () => {
                     ['in_progress', 'submitted', 'graded'].includes(attempt.status)
                   );
                   
-                  // FIXED: Prioritize completed status over in-progress
-                  // Only show in-progress if there are NO completed attempts
+            
                   if (hasCompleted) {
-                    // If has any completed attempts, show as completed
                     status = 'completed';
                   } else if (hasInProgress) {
-                    // Only show in-progress if no completed attempts exist
                     status = 'in_progress';
                   } else if (validAttempts.length >= (quiz.attempts_allowed || 3)) {
-                    status = 'completed';    // Max attempts reached, show results only
+                    status = 'completed';    
                   }
                   
-                  // If no completed/in-progress but has other attempts, keep 'available'
+                 
                 }
               }
             } catch (attemptError) {
               console.error(`Error checking attempts for quiz ${quiz.quiz_id || quiz.id}:`, attemptError);
-              // Continue without attempt info if API fails
+             
             }
 
             return {
@@ -172,7 +166,7 @@ const QuizList: React.FC = () => {
           })
         );
 
-        // Only show published quizzes to students
+        
         const publishedQuizzes = processedQuizzes.filter((quiz: any) => quiz.isPublished);
         setQuizzes(publishedQuizzes);
       } else {
@@ -221,7 +215,7 @@ const QuizList: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
+        
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
@@ -239,7 +233,7 @@ const QuizList: React.FC = () => {
           </div>
         </div>
 
-        {/* Error display */}
+        
         {error && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4">
@@ -259,7 +253,7 @@ const QuizList: React.FC = () => {
           </Card>
         )}
 
-        {/* Statistics */}
+        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardContent className="p-4">
@@ -316,14 +310,14 @@ const QuizList: React.FC = () => {
           </Card>
         </div>
 
-        {/* Quiz Grid */}
+        
         {quizzes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quizzes.map((quiz) => (
               <Card key={quiz.id} className="shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {/* Header */}
+                    
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-1">
@@ -334,12 +328,12 @@ const QuizList: React.FC = () => {
                       {getStatusBadge(quiz.trangThai)}
                     </div>
 
-                    {/* Description */}
+                    
                     {quiz.moTa && (
                       <p className="text-gray-700 text-sm line-clamp-2">{quiz.moTa}</p>
                     )}
 
-                    {/* Quiz Info */}
+                    
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <BookOpen className="w-4 h-4" />
@@ -351,7 +345,7 @@ const QuizList: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Date Info */}
+                    
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
@@ -362,7 +356,7 @@ const QuizList: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Action Button */}
+                    
                     <div className="pt-2">
                       {quiz.trangThai === 'available' ? (
                         <Button
@@ -394,7 +388,7 @@ const QuizList: React.FC = () => {
                             <BookOpen className="w-4 h-4 mr-2" />
                             Xem kết quả
                           </Button>
-                          {/* Optionally allow retake if quiz allows multiple attempts */}
+
                         </div>
                       ) : (
                         <Button disabled className="w-full" variant="outline">
@@ -409,7 +403,7 @@ const QuizList: React.FC = () => {
             ))}
           </div>
         ) : (
-          /* Empty State */
+          
           <Card className="shadow-lg border border-gray-200">
             <CardContent className="p-12 text-center">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -424,7 +418,7 @@ const QuizList: React.FC = () => {
           </Card>
         )}
 
-        {/* Quick Links */}
+        
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">

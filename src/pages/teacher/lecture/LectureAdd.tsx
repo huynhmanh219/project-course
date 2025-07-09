@@ -32,7 +32,6 @@ const LectureAdd: React.FC = () => {
   const { courseId, chapterId } = useParams<{ courseId: string; chapterId: string }>();
   const navigate = useNavigate();
   
-  // States
   const [course, setCourse] = useState<Course | null>(null);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +39,6 @@ const LectureAdd: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Form states
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -61,7 +59,6 @@ const LectureAdd: React.FC = () => {
       setLoading(true);
       setError('');
       
-      // Load course info
       const courseResponse = await simpleCourseService.getCourse(Number(courseId));
       console.log('Course info response:', courseResponse);
       
@@ -69,7 +66,6 @@ const LectureAdd: React.FC = () => {
         setCourse(courseResponse.course);
       }
 
-      // Load chapter info
       const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
       console.log('Chapter info response:', chapterResponse);
       
@@ -102,7 +98,6 @@ const LectureAdd: React.FC = () => {
       }));
     }
     
-    // Clear error for this field
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -117,7 +112,6 @@ const LectureAdd: React.FC = () => {
       content
     }));
     
-    // Clear content error
     if (formErrors.content) {
       setFormErrors(prev => ({
         ...prev,
@@ -159,7 +153,6 @@ const LectureAdd: React.FC = () => {
       setError('');
       setSuccess('');
       
-      // Get next order index
       const existingLectures = await simpleLectureService.getLecturesByChapter(Number(chapterId));
       const nextOrderIndex = Math.max(...existingLectures.map((l: any) => l.order_index || 0), 0) + 1;
       
@@ -179,7 +172,6 @@ const LectureAdd: React.FC = () => {
       
       setSuccess('Bài giảng đã được tạo thành công!');
       
-      // Redirect after success
       setTimeout(() => {
         navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures`);
       }, 1500);
@@ -228,7 +220,6 @@ const LectureAdd: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline" 
@@ -249,7 +240,6 @@ const LectureAdd: React.FC = () => {
           </div>
         </div>
 
-        {/* Success Message */}
         {success && (
           <Card className="border-green-200 bg-green-50">
             <CardContent className="p-4">
@@ -261,7 +251,6 @@ const LectureAdd: React.FC = () => {
           </Card>
         )}
 
-        {/* Error Message */}
         {error && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4">
@@ -273,12 +262,10 @@ const LectureAdd: React.FC = () => {
           </Card>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="shadow-lg">
             <CardContent className="p-8">
               <div className="space-y-6">
-                {/* Title */}
                 <div>
                   <label htmlFor="title" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                     <FileText className="w-4 h-4" />
@@ -302,7 +289,6 @@ const LectureAdd: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Duration */}
                   <div>
                     <label htmlFor="duration_minutes" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                       <Clock className="w-4 h-4" />
@@ -327,7 +313,6 @@ const LectureAdd: React.FC = () => {
                     <p className="text-gray-500 text-sm mt-1">Ước tính thời gian đọc nội dung</p>
                   </div>
 
-                  {/* Publish Status */}
                   <div>
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                       {formData.is_published ? (
@@ -356,7 +341,6 @@ const LectureAdd: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Document Content */}
           <Card className="shadow-lg">
             <CardContent className="p-8">
               <div className="mb-6">
@@ -379,8 +363,7 @@ const LectureAdd: React.FC = () => {
               />
             </CardContent>
           </Card>
-
-          {/* Form Actions */}
+                  
           <Card className="shadow-lg">
             <CardContent className="p-6">
               <div className="flex gap-4 justify-between">

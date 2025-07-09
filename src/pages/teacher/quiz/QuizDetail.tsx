@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -14,7 +14,8 @@ import {
   XCircle,
   Loader2,
   AlertCircle,
-  Trash2
+  Trash2,
+  Upload
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
@@ -31,6 +32,8 @@ const QuizDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [quiz, setQuiz] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importing,setImporting]=useState(false);
 
   useEffect(() => {
     if (id) {
@@ -50,10 +53,7 @@ const QuizDetail: React.FC = () => {
       console.log('🔍 [QuizDetail] Current user role:', currentUser?.role);
       
       const quizData = await simpleQuizService.getQuiz(parseInt(id!));
-      console.log('🔍 [QuizDetail] Loaded quiz from API:', quizData);
-      console.log('🔍 [QuizDetail] Quiz lecturer_id:', quizData?.lecturer_id);
-      console.log('🔍 [QuizDetail] Quiz lecturer object:', quizData?.lecturer);
-      
+    
       const permissionCheck = PermissionUtils.canAccessQuiz(quizData);
       if (!permissionCheck.canAccess) {
         console.log('Permission denied:', permissionCheck.reason);
@@ -105,6 +105,23 @@ const QuizDetail: React.FC = () => {
     } catch (error: any) {
       console.error('Error deleting question:', error);
       alert('Lỗi xóa câu hỏi: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const handleImportClick = () => fileRef.current?.click();
+
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    try {
+      setImporting(true);
+      await simpleQuizService.importQuestions(parseInt(id!), e.target.files[0]);
+      alert('Import thành công!');
+      await loadQuestions();
+    } catch (err: any) {
+      alert(err.message || 'Lỗi import');
+    } finally {
+      setImporting(false);
+      e.target.value='';
     }
   };
 
@@ -249,7 +266,7 @@ const QuizDetail: React.FC = () => {
                   <div className="flex items-center gap-2 text-gray-600">
                     <Users className="w-4 h-4" />
                     <span className="font-medium">Giảng viên:</span>
-                    <span>{quiz?.lecturer?.full_name || quiz?.lecturer?.lecturer_name || 'N/A'}</span>
+                    <span>{quiz?.lecturer?.first_name + ' ' + quiz?.lecturer?.last_name || quiz?.lecturer?.lecturer_name || 'N/A'}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-gray-600">
@@ -307,6 +324,22 @@ const QuizDetail: React.FC = () => {
                       <BarChart3 className="w-4 h-4" />
                       Xem kết quả
           </Button>
+                  )}
+
+                  {/* Import CSV */}
+                  {PermissionUtils.canManageQuestions(quiz).canManage && (
+                    <Button
+                      onClick={handleImportClick}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+                      disabled={importing}
+                    >
+                      {importing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      Import CSV
+                    </Button>
                   )}
                 </div>
               </CardContent>
@@ -456,6 +489,7 @@ const QuizDetail: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+      <input type="file" ref={fileRef} accept=".csv" className="hidden" onChange={onFileChange} />
     </div>
   );
 };

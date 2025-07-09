@@ -5,7 +5,7 @@ import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import StarRating from '../../components/StarRating';
 import { classRatingService } from '../../services/class-rating.service';
-import { Search, Download, TrendingUp, Users, BookOpen } from 'lucide-react';
+import { Search, Download, TrendingUp, Users, BookOpen, Trash2 } from 'lucide-react';
 import { apiClient } from '../../services/api';
 
 interface ClassRating {
@@ -60,6 +60,7 @@ const AdminClassRatings: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState<string>('all');
   const [selectedClass, setSelectedClass] = useState<ClassRatingData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const [overallStats, setOverallStats] = useState({
     totalClasses: 0,
@@ -153,6 +154,28 @@ const AdminClassRatings: React.FC = () => {
     a.click();
   };
 
+  const handleDeleteRating = async (ratingId: number) => {
+    if (!selectedClass) return;
+    if (!window.confirm('Bạn có chắc chắn muốn xoá bình luận này?')) return;
+    try {
+      setDeletingId(ratingId);
+      await classRatingService.deleteClassRating(ratingId);
+      // Cập nhật danh sách
+      const updatedRatings = selectedClass.ratings.filter(r => r.id !== ratingId);
+      const updatedStats = {
+        ...selectedClass.statistics,
+        totalRatings: selectedClass.statistics.totalRatings - 1
+      };
+      setSelectedClass({ ...selectedClass, ratings: updatedRatings, statistics: updatedStats });
+      // Đồng thời refresh bảng chính
+      fetchAllClassRatings();
+    } catch (err) {
+      alert('Xoá bình luận thất bại');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) return <p className="p-4">Loading...</p>;
 
   return (
@@ -204,24 +227,43 @@ const AdminClassRatings: React.FC = () => {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRatings.map(item => (
-          <Card key={item.class_info.id} className="hover:shadow-md">
-            <CardHeader>
-              <CardTitle className="text-lg">{item.class_info.section_name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-gray-600">{item.class_info.subject.subject_name} ({item.class_info.subject.subject_code})</p>
-              <p className="text-sm text-gray-500">GV: {item.class_info.lecturer.title} {item.class_info.lecturer.last_name}</p>
-              <div className="flex items-center gap-2">
-                <StarRating rating={Number(item.statistics.averageRating)} readonly size="sm" />
-                <span className="text-sm">{Number(item.statistics.averageRating).toFixed(1)} / {item.statistics.totalRatings} đánh giá</span>
-              </div>
-              <Button size="sm" variant="outline" onClick={() => {setSelectedClass(item);setShowDetails(true);}}>Chi tiết</Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {filteredRatings.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <thead className="bg-gray-100 text-gray-700 font-semibold">
+              <tr>
+                <th className="py-3 px-4 text-left">Lớp học</th>
+                <th className="py-3 px-4 text-left">Môn học</th>
+                <th className="py-3 px-4 text-left">Giảng viên</th>
+                <th className="py-3 px-4 text-center">Điểm TB</th>
+                <th className="py-3 px-4 text-center">Số đánh giá</th>
+                <th className="py-3 px-4 text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRatings.map(item => (
+                <tr key={item.class_info.id} className="border-t hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium text-gray-900">{item.class_info.section_name}</td>
+                  <td className="py-3 px-4 text-gray-700">{item.class_info.subject.subject_name} ({item.class_info.subject.subject_code})</td>
+                  <td className="py-3 px-4 text-gray-700">{item.class_info.lecturer.title} {item.class_info.lecturer.first_name} {item.class_info.lecturer.last_name}</td>
+                  <td className="py-3 px-4 text-center">
+                    <StarRating rating={Number(item.statistics.averageRating)} readonly size="sm" />
+                    <span className="ml-1 font-semibold">{Number(item.statistics.averageRating).toFixed(1)}</span>
+                  </td>
+                  <td className="py-3 px-4 text-center">{item.statistics.totalRatings}</td>
+                  <td className="py-3 px-4 text-center">
+                    <Button size="sm" variant="outline" onClick={() => {setSelectedClass(item);setShowDetails(true);}}>
+                      Chi tiết
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-center text-gray-500">Không có lớp học phù hợp</p>
+      )}
 
       {showDetails && selectedClass && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -260,12 +302,38 @@ const AdminClassRatings: React.FC = () => {
             </div>
             <h3 className="mt-6 text-lg font-semibold">Nhận xét</h3>
             <div className="mt-2 space-y-4 max-h-60 overflow-y-auto">
-              {selectedClass.ratings.map(r=>(
-                <div key={r.id} className="border rounded p-3">
-                  <p className="font-medium">{r.student.first_name} {r.student.last_name}</p>
-                  <StarRating rating={r.rating} readonly size="sm" />
-                  {r.comment && <p className="italic text-gray-700 mt-1">"{r.comment}"</p>}
-                  <p className="text-xs text-gray-400 mt-1">{new Date(r.created_at).toLocaleDateString('vi-VN')}</p>
+              {selectedClass.ratings.map((rating) => (
+                <div key={rating.id} className="border rounded-lg p-4 bg-gray-50 flex gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-medium">
+                          {rating.student.first_name} {rating.student.last_name}
+                        </p>
+                        <p className="text-sm text-gray-600">{rating.student.account.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <StarRating rating={rating.rating} readonly size="sm" />
+                        <p className="text-sm text-gray-600 mt-1">
+                          {new Date(rating.created_at).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
+                    </div>
+                    {rating.comment && (
+                      <div className="mt-3 p-3 bg-white rounded border-l-4 border-blue-500">
+                        <p className="text-gray-700 italic">"{rating.comment}"</p>
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="self-start text-red-600 border-red-300 hover:bg-red-50"
+                    disabled={deletingId === rating.id}
+                    onClick={() => handleDeleteRating(rating.id)}
+                  >
+                    {deletingId === rating.id ? 'Đang xoá...' : <Trash2 className="w-4 h-4" />}
+                  </Button>
                 </div>
               ))}
             </div>

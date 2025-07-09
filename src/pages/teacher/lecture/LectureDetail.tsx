@@ -57,19 +57,16 @@ const LectureDetail: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load course info
       const courseResponse = await simpleCourseService.getCourse(Number(courseId));
       if (courseResponse.course) {
         setCourse(courseResponse.course);
       }
 
-      // Load chapter info
       const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
       if (chapterResponse) {
         setChapter(chapterResponse);
       }
 
-      // Load lecture info
       const lectureResponse = await simpleLectureService.getLecture(Number(lectureId));
       if (lectureResponse) {
         setLecture(lectureResponse);
@@ -167,7 +164,6 @@ const LectureDetail: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Lecture Info Card */}
             <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-8">
                 <div className="flex items-start gap-4 mb-6">
@@ -195,7 +191,6 @@ const LectureDetail: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Content Card */}
             <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-6">
@@ -221,7 +216,6 @@ const LectureDetail: React.FC = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Course Info Card */}
             <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -247,8 +241,7 @@ const LectureDetail: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Dates Card */}
-            <Card className="shadow-lg border border-gray-200 bg-white">
+            {/* <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="rounded-xl bg-gradient-to-tr from-orange-500 to-red-500 p-2 shadow-lg">
@@ -275,9 +268,8 @@ const LectureDetail: React.FC = () => {
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            {/* Statistics Card */}
             <Card className="shadow-lg border border-gray-200 bg-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">

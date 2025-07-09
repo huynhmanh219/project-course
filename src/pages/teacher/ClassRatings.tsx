@@ -298,87 +298,45 @@ const TeacherClassRatings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Danh sách lớp học */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRatings.map((item) => (
-          <Card key={item.class_info.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{item.class_info.section_name}</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {item.class_info.subject.subject_name}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {item.class_info.subject.subject_code}
-                  </p>
-                </div>
-                <Badge variant={item.statistics.totalRatings > 0 ? "default" : "secondary"}>
-                  {item.statistics.totalRatings} đánh giá
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {item.statistics.totalRatings > 0 ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <StarRating rating={Number(item.statistics.averageRating)} readonly />
-                      <span className={`text-lg font-bold ${getRatingColor(Number(item.statistics.averageRating))}`}>
-                        {Number(item.statistics.averageRating).toFixed(1)}
-                      </span>
-                    </div>
-                    <p className={`text-sm font-medium ${getRatingColor(Number(item.statistics.averageRating))}`}>
-                      {getRatingLabel(Number(item.statistics.averageRating))}
-                    </p>
-                    
-                    {/* Phân bố nhanh */}
-                    <div className="space-y-1">
-                      {[5, 4, 3, 2, 1].map((star) => {
-                        const count = item.statistics.distribution[star] || 0;
-                        const percent = item.statistics.totalRatings > 0 ? (count / Number(item.statistics.totalRatings)) * 100 : 0;
-                        return (
-                          <div key={star} className="flex items-center text-xs">
-                            <span className="w-6">{star}★</span>
-                            <div className="flex-1 bg-gray-200 rounded-full h-1 mx-2">
-                              <div
-                                className="bg-yellow-400 h-1 rounded-full"
-                                style={{ width: `${percent}%` }}
-                              />
-                            </div>
-                            <span className="w-4 text-right">
-                              {count}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-500">Chưa có đánh giá nào</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Sinh viên chưa đánh giá lớp học này
-                    </p>
-                  </div>
-                )}
-                
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleViewDetails(item)}
-                  disabled={item.statistics.totalRatings === 0}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Xem chi tiết
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredRatings.length === 0 && (
+      {/* Danh sách lớp học dạng bảng */}
+      {filteredRatings.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg text-sm">
+            <thead className="bg-gray-100 text-gray-700 font-semibold">
+              <tr>
+                <th className="py-3 px-4 text-left">Lớp học</th>
+                <th className="py-3 px-4 text-left">Môn học</th>
+                <th className="py-3 px-4 text-center">Điểm TB</th>
+                <th className="py-3 px-4 text-center">Số đánh giá</th>
+                <th className="py-3 px-4 text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRatings.map((item) => (
+                <tr key={item.class_info.id} className="border-t hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium text-gray-900">{item.class_info.section_name}</td>
+                  <td className="py-3 px-4 text-gray-700">{item.class_info.subject.subject_name}</td>
+                  <td className="py-3 px-4 text-center">
+                    <StarRating rating={Number(item.statistics.averageRating)} readonly size="sm" />
+                    <span className="ml-1 font-semibold">{Number(item.statistics.averageRating).toFixed(1)}</span>
+                  </td>
+                  <td className="py-3 px-4 text-center">{item.statistics.totalRatings}</td>
+                  <td className="py-3 px-4 text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDetails(item)}
+                      disabled={item.statistics.totalRatings === 0}
+                    >
+                      <Eye className="h-4 w-4 mr-1" /> Chi tiết
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-gray-500">Không tìm thấy lớp học nào phù hợp với bộ lọc</p>

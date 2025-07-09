@@ -23,7 +23,6 @@ const ClassManagement: React.FC = () => {
       setLoading(true);
       setError('');
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
@@ -32,9 +31,9 @@ const ClassManagement: React.FC = () => {
         return;
       }
 
-      console.log('Fetching classes...');
+     
       const response = await simpleClassService.getClasses();
-      console.log('Classes response:', response);
+     
       
      
       let classesData = response.data || [];
@@ -113,8 +112,7 @@ const ClassManagement: React.FC = () => {
         fetchClasses();
       }
     } catch (error: any) {
-      console.error('Error deleting class:', error);
-      
+     
      
       let errorMessage = 'Lỗi khi xóa lớp học phần: ';
       if (error.message.includes('Cannot delete class with enrolled students')) {

@@ -44,7 +44,6 @@ const LectureEdit: React.FC = () => {
   }>();
   const navigate = useNavigate();
   
-  // States
   const [course, setCourse] = useState<Course | null>(null);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [lecture, setLecture] = useState<Lecture | null>(null);
@@ -53,7 +52,6 @@ const LectureEdit: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Form states
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -74,7 +72,6 @@ const LectureEdit: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load all data in parallel
       const [courseResponse, chapterResponse, lectureResponse] = await Promise.all([
         simpleCourseService.getCourse(Number(courseId)),
         simpleChapterService.getChapter(Number(chapterId)),
@@ -95,7 +92,6 @@ const LectureEdit: React.FC = () => {
 
       if (lectureResponse) {
         setLecture(lectureResponse);
-        // Populate form with existing data
         setFormData({
           title: lectureResponse.title || '',
           content: lectureResponse.content || '',
@@ -129,7 +125,6 @@ const LectureEdit: React.FC = () => {
       }));
     }
     
-    // Clear error for this field
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -144,7 +139,6 @@ const LectureEdit: React.FC = () => {
       content
     }));
     
-    // Clear content error
     if (formErrors.content) {
       setFormErrors(prev => ({
         ...prev,
@@ -200,7 +194,6 @@ const LectureEdit: React.FC = () => {
       
       setSuccess('Bài giảng đã được cập nhật thành công!');
       
-      // Redirect after success
       setTimeout(() => {
         navigate(`/teacher/courses/${courseId}/chapters/${chapterId}/lectures`);
       }, 1500);
@@ -258,7 +251,6 @@ const LectureEdit: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline" 
@@ -279,7 +271,6 @@ const LectureEdit: React.FC = () => {
           </div>
         </div>
 
-        {/* Success Message */}
         {success && (
           <Card className="border-green-200 bg-green-50">
             <CardContent className="p-4">
@@ -291,7 +282,6 @@ const LectureEdit: React.FC = () => {
           </Card>
         )}
 
-        {/* Error Message */}
         {error && (
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4">
@@ -303,12 +293,10 @@ const LectureEdit: React.FC = () => {
           </Card>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="shadow-lg">
             <CardContent className="p-8">
               <div className="space-y-6">
-                {/* Title */}
                 <div>
                   <label htmlFor="title" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                     <FileText className="w-4 h-4" />
@@ -332,7 +320,6 @@ const LectureEdit: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Duration */}
                   <div>
                     <label htmlFor="duration_minutes" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                       <Clock className="w-4 h-4" />
@@ -356,8 +343,7 @@ const LectureEdit: React.FC = () => {
                     )}
                     <p className="text-gray-500 text-sm mt-1">Ước tính thời gian đọc nội dung</p>
                   </div>
-
-                  {/* Publish Status */}
+                      
                   <div>
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                       {formData.is_published ? (

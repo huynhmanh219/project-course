@@ -99,11 +99,13 @@ const TeacherCourses: React.FC = () => {
     if (isAdmin) return true; // Admin can edit all courses
     
     // Lecturer can only edit courses they are assigned to
-    const currentUserId = user?.id;
-    const currentLecturerId = user?.lecturerId || user?.lecturer_id;
+    const currentUserId = Number(user?.id);
+    const currentLecturerId = Number(user?.lecturerId || user?.lecturer_id);
     
-    // Check if current user is the lecturer of this course
-    return course.lecturerId === currentUserId || course.lecturerId === currentLecturerId;
+    // Dữ liệu trả về đôi khi là string, convert về number trước khi so sánh
+    const courseLecturerId = Number(course.lecturerId);
+
+    return courseLecturerId === currentUserId || courseLecturerId === currentLecturerId;
   };
 
   const handleDelete = async (courseId: number) => {

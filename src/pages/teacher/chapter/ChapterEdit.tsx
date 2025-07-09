@@ -34,7 +34,7 @@ const ChapterEdit: React.FC = () => {
   const { courseId, chapterId } = useParams<{ courseId: string; chapterId: string }>();
   const navigate = useNavigate();
   
-  // States
+
   const [course, setCourse] = useState<Course | null>(null);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ const ChapterEdit: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Form states
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -63,17 +63,17 @@ const ChapterEdit: React.FC = () => {
       setLoading(true);
       setError('');
       
-      // Load course info
+     
       const courseResponse = await simpleCourseService.getCourse(Number(courseId));
-      console.log('Course info response:', courseResponse);
+     
       
       if (courseResponse.course) {
         setCourse(courseResponse.course);
       }
 
-      // Load chapter info
+     
       const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
-      console.log('Chapter info response:', chapterResponse);
+     
       
       if (chapterResponse) {
         setChapter(chapterResponse);
@@ -87,7 +87,7 @@ const ChapterEdit: React.FC = () => {
         setError('Không tìm thấy thông tin chương');
       }
     } catch (error: any) {
-      console.error('Error loading data:', error);
+     
       setError(error.message || 'Lỗi khi tải thông tin');
     } finally {
       setLoading(false);
@@ -101,7 +101,7 @@ const ChapterEdit: React.FC = () => {
       [name]: value
     }));
     
-    // Clear error for this field
+   
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -150,20 +150,19 @@ const ChapterEdit: React.FC = () => {
         status: formData.status as 'active' | 'inactive'
       };
       
-      console.log('Updating chapter:', updateData);
       
       const updatedChapter = await simpleChapterService.updateChapter(chapter.id, updateData);
       console.log('Chapter updated:', updatedChapter);
       
       setSuccess('Chương đã được cập nhật thành công!');
       
-      // Redirect after success
+     
       setTimeout(() => {
         navigate(`/teacher/courses/${courseId}`);
       }, 1500);
       
     } catch (error: any) {
-      console.error('Error updating chapter:', error);
+     
       setError(error.message || 'Lỗi khi cập nhật chương');
     } finally {
       setSaving(false);

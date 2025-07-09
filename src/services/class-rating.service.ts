@@ -78,7 +78,22 @@ class ClassRatingService {
   async getStudentClassRating(classId: number): Promise<ClassRating | null> {
     try {
       const response = await apiClient.get(`${this.baseURL}/class/${classId}/my-rating`);
-      return response.data || response;
+
+      if (response == null) return null;
+
+      if (response.success === false || response.status === 'error') {
+        return null;
+      }
+
+      if (response.status === 'success' || response.success === true) {
+        return response.data ?? response;
+      }
+
+      if (response.rating || response.id) {
+        return response as unknown as ClassRating;
+      }
+
+      return null;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
@@ -99,6 +114,9 @@ class ClassRatingService {
   }
 
   async updateClassRating(ratingId: number, ratingData: ClassRatingUpdate): Promise<ClassRating> {
+    if (!ratingId) {
+      throw new Error('Missing ratingId for updateClassRating');
+    }
     try {
       const response = await apiClient.put(`${this.baseURL}/${ratingId}`, ratingData);
       return response.data || response;
@@ -109,6 +127,9 @@ class ClassRatingService {
   }
 
   async deleteClassRating(ratingId: number): Promise<void> {
+    if (!ratingId) {
+      throw new Error('Missing ratingId for deleteClassRating');
+    }
     try {
       await apiClient.delete(`${this.baseURL}/${ratingId}`);
     } catch (error: any) {

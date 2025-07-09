@@ -34,7 +34,6 @@ const ClassEdit: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Get current user first
         const currentUser = authService.getCurrentUser();
         setCurrentUser(currentUser);
         
@@ -43,48 +42,33 @@ const ClassEdit: React.FC = () => {
           return;
         }
         
-        // Check basic permissions
         if (!['admin', 'lecturer'].includes(currentUser.role?.toLowerCase())) {
           setError('Bạn không có quyền chỉnh sửa lớp học phần');
           setTimeout(() => navigate('/'), 3000);
           return;
         }
         
-        // Load class details, subjects and lecturers in parallel
         const [classResponse, subjectsResponse, lecturersResponse] = await Promise.all([
           simpleClassService.getClass(Number(id)),
           simpleCourseService.getCourses(),
           currentUser.role?.toLowerCase() === 'admin' ? simpleCourseService.getLecturers() : Promise.resolve([])
         ]);
         
-        console.log('🔄 Class data:', classResponse);
-        console.log('🔄 Subjects data:', subjectsResponse);
-        console.log('🔄 Lecturers data:', lecturersResponse);
-        console.log('👤 Current user:', currentUser);
+
         
-        // Set class data - backend returns { data: { class: {...} } }
         const currentClass = classResponse.class || classResponse;
         setClassData(currentClass);
         
-        // Check detailed permission - only lecturer assigned to this class or admin can edit
         const isAdmin = currentUser.role?.toLowerCase() === 'admin';
         
         let isAssignedLecturer = false;
         if (!isAdmin && currentUser.role?.toLowerCase() === 'lecturer') {
           try {
-            // Get lecturer profile to get correct lecturer_id for permission check
             const lecturerProfile = await simpleClassService.getCurrentLecturerProfile();
             isAssignedLecturer = currentClass.lecturer_id === lecturerProfile.lecturer_id;
             
-            console.log('🔐 Permission check:', { 
-              isAdmin, 
-              isAssignedLecturer, 
-              classLecturerId: currentClass.lecturer_id, 
-              userLecturerId: lecturerProfile.lecturer_id,
-              userAccountId: currentUser.id 
-            });
+         
           } catch (error: any) {
-            console.error('❌ Failed to get lecturer profile for permission check:', error);
             setError('Không thể xác minh quyền truy cập. Vui lòng thử lại.');
             return;
           }
@@ -109,11 +93,9 @@ const ClassEdit: React.FC = () => {
           room: currentClass.room || ''
         });
         
-        // Set subjects and lecturers with proper sorting
         setSubjects(subjectsResponse.data || []);
         
         if (currentUser.role?.toLowerCase() === 'admin') {
-          // Sort lecturers by full name (Vietnamese style: last_name first_name)
           const sortedLecturers = (lecturersResponse || []).sort((a: any, b: any) => {
             const nameA = `${a.profile?.last_name || ''} ${a.profile?.first_name || ''}`.trim();
             const nameB = `${b.profile?.last_name || ''} ${b.profile?.first_name || ''}`.trim();
@@ -124,7 +106,6 @@ const ClassEdit: React.FC = () => {
         }
         
       } catch (error: any) {
-        console.error('❌ Error loading data:', error);
         setError(error.message || 'Không thể tải dữ liệu');
       } finally {
         setLoading(false);
@@ -151,22 +132,15 @@ const ClassEdit: React.FC = () => {
       setSaving(true);
       setError(null);
       
-      // Debug: Log form data being sent
-      console.log('Form data being sent:', form);
-      console.log('Class ID:', id);
-      
-      // Validate required fields
+    
       if (!form.section_name.trim()) {
         throw new Error('Tên lớp học phần là bắt buộc');
       }
       
-      // For admin, lecturer_id must be selected
-      // For lecturer, lecturer_id is automatically their own ID
       if (currentUser?.role?.toLowerCase() === 'admin' && (!form.lecturer_id || form.lecturer_id === 0)) {
         throw new Error('Vui lòng chọn giảng viên phụ trách');
       }
       
-      // Validate required dates
       if (!form.start_date) {
         throw new Error('Ngày bắt đầu là bắt buộc');
       }
@@ -175,12 +149,10 @@ const ClassEdit: React.FC = () => {
         throw new Error('Ngày kết thúc là bắt buộc');
       }
       
-      // Validate date logic
       if (new Date(form.end_date) <= new Date(form.start_date)) {
         throw new Error('Ngày kết thúc phải sau ngày bắt đầu');
       }
       
-      // Clean up form data before sending - exclude subject_id as backend doesn't allow updating it
       const updateData: any = {
         lecturer_id: form.lecturer_id,
         section_name: form.section_name.trim(),
@@ -189,11 +161,9 @@ const ClassEdit: React.FC = () => {
         end_date: form.end_date
       };
       
-      // Only include optional fields if they have values
       if (form.schedule?.trim()) updateData.schedule = form.schedule.trim();
       if (form.room?.trim()) updateData.room = form.room.trim();
       
-      console.log('Clean update data being sent:', updateData);
       
       await simpleClassService.updateClass(Number(id), updateData);
       
@@ -201,15 +171,12 @@ const ClassEdit: React.FC = () => {
       navigate("/teacher/my-classes");
       
     } catch (error: any) {
-      console.error('Error updating class:', error);
       
-      // Better error handling with specific messages
       let errorMessage = 'Không thể cập nhật lớp học phần';
       
       if (error.message.includes('You are not the instructor of this course')) {
         errorMessage = 'Bạn không có quyền chỉnh sửa lớp học phần này. Chỉ giảng viên được phân công hoặc admin mới có thể thực hiện thao tác này.';
       } else if (error.message.includes('Validation failed')) {
-        // Display detailed validation errors
         if (error.validationErrors && Array.isArray(error.validationErrors)) {
           const errorDetails = error.validationErrors.map((err: any) => {
             if (typeof err === 'string') return err;
@@ -238,8 +205,7 @@ const ClassEdit: React.FC = () => {
     if (!classData) return;
 
     try {
-      // Check if class has enrolled students
-      console.log('Checking students for class:', id);
+
       const studentsResponse = await simpleClassService.getClassStudents(Number(id));
       
       if (studentsResponse.data && studentsResponse.data.length > 0) {
@@ -251,7 +217,6 @@ const ClassEdit: React.FC = () => {
         return;
       }
 
-      // If no students, proceed with normal delete confirmation
       const confirmMessage = `Bạn có chắc chắn muốn xóa lớp học "${classData.section_name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
       
       if (window.confirm(confirmMessage)) {
@@ -266,9 +231,7 @@ const ClassEdit: React.FC = () => {
         navigate("/teacher/my-classes");
       }
     } catch (error: any) {
-      console.error('Error deleting class:', error);
       
-      // Handle specific error messages
       let errorMessage = 'Không thể xóa lớp học';
       if (error.message.includes('Cannot delete class with enrolled students')) {
         errorMessage = `Không thể xóa lớp học "${classData.section_name}"!\n\nLớp học này vẫn còn có sinh viên đang học. Vui lòng xóa tất cả sinh viên khỏi lớp trước khi xóa lớp học.`;
@@ -349,7 +312,6 @@ const ClassEdit: React.FC = () => {
           <div>
             <label className="block text-gray-700 mb-2 font-semibold">Giảng viên phụ trách</label>
             {currentUser?.role?.toLowerCase() === 'admin' ? (
-              // Admin can select any lecturer
               <select 
                 name="lecturer_id" 
                 value={form.lecturer_id} 
@@ -371,7 +333,7 @@ const ClassEdit: React.FC = () => {
                 })}
             </select>
             ) : (
-              // Lecturer sees their own info and cannot change
+
               <div className="border rounded-xl px-3 py-2 w-full bg-gray-100 text-gray-700 text-base">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">

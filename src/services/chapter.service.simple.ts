@@ -145,7 +145,6 @@ class SimpleChapterService {
 
   async getChapter(id: number): Promise<any> {
     try {
-      console.log(`Getting chapter ${id}...`);
       
       const response = await fetch(`${API_BASE_URL}/lectures/chapters/${id}`, {
         method: 'GET',
@@ -153,7 +152,6 @@ class SimpleChapterService {
       });
 
       const result = await response.json();
-      console.log('Get chapter response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -166,14 +164,12 @@ class SimpleChapterService {
         throw new Error(result.message || 'Failed to fetch chapter');
       }
     } catch (error: any) {
-      console.error('Get chapter error:', error);
       throw error;
     }
   }
 
   async createChapter(data: CreateChapterData): Promise<Chapter> {
     try {
-      console.log('Creating chapter:', data);
       
       const response = await fetch(`${API_BASE_URL}/lectures/chapters`, {
         method: 'POST',
@@ -182,7 +178,6 @@ class SimpleChapterService {
       });
 
       const result: any = await response.json();
-      console.log('Create chapter response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -203,7 +198,6 @@ class SimpleChapterService {
         throw new Error(result.message || 'Failed to create chapter');
       }
     } catch (error: any) {
-      console.error('Create chapter error:', error);
       throw error;
     }
   }
@@ -219,7 +213,6 @@ class SimpleChapterService {
       });
 
       const result = await response.json();
-      console.log('Update chapter response:', result);
 
       if (response.ok) {
         return result.data || result;
@@ -240,7 +233,6 @@ class SimpleChapterService {
         throw new Error(result.message || 'Failed to update chapter');
       }
     } catch (error: any) {
-      console.error('Update chapter error:', error);
       throw error;
     }
   }

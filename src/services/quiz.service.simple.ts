@@ -530,6 +530,19 @@ class SimpleQuizService {
       throw error;
     }
   }
+
+  async importQuestions(quizId: number, file: File): Promise<any> {
+    const fd = new FormData();
+    fd.append('file', file);
+    const token = await authService.getValidToken();
+    return fetch(`${API_BASE_URL}/quizzes/${quizId}/import-csv`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: fd
+    }).then(res => res.json());
+  }
 }
 
 export const simpleQuizService = new SimpleQuizService();

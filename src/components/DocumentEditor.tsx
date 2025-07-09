@@ -162,12 +162,20 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
   };
 
   const deleteSection = (id: string) => {
-    if (sections.length === 1) return;
-    
-    const filtered = sections.filter(s => s.id !== id);
-    filtered.forEach((section, idx) => {
-      section.order = idx;
-    });
+    let filtered = sections.filter(s => s.id !== id);
+
+    if (filtered.length === 0) {
+      filtered = [{
+        id: generateId(),
+        type: 'paragraph',
+        content: '',
+        order: 0
+      }];
+    } else {
+      filtered.forEach((section, idx) => {
+        section.order = idx;
+      });
+    }
     setSections(filtered);
   };
 

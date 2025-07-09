@@ -51,9 +51,7 @@ const ChapterManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<{ [key: number]: 'lectures' | 'materials' }>({});
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
-    // Simulate API call
     const mockChapters: Chapter[] = [
       {
         id: 1,

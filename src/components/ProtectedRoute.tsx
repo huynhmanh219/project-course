@@ -53,11 +53,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   if (requiredRole && userRole) {
-    if (userRole === 'admin') {
+    // Normalize role alias: treat "teacher" as "lecturer"
+    const normalizedRole = userRole === 'teacher' ? 'lecturer' : userRole;
+
+    // Admin bypasses all role checks
+    if (normalizedRole === 'admin') {
       return <>{children}</>;
     }
-    
-    if (!requiredRole.includes(userRole)) {
+
+    if (!requiredRole.includes(normalizedRole)) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg">

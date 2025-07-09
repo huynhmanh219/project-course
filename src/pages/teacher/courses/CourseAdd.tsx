@@ -49,19 +49,20 @@ const CourseAdd: React.FC = () => {
         return;
       }
 
-      // Check if user is admin
+      // Check if user is admin  (use local variable to avoid async state delay)
       const userRole = currentUser.role || currentUser.roleName;
-      setIsAdmin(userRole === 'admin');
-      console.log('User role:', userRole, 'Is admin:', userRole === 'admin');
+      const isCurrentAdmin = userRole === 'admin';
+      setIsAdmin(isCurrentAdmin);
+      console.log('User role:', userRole, 'Is admin:', isCurrentAdmin);
 
       // Permission check and suggestion
-      if (currentUser.role !== 'admin' && currentUser.role !== 'lecturer') {
+      if (!isCurrentAdmin && currentUser.role !== 'lecturer') {
         console.log('⚠️ User role might not have teachers access. Current role:', currentUser.role);
         setError(`Role hiện tại (${currentUser.role}) có thể không có quyền truy cập teachers API. Thử login với admin hoặc lecturer account.`);
       }
 
-      // Only admin can select lecturers, lecturer automatically creates for themselves
-      if (isAdmin) {
+      // Only admin can select lecturers; lecturer auto-assigns themself
+      if (isCurrentAdmin) {
         // Fetch teachers list for admin
         console.log('🔍 Loading teachers list for admin...');
         try {
@@ -72,15 +73,12 @@ const CourseAdd: React.FC = () => {
           
           // Handle different possible response structures
           let teachersData = null;
-          if (teachersResponse && teachersResponse.data) {
-            teachersData = teachersResponse.data;
-            console.log('✅ Found data in response.data:', teachersData);
+          if (teachersResponse && Array.isArray(teachersResponse.teachers)) {
+            teachersData = teachersResponse.teachers;
+          } else if (teachersResponse && teachersResponse.data && Array.isArray(teachersResponse.data.teachers)) {
+            teachersData = teachersResponse.data.teachers;
           } else if (teachersResponse && Array.isArray(teachersResponse)) {
             teachersData = teachersResponse;
-            console.log('✅ Response is direct array:', teachersData);
-          } else if (teachersResponse && teachersResponse.teachers) {
-            teachersData = teachersResponse.teachers;
-            console.log('✅ Found data in response.teachers:', teachersData);
           } else {
             console.log('⚠️ Unexpected response structure:', teachersResponse);
           }
@@ -92,7 +90,7 @@ const CourseAdd: React.FC = () => {
               console.log('🔍 Processing teacher:', teacher);
               
               // Handle different teacher object structures
-              const teacherId = teacher.lecturer_id || teacher.id || teacher.account_id;
+              const teacherId = teacher.profile?.id || teacher.lecturer_id || teacher.id || teacher.account_id;
               const firstName = teacher.first_name || teacher.profile?.first_name || teacher.lecturer?.first_name;
               const lastName = teacher.last_name || teacher.profile?.last_name || teacher.lecturer?.last_name;
               const email = teacher.email || teacher.account?.email;
@@ -329,7 +327,7 @@ const CourseAdd: React.FC = () => {
               >
                 <option value="">-- Chọn giảng viên --</option>
                 {giangVienOptions.map((gv) => (
-                  <option key={gv.id} value={gv.id-1}>
+                  <option key={gv.id} value={gv.id}>
                     {gv.name} ({gv.email})
                   </option>
                 ))}

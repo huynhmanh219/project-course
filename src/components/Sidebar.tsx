@@ -5,7 +5,6 @@ import { Home,
   Users,
   Settings,
   ClipboardList,
-
   LayoutDashboard,
   UserCog,
   Layers,
@@ -96,7 +95,7 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/admin/class-ratings" className={navLinkClass}>
               <Star className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Đánh giá lớp học</span>
+              <span className="truncate">Quản lý đánh giá lớp học</span>
             </NavLink>
 
           </>
@@ -128,7 +127,7 @@ export function Sidebar() {
             </NavLink>
             <NavLink to="/teacher/class-ratings" className={navLinkClass}>
               <Star className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Đánh giá lớp học của tôi</span>
+              <span className="truncate">Đánh giá lớp học</span>
             </NavLink>
             
             <div className={sectionTitleClass}>

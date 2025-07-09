@@ -34,7 +34,6 @@ const ClassAdd: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // CRITICAL: Refresh user data từ server để đảm bảo data đúng
       console.log('🔄 Refreshing user data from server...');
       const freshUser = await authService.refreshUserData();
       setCurrentUser(freshUser);
@@ -44,32 +43,23 @@ const ClassAdd: React.FC = () => {
         return;
       }
       
-      console.log('✅ Using fresh user data:', freshUser);
       
-      // Check if user has permission to create classes
       if (!['admin', 'lecturer'].includes(freshUser.role?.toLowerCase())) {
         setError('Bạn không có quyền tạo lớp học phần');
         setTimeout(() => navigate('/'), 3000);
         return;
       }
       
-      // Load subjects and lecturers in parallel
       const [subjectsResponse, lecturersResponse] = await Promise.all([
         simpleCourseService.getCourses(),
         freshUser.role?.toLowerCase() === 'admin' ? simpleCourseService.getLecturers() : Promise.resolve([])
       ]);
+
       
-      console.log('🔄 Subjects data:', subjectsResponse);
-      console.log('🔄 Lecturers data:', lecturersResponse);
-      console.log('👤 Fresh user:', freshUser);
-      
-      // Set subjects
       const subjectsData = subjectsResponse.data || [];
       setSubjects(subjectsData);
       
-      // Handle lecturer selection based on role
       if (freshUser.role?.toLowerCase() === 'admin') {
-        // Admin can select any lecturer
         const sortedLecturers = (lecturersResponse || []).sort((a: any, b: any) => {
           const nameA = `${a.profile?.last_name || ''} ${a.profile?.first_name || ''}`.trim();
           const nameB = `${b.profile?.last_name || ''} ${b.profile?.first_name || ''}`.trim();
@@ -77,29 +67,23 @@ const ClassAdd: React.FC = () => {
         });
         setLecturers(sortedLecturers);
       } else {
-        // Lecturer can only create classes for themselves
-        // Get lecturer profile to get correct lecturer_id
         try {
           const lecturerProfile = await simpleClassService.getCurrentLecturerProfile();
           setForm(prev => ({ 
             ...prev, 
-            lecturer_id: lecturerProfile.lecturer_id // Use lecturer table ID, not account ID
+            lecturer_id: lecturerProfile.lecturer_id
           }));
-          console.log('✅ Set lecturer_id for current user:', lecturerProfile.lecturer_id);
         } catch (error: any) {
-          console.error('❌ Failed to get lecturer profile:', error);
           setError('Không thể lấy thông tin giảng viên. Vui lòng thử lại.');
           return;
         }
       }
       
-      // Set default subject_id if available
       if (subjectsData.length > 0) {
         setForm(prev => ({ ...prev, subject_id: subjectsData[0].id }));
       }
       
     } catch (error: any) {
-      console.error('❌ Error loading data:', error);
       setError(error.message || 'Không thể tải dữ liệu');
     } finally {
       setLoading(false);
@@ -123,7 +107,6 @@ const ClassAdd: React.FC = () => {
       setSaving(true);
       setError(null);
       
-      // Additional validation
       if (!form.section_name.trim()) {
         throw new Error('Tên lớp học phần là bắt buộc');
       }
@@ -132,13 +115,10 @@ const ClassAdd: React.FC = () => {
         throw new Error('Vui lòng chọn môn học');
       }
       
-      // For admin, lecturer_id must be selected
-      // For lecturer, lecturer_id is auto-set
       if (currentUser?.role?.toLowerCase() === 'admin' && (!form.lecturer_id || form.lecturer_id === 0)) {
         throw new Error('Vui lòng chọn giảng viên phụ trách');
       }
-      
-      // Validate required dates
+          
       if (!form.start_date) {
         throw new Error('Ngày bắt đầu là bắt buộc');
       }
@@ -147,12 +127,10 @@ const ClassAdd: React.FC = () => {
         throw new Error('Ngày kết thúc là bắt buộc');
       }
       
-      // Validate date logic
       if (new Date(form.end_date) <= new Date(form.start_date)) {
         throw new Error('Ngày kết thúc phải sau ngày bắt đầu');
       }
       
-      // Clean up form data before sending
       const cleanFormData: any = {
         subject_id: form.subject_id,
         lecturer_id: form.lecturer_id,
@@ -162,7 +140,6 @@ const ClassAdd: React.FC = () => {
         end_date: form.end_date
       };
       
-      // Only include optional fields if they have values
       if (form.schedule?.trim()) {
         cleanFormData.schedule = form.schedule.trim();
       }
@@ -170,17 +147,13 @@ const ClassAdd: React.FC = () => {
       if (form.room?.trim()) {
         cleanFormData.room = form.room.trim();
       }
-      
-      console.log('✅ Creating class with clean data:', cleanFormData);
-      console.log('👤 Current user role:', currentUser?.role);
-      
+    
       await simpleClassService.createClass(cleanFormData);
       
       alert("Đã tạo lớp học thành công!");
       navigate("/teacher/my-classes");
       
     } catch (error: any) {
-      console.error('❌ Error creating class:', error);
       setError(error.message || 'Không thể tạo lớp học');
     } finally {
       setSaving(false);

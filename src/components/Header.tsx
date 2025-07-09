@@ -59,20 +59,20 @@ export function Header() {
 
   return (
     <header className="w-full flex items-center justify-between px-6 py-3 border-b bg-gradient-to-r from-blue-50 via-white to-indigo-50 shadow-sm">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-$">
         <img src="/logo.jpg" alt="Class" className="h-10 w-10 rounded-full shadow-lg border-2 border-blue-200" />
         <span className="text-2xl font-extrabold text-blue-800 tracking-tight drop-shadow">LMS Portal</span>
       </div>
 
       <div className="flex-1 max-w-xl mx-8 hidden md:block">
-        <div className="relative">
+        {/* <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
           <input
             type="text"
             placeholder="Tìm kiếm khoá học, lớp học..."
             className="w-full pl-12 pr-4 py-2 rounded-full border border-blue-200 bg-white focus:outline-none focus:border-blue-500 shadow-sm text-base text-gray-700 placeholder:text-gray-400"
           />
-        </div>
+        </div> */}
       </div>
 
       <div className="flex items-center gap-3">

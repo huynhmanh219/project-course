@@ -50,7 +50,6 @@ const Lectures: React.FC = () => {
   const { courseId, chapterId } = useParams<{ courseId: string; chapterId: string }>();
   const navigate = useNavigate();
   
-  // States
   const [course, setCourse] = useState<Course | null>(null);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -69,7 +68,6 @@ const Lectures: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load course info
       const courseResponse = await simpleCourseService.getCourse(Number(courseId));
       console.log('Course info response:', courseResponse);
       
@@ -77,14 +75,12 @@ const Lectures: React.FC = () => {
         setCourse(courseResponse.course);
       }
 
-      // Load chapter info
       const chapterResponse = await simpleChapterService.getChapter(Number(chapterId));
       console.log('Chapter info response:', chapterResponse);
       
       if (chapterResponse) {
         setChapter(chapterResponse);
         
-        // Load lectures for this chapter
         await loadLectures();
       } else {
         setError('Không tìm thấy thông tin chương');
@@ -127,7 +123,6 @@ const Lectures: React.FC = () => {
         
         await simpleLectureService.deleteLecture(lectureId);
         
-        // Remove from local state
         setLectures(lectures.filter(l => l.id !== lectureId));
         alert('Đã xóa bài giảng thành công!');
       } catch (error: any) {
@@ -144,7 +139,6 @@ const Lectures: React.FC = () => {
       const newStatus = !currentStatus;
       await simpleLectureService.togglePublishStatus(lectureId, newStatus);
       
-      // Update local state
       setLectures(lectures.map(lecture => 
         lecture.id === lectureId 
           ? { ...lecture, is_published: newStatus }
@@ -211,7 +205,6 @@ const Lectures: React.FC = () => {
                 {lecture.title}
               </h3>
               
-              {/* Thông tin cơ bản */}
               <div className="flex items-center gap-4 text-sm text-gray-500 mb-3 flex-wrap">
                 <div className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
@@ -236,7 +229,6 @@ const Lectures: React.FC = () => {
                 </div>
               </div>
 
-              {/* Trạng thái nội dung */}
               <div className="flex items-center gap-2 mb-3">
                 <div className={`w-3 h-3 rounded-full ${lecture.is_published ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                 <span className="text-sm text-gray-600">
@@ -249,9 +241,7 @@ const Lectures: React.FC = () => {
             </div>
           </div>
 
-          {/* Các nút hành động */}
           <div className="space-y-2">
-            {/* Nút chính */}
             <Button 
               size="sm" 
               className="w-full bg-green-500 hover:bg-green-600"
