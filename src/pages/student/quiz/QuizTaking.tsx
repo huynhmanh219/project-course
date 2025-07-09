@@ -185,7 +185,7 @@ const QuizTaking: React.FC = () => {
               if (remainingTime <= 0) {
                 console.log('Time expired, auto-submitting...');
                 await SimpleQuizService.submitQuizAttempt(inProgressAttempt.id);
-                navigate(`/student/quiz/${quizId}/result?submission=${inProgressAttempt.id}`);
+                navigate(`/student/quiz/${quizId}/result/${inProgressAttempt.id}`);
                 return;
               }
             } else {
@@ -195,7 +195,7 @@ const QuizTaking: React.FC = () => {
               
               if (completedAttempt) {
                 console.log('Found completed attempt, redirecting to results:', completedAttempt.id);
-                navigate(`/student/quiz/${quizId}/result?submission=${completedAttempt.id}`);
+                navigate(`/student/quiz/${quizId}/result/${completedAttempt.id}`);
                 return;
               }
               
@@ -415,7 +415,7 @@ const QuizTaking: React.FC = () => {
       console.log('Final submit response:', submitResponse);
 
       if (submitResponse) {
-        navigate(`/student/quiz/${quizId}/result?submission=${attemptId}`);
+        navigate(`/student/quiz/${quizId}/result/${attemptId}`);
       } else {
         throw new Error('Không nhận được phản hồi từ server');
       }

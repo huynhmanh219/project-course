@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {  UserPlus, Edit, Trash2, Search, GraduationCap, UserCheck, UserX, Loader2, Eye } from "lucide-react";
+import { Pagination } from '../../../components/ui/pagination';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleUserService } from '../../../services';
@@ -29,7 +30,7 @@ const StudentManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 20,
+    limit: 6,
     total: 0,
     totalPages: 0
   });
@@ -348,24 +349,8 @@ const StudentManagement: React.FC = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => loadStudents(pagination.page - 1, searchTerm)}
-              disabled={pagination.page <= 1}
-            >
-              Trước
-            </Button>
-            <span className="px-4 py-2 bg-white rounded-lg border">
-              Trang {pagination.page} / {pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => loadStudents(pagination.page + 1, searchTerm)}
-              disabled={pagination.page >= pagination.totalPages}
-            >
-              Sau
-            </Button>
+          <div className="mt-8 flex justify-center">
+            <Pagination currentPage={pagination.page} totalPages={pagination.totalPages} onPageChange={(p)=>loadStudents(p, searchTerm)} />
           </div>
         )}
 

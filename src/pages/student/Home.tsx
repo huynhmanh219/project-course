@@ -62,7 +62,9 @@ export function Home() {
     totalLectures: 0,
     completedLectures: 0,
     averageGrade: 0,
-    lectureCompletionPercent: 0
+    lectureCompletionPercent: 0,
+    classCompletionPercent: 0,
+    completedSections: 0
   });
   const [notifications, setNotifications] = useState<any[]>([]); void notifications;
   const [loading, setLoading] = useState(true);
@@ -112,6 +114,7 @@ export function Home() {
 
           let totalLectures = 0;
           let completedLectures = 0;
+          let completedSections = 0;
           const progressMap: {[key:number]: any} = {};
 
           progressResults.forEach((res, idx) => {
@@ -120,18 +123,22 @@ export function Home() {
               progressMap[sectionId] = res.data;
               totalLectures += res.data.total_lectures || 0;
               completedLectures += res.data.lectures_completed || 0;
+              if (Number(res.data.completion_rate) === 100) completedSections += 1;
             }
           });
 
           setSectionProgress(progressMap);
 
           const lectureCompletionPercent = Math.round((completedLectures / Math.max(totalLectures, 1)) * 100);
+          const classCompletionPercent = Math.round((completedSections / Math.max(studentClasses.length,1))*100);
 
           setStats(prev => ({
             ...prev,
             totalLectures,
             completedLectures,
-            lectureCompletionPercent
+            lectureCompletionPercent,
+            classCompletionPercent,
+            completedSections
           }));
 
           // Generate recent activities from classes
@@ -377,7 +384,7 @@ export function Home() {
                 <div className="text-2xl font-bold text-gray-800">{stats.totalClasses}</div>
                 <div className="text-gray-600 text-sm">Lớp đang tham gia</div>
                 <div className="text-xs text-green-600 mt-1">
-                  {stats.upcomingClasses} đang active
+                  {stats.upcomingClasses} đang hoạt động
                 </div>
               </div>
             </div>
@@ -405,11 +412,11 @@ export function Home() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-800">
-                  {Math.round((stats.completedClasses / Math.max(stats.totalClasses, 1)) * 100)}%
+                  {stats.classCompletionPercent}%
                 </div>
                 <div className="text-gray-600 text-sm">Tiến độ hoàn thành</div>
                 <div className="text-xs text-green-600 mt-1">
-                  {stats.completedClasses}/{stats.totalClasses} lớp
+                  {stats.completedSections}/{stats.totalClasses} lớp
                 </div>
               </div>
             </div>
@@ -484,6 +491,11 @@ export function Home() {
                       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                         {/* Header với gradient */}
                         <div className={`h-32 bg-gradient-to-br ${cls.color} relative overflow-hidden`}>
+                          {getSectionPercent(cls.id) === 100 && (
+                            <span className="absolute top-2 right-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg">
+                              Hoàn thành
+                            </span>
+                          )}
                           <div className="absolute inset-0 bg-black/10"></div>
                           <div className="relative z-10 p-6 flex items-center justify-between h-full">
                             <div>

@@ -5,10 +5,13 @@ import { Button } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
 import { authService } from "../../../services/auth.service";
 import { simpleCourseService as SimpleCourseService } from "../../../services/course.service.simple";
+import { Pagination } from "../../../components/ui/pagination";
 
 const TeacherCourses: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [deletingCourseId, setDeletingCourseId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
@@ -16,10 +19,10 @@ const TeacherCourses: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    fetchCourses(currentPage);
+  }, [currentPage]);
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (page:number = 1) => {
     try {
       setLoading(true);
       setError('');
@@ -39,8 +42,12 @@ const TeacherCourses: React.FC = () => {
       console.log('User role:', userRole, 'Is admin:', userRole === 'admin');
 
       console.log('Fetching courses...');
-      const response = await SimpleCourseService.getCourses();
+      const response = await SimpleCourseService.getCourses({ page, limit: 12 });
       console.log('Courses response:', response);
+
+      if (response && response.pagination) {
+        setTotalPages(response.pagination.totalPages || response.pagination.total_pages || 1);
+      }
       
       // Backend returns: { status: 'success', data: { courses: [...], pagination: {...} } }
       // Check multiple possible response formats
@@ -414,6 +421,11 @@ const TeacherCourses: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="mt-8 flex justify-center">
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </div>
       </div>
     </div>
   );

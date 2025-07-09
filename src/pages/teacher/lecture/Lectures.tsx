@@ -19,6 +19,7 @@ import {
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleLectureService, simpleChapterService, simpleCourseService } from '../../../services';
+import { Pagination } from '../../../components/ui/pagination';
 
 interface Lecture {
   id: number;
@@ -53,6 +54,8 @@ const Lectures: React.FC = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingLectureId, setDeletingLectureId] = useState<number | null>(null);
@@ -81,7 +84,7 @@ const Lectures: React.FC = () => {
       if (chapterResponse) {
         setChapter(chapterResponse);
         
-        await loadLectures();
+        await loadLectures(currentPage);
       } else {
         setError('Không tìm thấy thông tin chương');
       }
@@ -93,17 +96,21 @@ const Lectures: React.FC = () => {
     }
   };
 
-  const loadLectures = async () => {
+  const loadLectures = async (page:number = 1) => {
     try {
       console.log(`Loading lectures for chapter ${chapterId}...`);
       
-      const lecturesData = await simpleLectureService.getLecturesByChapter(Number(chapterId));
-      console.log('Lectures data:', lecturesData);
-      
-      if (Array.isArray(lecturesData)) {
-        setLectures(lecturesData.sort((a, b) => a.order_index - b.order_index));
-      } else {
-        setLectures([]);
+      const response = await simpleLectureService.getLectures({ chapter_id: Number(chapterId), page, limit: 9 });
+      console.log('Lectures response:', response);
+
+      let data: Lecture[] = [];
+      if (response && response.data) data = response.data;
+      else if (Array.isArray(response)) data = response;
+
+      setLectures(data.sort((a,b)=>a.order_index-b.order_index));
+
+      if (response && response.pagination) {
+        setTotalPages(response.pagination.totalPages || response.pagination.total_pages || 1);
       }
     } catch (error: any) {
       console.error('Error loading lectures:', error);
@@ -392,6 +399,11 @@ const Lectures: React.FC = () => {
               </Button>
             </div>
           )}
+
+          {/* Pagination */}
+          <div className="mt-8 flex justify-center">
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p)=> setCurrentPage(p)} />
+          </div>
         </div>
       </div>
     </div>

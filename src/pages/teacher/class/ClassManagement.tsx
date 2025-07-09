@@ -5,20 +5,23 @@ import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { authService } from '../../../services/auth.service';
 import { simpleClassService } from '../../../services/class.service.simple';
+import { Pagination } from '../../../components/ui/pagination';
 
 const ClassManagement: React.FC = () => {
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [deletingClassId, setDeletingClassId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchClasses();
-  }, []);
+    fetchClasses(currentPage);
+  }, [currentPage]);
 
-  const fetchClasses = async () => {
+  const fetchClasses = async (page:number = 1) => {
     try {
       setLoading(true);
       setError('');
@@ -32,11 +35,15 @@ const ClassManagement: React.FC = () => {
       }
 
      
-      const response = await simpleClassService.getClasses();
+      const response = await simpleClassService.getClasses({ page, limit: 12 });
      
       
      
       let classesData = response.data || [];
+
+      if (response && response.pagination) {
+        setTotalPages(response.pagination.totalPages || response.pagination.total_pages || 1);
+      }
       
       console.log('Classes data to process:', classesData);
       
@@ -309,7 +316,7 @@ const ClassManagement: React.FC = () => {
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-medium">{error}</span>
                 <Button 
-                  onClick={fetchClasses}
+                  onClick={()=>fetchClasses(currentPage)}
                   variant="outline"
                   size="sm"
                   className="ml-auto border-red-300 text-red-700 hover:bg-red-100"
@@ -343,6 +350,11 @@ const ClassManagement: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="mt-8 flex justify-center">
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </div>
       </div>
     </div>
   );

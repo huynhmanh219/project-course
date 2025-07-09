@@ -139,40 +139,46 @@ const QuizResult: React.FC = () => {
         }
       } else {
         try {
-          const attemptsResponse = await fetch(`http://localhost:3000/api/debug-direct?quiz_id=${quizId}`, {
-            headers: { 'Content-Type': 'application/json' }
+          // Lấy tất cả submissions của sinh viên cho quiz hiện tại
+          const attemptsResponse = await simpleQuizService.getMyAttempts({
+            quiz_id: quizId,
+            page: 1,
+            size: 50 // đủ lớn để lấy hết
           });
-          
-          const attemptsResult = await attemptsResponse.json();
-          if (attemptsResult.success && attemptsResult.data.length > 0) {
-            const completedSubmissions = attemptsResult.data.filter((s: any) => 
-              s.status === 'submitted'
+
+          const attempts = attemptsResponse.results || attemptsResponse.data || [];
+
+          if (Array.isArray(attempts) && attempts.length) {
+            // Chỉ lấy những bài đã nộp/đã chấm
+            const completedSubmissions = attempts.filter((s: any) =>
+              s.status === 'submitted' || s.status === 'graded'
             );
-            
+
             if (completedSubmissions.length > 0) {
+              // Chọn bài có điểm cao nhất, nếu bằng điểm thì chọn bài nộp sau cùng
               const bestSubmission = completedSubmissions.reduce((best: any, current: any) => {
                 const bestScore = parseFloat(best.score || 0);
                 const currentScore = parseFloat(current.score || 0);
-                
+
                 if (currentScore > bestScore) return current;
                 if (currentScore === bestScore) {
                   return new Date(current.submitted_at) > new Date(best.submitted_at) ? current : best;
                 }
                 return best;
               });
-              
+
               const resultResponse = await simpleQuizService.getAttemptResult(bestSubmission.id);
-              
+
               if (resultResponse && (resultResponse.score !== undefined || resultResponse.data)) {
                 const data = resultResponse.data || resultResponse;
-                
+
                 const correctAnswers = data.responses?.filter((r: any) => r.is_correct === true || r.is_correct === 1).length || 0;
                 const totalQuestions = data.responses?.length || 0;
-                
+
                 const score = parseFloat(data.score || 0);
                 const maxScore = parseFloat(data.max_score || 10);
                 const percentage = maxScore > 0 ? (score / maxScore * 100) : parseFloat(data.percentage || 0);
-                
+
                 setResult({
                   submissionId: data.id || bestSubmission.id,
                   score: score,
@@ -186,15 +192,15 @@ const QuizResult: React.FC = () => {
                   questions: data.quiz?.questions || [],
                   quiz: data.quiz
                 });
-                
+
                 return;
               }
             }
           }
-          
-          // If no submissions found, show error
+
+          // Không tìm thấy submission hợp lệ
           setError('Bạn chưa hoàn thành bài kiểm tra này.');
-          
+
         } catch (searchError) {
           console.error('Error searching for submissions:', searchError);
           setError('Không thể tìm thấy kết quả bài kiểm tra.');

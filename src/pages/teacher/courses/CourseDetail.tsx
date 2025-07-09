@@ -388,7 +388,7 @@ const CourseDetail: React.FC = () => {
             {activeTab === 'overview' && (
               <div className="space-y-8">
                 {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                   <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
                     <CardContent className="p-6 text-center">
                       <Book className="w-8 h-8 text-blue-500 mx-auto mb-3" />
@@ -397,7 +397,7 @@ const CourseDetail: React.FC = () => {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                  {/* <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
                     <CardContent className="p-6 text-center">
                       <Video className="w-8 h-8 text-green-500 mx-auto mb-3" />
                       <div className="text-2xl font-bold text-green-700">
@@ -415,7 +415,7 @@ const CourseDetail: React.FC = () => {
                       </div>
                       <p className="text-purple-600 font-medium">Tổng thời lượng</p>
                     </CardContent>
-                  </Card>
+                  </Card> */}
                 </div>
 
                 {/* Course Overview */}
