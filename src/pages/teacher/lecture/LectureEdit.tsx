@@ -388,11 +388,14 @@ const LectureEdit: React.FC = () => {
                 )}
               </div>
               
-              <DocumentEditor
-                initialContent={formData.content}
-                onChange={handleContentChange}
-                disabled={saving}
-              />
+              {course && (
+                <DocumentEditor
+                  initialContent={formData.content}
+                  onChange={handleContentChange}
+                  disabled={saving}
+                  meta={{ subjectId: course.id, chapterId: Number(chapterId) }}
+                />
+              )}
             </CardContent>
           </Card>
 

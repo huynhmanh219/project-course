@@ -4,6 +4,7 @@ import { ArrowLeft, Edit, BookOpen, Calendar, Hash, FileText, Clock, GraduationC
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleLectureService, simpleChapterService, simpleCourseService } from '../../../services';
+import ReactMarkdown from 'react-markdown';
 
 interface Lecture {
   id: number;
@@ -201,9 +202,9 @@ const LectureDetail: React.FC = () => {
                 </div>
                 <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200">
                   {lecture.content ? (
-                    <div className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed text-sm">
+                    <ReactMarkdown className="prose max-w-none text-gray-800">
                       {lecture.content}
-                    </div>
+                    </ReactMarkdown>
                   ) : (
                     <div className="text-gray-500 italic text-center py-8">
                       Chưa có nội dung bài giảng

@@ -71,6 +71,7 @@ import TestRating from "./pages/TestRating"
 import TestClassRating from "./pages/TestClassRating"
 import AdminClassRatings from "./pages/admin/ClassRatings"
 import TeacherClassRatings from "./pages/teacher/ClassRatings"
+import PendingClassRatings from "./pages/admin/PendingClassRatings";
 
 import TestAPI from "./pages/TestAPI"
 import TestQuizRouting from "./pages/TestQuizRouting"
@@ -459,6 +460,7 @@ export function App() {
                   
                   {/* Class Ratings */}
                   <Route path="class-ratings" element={<AdminClassRatings />} />
+                  <Route path="class-ratings/pending" element={<PendingClassRatings />} />
                   
                   {/* Profile */}
                   <Route path="profile" element={<Profile />} />

@@ -150,6 +150,25 @@ class ClassRatingService {
       throw new Error(error.response?.data?.message || 'Không thể tải danh sách lớp học được đánh giá cao');
     }
   }
+
+  async getPendingRatings(page: number = 1, size: number = 20): Promise<any> {
+    try {
+      const response = await apiClient.get(`${this.baseURL}/pending?page=${page}&size=${size}`);
+      return response.data || response;
+    } catch (error: any) {
+      console.error('Error fetching pending ratings:', error);
+      throw new Error(error.response?.data?.message || 'Không thể tải đánh giá chờ duyệt');
+    }
+  }
+
+  async approveRating(ratingId: number): Promise<void> {
+    try {
+      await apiClient.put(`${this.baseURL}/${ratingId}/approve`, {});
+    } catch (error: any) {
+      console.error('Error approving rating:', error);
+      throw new Error(error.response?.data?.message || 'Không thể duyệt đánh giá');
+    }
+  }
 }
 
 export const classRatingService = new ClassRatingService(); 

@@ -9,14 +9,16 @@ import {
   FileText,
   Heading1,
   Heading2,
-  Heading3
+  Heading3,
+  Image as ImageIcon
 } from 'lucide-react';
+import { uploadImage } from '../services/image-upload.service';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 interface ContentSection {
   id: string;
-  type: 'heading1' | 'heading2' | 'heading3' | 'paragraph' | 'list';
+  type: 'heading1' | 'heading2' | 'heading3' | 'paragraph' | 'list' | 'image';
   content: string;
   order: number;
 }
@@ -25,12 +27,14 @@ interface DocumentEditorProps {
   initialContent?: string;
   onChange: (content: string) => void;
   disabled?: boolean;
+  meta?: { subjectId: number; chapterId?: number };
 }
 
 const DocumentEditor: React.FC<DocumentEditorProps> = ({ 
   initialContent = '', 
   onChange, 
-  disabled = false 
+  disabled = false,
+  meta
 }) => {
   const [sections, setSections] = useState<ContentSection[]>([]);
 
@@ -66,7 +70,14 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
       let type: ContentSection['type'] = 'paragraph';
       let cleanContent = line.trim();
 
-      if (line.startsWith('# ')) {
+      if (line.startsWith('![')) {
+        // markdown image ![alt](url)
+        const match = /!\[.*?\]\((.*?)\)/.exec(line);
+        if (match) {
+          type = 'image';
+          cleanContent = match[1];
+        }
+      } else if (line.startsWith('# ')) {
         type = 'heading1';
         cleanContent = line.substring(2).trim();
       } else if (line.startsWith('## ')) {
@@ -109,10 +120,13 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
             return `### ${section.content}`;
           case 'list':
             return `- ${section.content}`;
+          case 'image':
+            return section.content ? `![image](${section.content})` : '';
           default:
             return section.content;
         }
       })
+      .filter(Boolean)
       .join('\n\n');
   };
 
@@ -189,6 +203,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
         return <Heading3 className="w-4 h-4" />;
       case 'list':
         return <List className="w-4 h-4" />;
+      case 'image':
+        return <ImageIcon className="w-4 h-4" />;
       default:
         return <AlignLeft className="w-4 h-4" />;
     }
@@ -204,6 +220,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
         return 'Tiêu đề nhỏ...';
       case 'list':
         return 'Mục danh sách...';
+      case 'image':
+        return 'Chèn đường dẫn ảnh...';
       default:
         return 'Nội dung đoạn văn...';
     }
@@ -270,6 +288,17 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
               <List className="w-3 h-3 mr-1" />
               Danh sách
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => addSection('image')}
+              disabled={disabled}
+              className="text-xs"
+            >
+              <ImageIcon className="w-3 h-3 mr-1" />
+              Ảnh
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -293,6 +322,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
                       <option value="heading3">H3</option>
                       <option value="paragraph">P</option>
                       <option value="list">List</option>
+                      <option value="image">Image</option>
                     </select>
                   </div>
                   
@@ -340,6 +370,45 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
                       disabled={disabled}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                     />
+                  ) : section.type === 'image' ? (
+                    <div className="space-y-3">
+                      {section.content ? (
+                        <div className="space-y-2">
+                          <img src={section.content} alt="uploaded" className="max-w-xs rounded" />
+                          {!disabled && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateSection(section.id, '')}
+                            >
+                              Thay ảnh khác
+                            </Button>
+                          )}
+                        </div>
+                      ) : !disabled ? (
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              if (!meta) {
+                                alert('Thiếu subjectId khi upload ảnh');
+                                return;
+                              }
+                              const url = await uploadImage(file, meta.subjectId, meta.chapterId);
+                              updateSection(section.id, url);
+                            } catch (err: any) {
+                              alert(err.message || 'Upload thất bại');
+                            }
+                          }}
+                        />
+                      ) : (
+                        <p className="text-gray-500">(Ảnh)</p>
+                      )}
+                    </div>
                   ) : (
                     <input
                       type="text"

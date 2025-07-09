@@ -8,6 +8,7 @@ import { API_BASE_URL } from "../../services/api";
 import { useLectureProgress } from '../../hooks/useLectureProgress';
 import { progressService } from '../../services/progress.service';
 import { Circle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ClassInfo {
   id: number;
@@ -925,16 +926,16 @@ const ClassDetail: React.FC = () => {
                   <div className={`bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-8 border-l-4 border-orange-500 transition-all duration-300 ${
                     sidebarVisible ? 'min-h-[600px]' : 'min-h-[700px]'
                   }`}>
-                    <div className="prose max-w-none text-base">
-                      <pre className={`whitespace-pre-wrap text-gray-700 font-sans leading-relaxed transition-all duration-300 ${
-                        sidebarVisible ? 'text-lg' : 'text-xl'
-                      }`}>
-                        {selectedLecture.content || 'Nội dung bài giảng chưa được cập nhật.'}
-                      </pre>
-                    </div>
+                    <ReactMarkdown
+                      className={`prose max-w-none text-gray-700 transition-all duration-300 ${
+                        sidebarVisible ? 'text-base' : 'text-lg'
+                      }`}
+                    >
+                      {selectedLecture.content || 'Nội dung bài giảng chưa được cập nhật.'}
+                    </ReactMarkdown>
                   </div>
                 </div>
-
+               
                 {/* Action Buttons */}
                 <div className="p-8 border-t border-gray-200 bg-gray-50">
                   <div className="flex items-center justify-center gap-6">

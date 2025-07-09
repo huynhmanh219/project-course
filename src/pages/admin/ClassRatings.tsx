@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -61,6 +62,8 @@ const AdminClassRatings: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<ClassRatingData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const navigate = useNavigate();
 
   const [overallStats, setOverallStats] = useState({
     totalClasses: 0,
@@ -181,22 +184,27 @@ const AdminClassRatings: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <Card>
-        <CardContent className="p-6 grid grid-cols-3 gap-6 text-center">
-          <div>
-            <BookOpen className="mx-auto h-6 w-6 text-blue-600" />
-            <p className="font-semibold">{overallStats.totalClasses}</p>
-            <span className="text-sm text-gray-500">Lớp học</span>
+        <CardContent className="p-6 flex justify-between items-center">
+          <div className="grid grid-cols-3 gap-6 text-center">
+            <div>
+              <BookOpen className="mx-auto h-6 w-6 text-blue-600" />
+              <p className="font-semibold">{overallStats.totalClasses}</p>
+              <span className="text-sm text-gray-500">Lớp học</span>
+            </div>
+            <div>
+              <Users className="mx-auto h-6 w-6 text-green-600" />
+              <p className="font-semibold">{overallStats.totalRatings}</p>
+              <span className="text-sm text-gray-500">Đánh giá</span>
+            </div>
+            <div>
+              <TrendingUp className="mx-auto h-6 w-6 text-yellow-600" />
+              <p className="font-semibold">{overallStats.averageRating.toFixed(1)}</p>
+              <span className="text-sm text-gray-500">Điểm TB</span>
+            </div>
           </div>
-          <div>
-            <Users className="mx-auto h-6 w-6 text-green-600" />
-            <p className="font-semibold">{overallStats.totalRatings}</p>
-            <span className="text-sm text-gray-500">Đánh giá</span>
-          </div>
-          <div>
-            <TrendingUp className="mx-auto h-6 w-6 text-yellow-600" />
-            <p className="font-semibold">{overallStats.averageRating.toFixed(1)}</p>
-            <span className="text-sm text-gray-500">Điểm TB</span>
-          </div>
+          <Button onClick={()=>navigate('/admin/class-ratings/pending')} className="bg-orange-600 hover:bg-orange-700 text-white h-10 px-4">
+            Chờ duyệt
+          </Button>
         </CardContent>
       </Card>
 
