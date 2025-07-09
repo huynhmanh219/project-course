@@ -1,11 +1,13 @@
-import  { useState } from "react";
+import  { useState, useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
 // import { Progress } from "../../components/ui/progress";
 // import { AnnouncementCard } from "../../components/course/AnnouncementCard";
 // import { AssignmentCard } from "../../components/course/AssignmentCard";
 import { Button } from "../../components/ui/button";
-import { Star, FileText, FileDown, CheckCircle, Clock } from "lucide-react";
+import { Star, FileText, FileDown, CheckCircle, Clock, Circle } from "lucide-react";
+import { useLectureProgress } from '../../hooks/useLectureProgress';
+import { progressService } from '../../services/progress.service';
 
 // Danh sách khoá học mẫu giống Courses.tsx
 const sampleCourses = [
@@ -115,6 +117,8 @@ export function Course() {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [lectureProgresses, setLectureProgresses] = useState<{[key: number]: any}>({});
+  const [loadingProgress, setLoadingProgress] = useState(true);
 
   // Điểm số cá nhân
   const myGrades = assignments.map(a => ({
@@ -236,6 +240,60 @@ const add = (a, b) => a + b;
   ];
 
   const [selectedLecture, setSelectedLecture] = useState(lectures[0]);
+
+  // Use progress hook for selected lecture
+  useLectureProgress(selectedLecture?.id);
+
+  // Load lecture progress on mount
+  useEffect(() => {
+    const loadLectureProgresses = async () => {
+      try {
+        console.log('🔍 Starting to load lecture progresses...');
+        setLoadingProgress(true);
+        const progressMap: {[key: number]: any} = {};
+        
+        // Load progress for each lecture
+        for (const lecture of lectures) {
+          try {
+            console.log(`📚 Loading progress for lecture ${lecture.id}: ${lecture.title}`);
+            const progress = await progressService.getLectureProgress(lecture.id);
+            console.log(`📊 Progress result for lecture ${lecture.id}:`, progress);
+            
+            if (progress && progress.success) {
+              progressMap[lecture.id] = progress.data;
+            }
+          } catch (error) {
+            console.error(`❌ Failed to load progress for lecture ${lecture.id}:`, error);
+          }
+        }
+        
+        console.log('📋 Final progress map:', progressMap);
+        setLectureProgresses(progressMap);
+      } catch (error) {
+        console.error('❌ Error loading lecture progresses:', error);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    loadLectureProgresses();
+  }, []);
+
+  // Helper function to check if lecture is completed
+  const isLectureCompleted = (lectureId: number) => {
+    const progress = lectureProgresses[lectureId];
+    const completed = progress && progress.status === 'completed';
+    console.log(`🎯 Checking completion for lecture ${lectureId}:`, { progress, completed });
+    return completed;
+  };
+
+  // Helper function to get lecture status
+  const getLectureStatus = (lectureId: number) => {
+    const progress = lectureProgresses[lectureId];
+    const status = progress ? progress.status : 'not_started';
+    console.log(`📍 Status for lecture ${lectureId}:`, status);
+    return status;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -497,16 +555,31 @@ const add = (a, b) => a + b;
                                 {lecture.duration}
                               </div>
                             </div>
-                            {lecture.completed && (
+                            {/* Progress indicator */}
+                            {loadingProgress ? (
+                              <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent"></div>
+                            ) : isLectureCompleted(lecture.id) ? (
                               <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                                 selectedLecture.id === lecture.id ? 'bg-white' : 'bg-green-500'
                               }`}>
-                                <svg className={`w-3 h-3 ${
+                                <CheckCircle
+                                  className={`w-3 h-3 ${
                                   selectedLecture.id === lecture.id ? 'text-green-500' : 'text-white'
-                                }`} fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
+                                  }`}
+                                />
                               </div>
+                            ) : getLectureStatus(lecture.id) === 'in_progress' ? (
+                              <Clock
+                                className={`w-4 h-4 ${
+                                  selectedLecture.id === lecture.id ? 'text-yellow-200' : 'text-yellow-500'
+                                }`}
+                              />
+                            ) : (
+                              <Circle
+                                className={`w-4 h-4 ${
+                                  selectedLecture.id === lecture.id ? 'text-white' : 'text-gray-300'
+                                }`}
+                              />
                             )}
                           </div>
                         </div>

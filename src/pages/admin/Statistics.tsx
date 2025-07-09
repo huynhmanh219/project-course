@@ -108,8 +108,8 @@ const AdminStatisticsCharts: React.FC = () => {
         <h3 className="font-semibold mb-2">Tổng số môn học Active/Inactive theo tháng</h3>
         <div className="h-[200px]">
           <Bar data={barData} options={barOptions} height={chartHeight} />
-        </div>
-      </div>
+              </div>
+            </div>
 
       {/* Publish status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,7 +118,7 @@ const AdminStatisticsCharts: React.FC = () => {
           <div className="h-[200px]">
             <Doughnut data={chapterDoughData} height={chartHeight} />
           </div>
-        </div>
+            </div>
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="font-semibold mb-2 text-center">Bài giảng (Published / Draft)</h3>
           <div className="h-[200px]">
@@ -140,11 +140,11 @@ const AdminStatisticsCharts: React.FC = () => {
         <h3 className="font-semibold mb-2">Top môn học có nhiều lớp học phần nhất</h3>
         <div className="h-[200px]">
           <Bar data={topBarData} options={horizontalOptions} height={chartHeight} />
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 // ----- removed legacy static cards and activities -----
 

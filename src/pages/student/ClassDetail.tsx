@@ -5,6 +5,9 @@ import { BookOpen, User2, FileText, Users, Info, CheckCircle, FileDown, Play, Cl
 import { simpleClassService } from "../../services";
 // import StarRating from "../../components/StarRating";
 import { API_BASE_URL } from "../../services/api";
+import { useLectureProgress } from '../../hooks/useLectureProgress';
+import { progressService } from '../../services/progress.service';
+import { Circle } from 'lucide-react';
 
 interface ClassInfo {
   id: number;
@@ -91,8 +94,9 @@ const ClassDetail: React.FC = () => {
   const [loadingMaterials, setLoadingMaterials] = useState(false);
   void loadingMaterials;
   const [error, setError] = useState<string | null>(null);
+  const [lectureProgresses, setLectureProgresses] = useState<{[key: number]: any}>({});
+  const [loadingProgress, setLoadingProgress] = useState(true);
 
-  // Toggle chapter collapse
   const toggleChapter = (chapterId: number) => {
     const newCollapsed = new Set(collapsedChapters);
     if (newCollapsed.has(chapterId)) {
@@ -103,7 +107,6 @@ const ClassDetail: React.FC = () => {
     setCollapsedChapters(newCollapsed);
   };
 
-  // Fetch class info
   useEffect(() => {
     const fetchClassInfo = async () => {
       try {
@@ -111,7 +114,6 @@ const ClassDetail: React.FC = () => {
         setError(null);
         
         const response = await simpleClassService.getClass(classId);
-        console.log('Class info response:', response);
         
         if (response && response.class) {
           setClassInfo(response.class);
@@ -119,7 +121,6 @@ const ClassDetail: React.FC = () => {
           setError('Không thể tải thông tin lớp học');
         }
       } catch (error: any) {
-        console.error('Error fetching class info:', error);
         setError(error.message || 'Không thể tải thông tin lớp học');
       } finally {
         setLoading(false);
@@ -138,22 +139,17 @@ const ClassDetail: React.FC = () => {
         setLoadingLectures(true);
         
         // Request a larger page size so tất cả bài giảng (nhiều hơn 10) đều được lấy về
-        console.log('🔍 Calling getClassLectures for classId:', classId);
-        console.log('🔍 Class subject_id at fetch time:', classInfo?.subject?.id);
         const response = await simpleClassService.getClassLectures(classId, { limit: 100 });
-        console.log('📋 Lectures response:', response);
-        console.log('📋 Response type:', typeof response);
-        console.log('📋 Response keys:', response ? Object.keys(response) : 'null');
         
         if (response && response.data) {
-          console.log('Lectures data:', response.data);
-          console.log('Total lectures found:', response.data.length);
-          console.log('Class subject_id:', classInfo?.subject?.id);
+          // console.log('Lectures data:', response.data);
+          // console.log('Total lectures found:', response.data.length);
+          // console.log('Class subject_id:', classInfo?.subject?.id);
           
-          // Log chapter information for debugging
-          response.data.forEach((lecture: any) => {
-            console.log(`Lecture: ${lecture.title}, Chapter: ${lecture.chapter.title} (ID: ${lecture.chapter.id}, Subject: ${lecture.chapter.subject_id}, Order: ${lecture.chapter.order_index}), Published: ${lecture.is_published}`);
-          });
+          // // Log chapter information for debugging
+          // response.data.forEach((lecture: any) => {
+          //   console.log(`Lecture: ${lecture.title}, Chapter: ${lecture.chapter.title} (ID: ${lecture.chapter.id}, Subject: ${lecture.chapter.subject_id}, Order: ${lecture.chapter.order_index}), Published: ${lecture.is_published}`);
+          // });
           
           setLectures(response.data);
           // Set first lecture as selected
@@ -172,33 +168,26 @@ const ClassDetail: React.FC = () => {
       }
     };
 
-    // ✅ CRITICAL FIX: Only fetch lectures AFTER we have classInfo
     if (classId && classInfo && classInfo.subject) {
       fetchLectures();
     }
-  }, [classId, classInfo]); // ✅ Add classInfo dependency
+  }, [classId, classInfo]); 
 
-  // Load lecture ratings
   const loadLectureRatings = async (lectureList: Lecture[]) => {
     try {
       const ratingsData: Record<number, {averageRating: number, totalRatings: number}> = {};
       
-      // Simulate API calls to get ratings for each lecture
-      // In a real app, you might want to batch this or get all ratings at once
       for (const lecture of lectureList) {
         try {
-          // You can replace this with actual API call when backend is ready
           // const response = await lectureRatingService.getRatingsForLecture(lecture.id);
           
-          // For now, simulate some ratings data
           const mockRating = {
-            averageRating: Math.random() * 5, // Random rating between 0-5
-            totalRatings: Math.floor(Math.random() * 20) // Random count 0-20
+            averageRating: Math.random() * 5, 
+            totalRatings: Math.floor(Math.random() * 20) 
           };
           
           ratingsData[lecture.id] = mockRating;
         } catch (error) {
-          console.log(`No ratings found for lecture ${lecture.id}`);
           ratingsData[lecture.id] = { averageRating: 0, totalRatings: 0 };
         }
       }
@@ -209,14 +198,12 @@ const ClassDetail: React.FC = () => {
     }
   };
 
-  // Fetch materials
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
         setLoadingMaterials(true);
         
         const response = await simpleClassService.getClassMaterials(classId);
-        console.log('Materials response:', response);
         
         if (response && response.data) {
           setMaterials(response.data);
@@ -233,7 +220,6 @@ const ClassDetail: React.FC = () => {
     }
   }, [classId]);
 
-  // Generate mock members data (since we don't have endpoint for this yet)
   useEffect(() => {
     if (classInfo) {
       const mockMembers: Member[] = [
@@ -247,6 +233,83 @@ const ClassDetail: React.FC = () => {
       setMembers(mockMembers);
     }
   }, [classInfo]);
+
+  // Callback to update progress when hook syncs with backend
+  const handleProgressUpdate = (lectureId: number, progressData: any) => {
+    console.log(`🔄 Updating progress for lecture ${lectureId}:`, progressData);
+    setLectureProgresses(prev => ({
+      ...prev,
+      [lectureId]: progressData
+    }));
+  };
+
+  // Use progress hook for selected lecture
+  useLectureProgress(selectedLecture?.id, handleProgressUpdate);
+
+  // Load lecture progress when lectures are loaded
+  useEffect(() => {
+    const loadLectureProgresses = async () => {
+      if (lectures.length === 0) return;
+      
+      try {
+        console.log('🔍 Loading lecture progresses for ClassDetail...');
+        setLoadingProgress(true);
+        const progressMap: {[key: number]: any} = {};
+        
+        // Load progress for each lecture
+        for (const lecture of lectures) {
+          try {
+            console.log(`📚 Loading progress for lecture ${lecture.id}: ${lecture.title}`);
+            const progress = await progressService.getLectureProgress(lecture.id);
+            console.log(`📊 Progress result for lecture ${lecture.id}:`, progress);
+            
+            if (progress && progress.success) {
+              progressMap[lecture.id] = progress.data;
+            }
+          } catch (error) {
+            console.error(`❌ Failed to load progress for lecture ${lecture.id}:`, error);
+          }
+        }
+        
+        console.log('📋 Final progress map:', progressMap);
+        setLectureProgresses(progressMap);
+      } catch (error) {
+        console.error('❌ Error loading lecture progresses:', error);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    loadLectureProgresses();
+  }, [lectures]);
+
+  // Helper function to check if lecture is completed
+  const isLectureCompleted = (lectureId: number) => {
+    const progress = lectureProgresses[lectureId];
+    const completed = progress && progress.status === 'completed';
+    console.log(`🎯 Checking completion for lecture ${lectureId}:`, { progress, completed });
+    return completed;
+  };
+
+  // Helper function to get lecture status
+  const getLectureStatus = (lectureId: number) => {
+    const progress = lectureProgresses[lectureId];
+    const status = progress ? progress.status : 'not_started';
+    console.log(`📍 Status for lecture ${lectureId}:`, status);
+    return status;
+  };
+
+  // Helper to calculate progress percent (0-100)
+  const getLecturePercent = (lectureId: number) => {
+    const progress = lectureProgresses[lectureId];
+    if (!progress) return 0;
+    if (progress.progress_percent !== undefined) return progress.progress_percent;
+    // fallback: derive from time_spent and scrolled_to_bottom
+    const timeRatio = Math.min(progress.time_spent_sec / 10, 1); // MIN_COMPLETE_TIME
+    const timePart = timeRatio * 50;
+    const scrollPart = progress.scrolled_to_bottom ? 50 : 0;
+    return Math.round(timePart + scrollPart);
+  };
 
   const formatDuration = (minutes?: number): string => {
     if (!minutes) return '';
@@ -279,7 +342,6 @@ const ClassDetail: React.FC = () => {
         return;
       }
 
-      // Use dedicated download endpoint to get file with proper headers
       const response = await fetch(`${API_BASE_URL}/materials/${material.id}/download`, {
         method: 'GET',
         headers: {
@@ -306,7 +368,6 @@ const ClassDetail: React.FC = () => {
     }
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -526,8 +587,7 @@ const ClassDetail: React.FC = () => {
                       (a, b) => a.chapter.order_index - b.chapter.order_index
                     );
 
-                    console.log('Grouped lectures:', groupedLectures);
-                    console.log('Sorted chapters:', sortedChapters);
+            
 
                     return sortedChapters.map((chapterGroup) => {
                       const isCollapsed = collapsedChapters.has(chapterGroup.chapter.id);
@@ -584,8 +644,8 @@ const ClassDetail: React.FC = () => {
                                       <div className={`text-sm mt-1 flex items-center gap-2 ${
                                         selectedLecture?.id === lecture.id ? 'text-orange-100' : 'text-gray-500'
                                       }`}>
-                                        <Clock className="w-4 h-4" />
-                                        {formatDuration(lecture.duration_minutes) || 'Chưa có thời lượng'}
+                                        {/* <Clock className="w-4 h-4" /> */}
+                                        {/* {formatDuration(lecture.duration_minutes) || 'Chưa có thời lượng'} */}
                                       </div>
                                       {/* Rating Display */}
                                       {lectureRatings[lecture.id] && lectureRatings[lecture.id].totalRatings > 0 && (
@@ -622,7 +682,10 @@ const ClassDetail: React.FC = () => {
                                         <span className="text-xs">Đánh giá</span>
                                       </Button> */}
                                       
-                                      {lecture.is_published && (
+                                      {/* Progress indicator */}
+                                      {loadingProgress ? (
+                                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent"></div>
+                                      ) : isLectureCompleted(lecture.id) ? (
                                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                                           selectedLecture?.id === lecture.id ? 'bg-white' : 'bg-green-500'
                                         }`}>
@@ -630,7 +693,48 @@ const ClassDetail: React.FC = () => {
                                             selectedLecture?.id === lecture.id ? 'text-green-500' : 'text-white'
                                           }`} />
                                         </div>
+                                      ) : getLectureStatus(lecture.id) === 'in_progress' ? (
+                                        <div className="relative w-8 h-8">
+                                          <svg className="absolute top-0 left-0 w-8 h-8 text-yellow-500" viewBox="0 0 36 36">
+                                            <path
+                                              className="text-gray-200"
+                                              strokeWidth="3"
+                                              fill="none"
+                                              d="M18 2.0845
+                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            />
+                                            <path
+                                              className="text-yellow-500"
+                                              strokeWidth="3"
+                                              fill="none"
+                                              strokeDasharray={`${getLecturePercent(lecture.id)}, 100`}
+                                              d="M18 2.0845
+                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            />
+                                          </svg>
+                                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-yellow-600">
+                                            {getLecturePercent(lecture.id)}%
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <Circle
+                                          className={`w-5 h-5 ${
+                                            selectedLecture?.id === lecture.id ? 'text-white' : 'text-gray-300'
+                                          }`}
+                                        />
                                       )}
+                                      
+                                      {/* {lecture.is_published && (
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                          selectedLecture?.id === lecture.id ? 'bg-white' : 'bg-blue-500'
+                                        }`}>
+                                          <CheckCircle className={`w-4 h-4 ${
+                                            selectedLecture?.id === lecture.id ? 'text-blue-500' : 'text-white'
+                                          }`} />
+                                        </div>
+                                      )} */}
                                     </div>
                                   </div>
                                 </div>
@@ -749,15 +853,15 @@ const ClassDetail: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-right">
+                      {/* <div className="text-right">
                         <div className="text-xs text-orange-100">Thời lượng</div>
                         <div className="font-semibold text-lg">{formatDuration(selectedLecture.duration_minutes) || 'N/A'}</div>
-                      </div>
-                      {selectedLecture.is_published && (
+                      </div> */}
+                      {/* {selectedLecture.is_published && (
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                           <CheckCircle className="w-6 h-6 text-white" />
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   

@@ -4,7 +4,9 @@ import {  BookOpen, Bell, Calendar, Clock, Award, ChevronRight, CheckCircle, XCi
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../services/auth.service"
 import { simpleClassService } from "../../services"
+import { Progress } from "../../components/ui/progress"
 import SimpleQuizService from "../../services/quiz.service.simple"
+import { progressService } from "../../services/progress.service"
 
 interface ClassData {
   id: number;
@@ -49,6 +51,8 @@ export function Home() {
   const [user, setUser] = useState<any>(null);
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [sectionProgress, setSectionProgress] = useState<{[key:number]: {completion_rate:number, lectures_completed:number, total_lectures:number}}>({});
+
   const [stats, setStats] = useState({
     totalClasses: 0,
     completedClasses: 0,
@@ -57,7 +61,8 @@ export function Home() {
     upcomingClasses: 0,
     totalLectures: 0,
     completedLectures: 0,
-    averageGrade: 0
+    averageGrade: 0,
+    lectureCompletionPercent: 0
   });
   const [notifications, setNotifications] = useState<any[]>([]); void notifications;
   const [loading, setLoading] = useState(true);
@@ -98,6 +103,35 @@ export function Home() {
             totalClasses: studentClasses.length,
             completedClasses: studentClasses.filter((cls: ClassData) => cls.status === 'completed').length,
             upcomingClasses: studentClasses.filter((cls: ClassData) => cls.courseSection.status === 'active').length
+          }));
+
+          // Fetch lecture progress for each class (courseSection)
+          const progressResults = await Promise.all(
+            studentClasses.map((cls: any) => progressService.getSectionProgress(cls.courseSection.id))
+          );
+
+          let totalLectures = 0;
+          let completedLectures = 0;
+          const progressMap: {[key:number]: any} = {};
+
+          progressResults.forEach((res, idx) => {
+            const sectionId = studentClasses[idx].courseSection.id;
+            if (res && res.success && res.data) {
+              progressMap[sectionId] = res.data;
+              totalLectures += res.data.total_lectures || 0;
+              completedLectures += res.data.lectures_completed || 0;
+            }
+          });
+
+          setSectionProgress(progressMap);
+
+          const lectureCompletionPercent = Math.round((completedLectures / Math.max(totalLectures, 1)) * 100);
+
+          setStats(prev => ({
+            ...prev,
+            totalLectures,
+            completedLectures,
+            lectureCompletionPercent
           }));
 
           // Generate recent activities from classes
@@ -262,6 +296,11 @@ export function Home() {
 
   const displayClasses = classes.map(formatClassForDisplay);
 
+  const getSectionPercent = (sectionId:number) => {
+    const prog = sectionProgress[sectionId];
+    return prog ? Math.round(prog.completion_rate) : 0;
+  }
+
   // Get priority icon for notifications
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
@@ -376,7 +415,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 group">
+          {/* <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 group">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Activity className="w-6 h-6 text-purple-600" />
@@ -386,6 +425,22 @@ export function Home() {
                 <div className="text-gray-600 text-sm">Hoạt động gần đây</div>
                 <div className="text-xs text-purple-600 mt-1">
                   Hôm nay
+                </div>
+              </div>
+            </div>
+          </div> */}
+
+          {/* Lecture completion */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 group">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Play className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-800">{stats.lectureCompletionPercent}%</div>
+                <div className="text-gray-600 text-sm">Hoàn thành bài giảng</div>
+                <div className="text-xs text-yellow-600 mt-1">
+                  {stats.completedLectures}/{stats.totalLectures} bài
                 </div>
               </div>
             </div>
@@ -469,6 +524,14 @@ export function Home() {
                                   </>
                                 )}
                               </span>
+                            </div>
+
+                            {/* Progress */}
+                            <div className="mb-3">
+                              <Progress value={getSectionPercent(cls.id)} />
+                              <div className="text-xs text-gray-500 text-right mt-1">
+                                {sectionProgress[cls.id]?.lectures_completed || 0}/{sectionProgress[cls.id]?.total_lectures || 0} · {getSectionPercent(cls.id)}%
+                              </div>
                             </div>
 
                             {/* Info */}
