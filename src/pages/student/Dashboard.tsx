@@ -56,7 +56,6 @@ export function Dashboard() {
         }));
       }
 
-      // Fetch quiz statistics
       try {
         console.log('Fetching quiz statistics...');
         const quizzesResponse = await SimpleQuizService.getQuizzes();
@@ -164,7 +163,7 @@ export function Dashboard() {
         )}
 
         {/* Thống kê tổng quan */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -189,7 +188,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
+          {/* <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                 <Award className="w-6 h-6 text-orange-600" />
@@ -199,7 +198,7 @@ export function Dashboard() {
                 <div className="text-gray-600 text-sm">Quiz đã hoàn thành</div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-200">
             <div className="flex items-center gap-4">

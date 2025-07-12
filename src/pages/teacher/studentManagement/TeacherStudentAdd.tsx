@@ -15,6 +15,7 @@ const TeacherStudentAdd: React.FC = () => {
     student_id: "",           // MSSV
     first_name: "",           // Họ đệm
     last_name: "",            // Tên
+    personal_email: "",       // Email cá nhân
     phone: "",
     date_of_birth: "",
     address: ""
@@ -38,6 +39,12 @@ const TeacherStudentAdd: React.FC = () => {
     // Basic validation
     if (!form.student_id || !form.first_name || !form.last_name) {
       setError('Vui lòng điền đầy đủ thông tin bắt buộc');
+      setLoading(false);
+      return;
+    }
+
+    if (form.personal_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.personal_email)) {
+      setError('Email cá nhân không hợp lệ');
       setLoading(false);
       return;
     }
@@ -79,6 +86,7 @@ const TeacherStudentAdd: React.FC = () => {
         student_id: String(form.student_id || '').trim(),
         first_name: String(form.first_name || '').trim(),
         last_name: String(form.last_name || '').trim(),
+        personal_email: form.personal_email ? String(form.personal_email).trim() : undefined,
         phone: String(form.phone || '').trim() || undefined,
         date_of_birth: form.date_of_birth ? String(form.date_of_birth).trim() : undefined,
         address: String(form.address || '').trim() || undefined
@@ -183,6 +191,22 @@ const TeacherStudentAdd: React.FC = () => {
                 placeholder="VD: An"
               />
             </div>
+          </div>
+
+          {/* Personal Email Section */}
+          <div>
+            <label className="block text-gray-700 mb-2 font-semibold">
+              Email cá nhân (để nhận thông báo)
+            </label>
+            <input
+              name="personal_email"
+              value={form.personal_email}
+              onChange={handleChange}
+              type="email"
+              disabled={loading}
+              className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
+              placeholder="student@example.com"
+            />
           </div>
 
           {/* Phone Section */}

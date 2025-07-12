@@ -287,7 +287,7 @@ const LectureDetail: React.FC = () => {
                     <p className="text-lg font-bold text-gray-800">{lecture.duration_minutes || 0}</p>
                     <p className="text-xs text-gray-600">Phút đọc</p>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                  {/* <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
                     <div className="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-lg mx-auto mb-2">
                       <FileText className="w-4 h-4 text-white" />
                     </div>
@@ -295,7 +295,7 @@ const LectureDetail: React.FC = () => {
                       {lecture.content ? Math.ceil(lecture.content.length / 100) : 0}
                     </p>
                     <p className="text-xs text-gray-600">Độ dài nội dung</p>
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
             </Card>

@@ -9,6 +9,7 @@ import { useLectureProgress } from '../../hooks/useLectureProgress';
 import { progressService } from '../../services/progress.service';
 import { Circle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import ClassChat from '../../components/ClassChat';
 
 interface ClassInfo {
   id: number;
@@ -237,7 +238,6 @@ const ClassDetail: React.FC = () => {
 
   // Callback to update progress when hook syncs with backend
   const handleProgressUpdate = (lectureId: number, progressData: any) => {
-    console.log(`🔄 Updating progress for lecture ${lectureId}:`, progressData);
     setLectureProgresses(prev => ({
       ...prev,
       [lectureId]: progressData
@@ -253,16 +253,13 @@ const ClassDetail: React.FC = () => {
       if (lectures.length === 0) return;
       
       try {
-        console.log('🔍 Loading lecture progresses for ClassDetail...');
         setLoadingProgress(true);
         const progressMap: {[key: number]: any} = {};
         
         // Load progress for each lecture
         for (const lecture of lectures) {
           try {
-            console.log(`📚 Loading progress for lecture ${lecture.id}: ${lecture.title}`);
             const progress = await progressService.getLectureProgress(lecture.id);
-            console.log(`📊 Progress result for lecture ${lecture.id}:`, progress);
             
             if (progress && progress.success) {
               progressMap[lecture.id] = progress.data;
@@ -272,7 +269,6 @@ const ClassDetail: React.FC = () => {
           }
         }
         
-        console.log('📋 Final progress map:', progressMap);
         setLectureProgresses(progressMap);
       } catch (error) {
         console.error('❌ Error loading lecture progresses:', error);
@@ -288,7 +284,6 @@ const ClassDetail: React.FC = () => {
   const isLectureCompleted = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const completed = progress && progress.status === 'completed';
-    console.log(`🎯 Checking completion for lecture ${lectureId}:`, { progress, completed });
     return completed;
   };
 
@@ -296,7 +291,6 @@ const ClassDetail: React.FC = () => {
   const getLectureStatus = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const status = progress ? progress.status : 'not_started';
-    console.log(`📍 Status for lecture ${lectureId}:`, status);
     return status;
   };
 
@@ -974,6 +968,11 @@ const ClassDetail: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+        {/* At end of main content maybe before footer */}
+        <div className="mt-10">
+          <h2 className="text-xl font-bold mb-2">Thảo luận lớp</h2>
+          <ClassChat classId={Number(classId)} />
         </div>
       </div>
     </div>

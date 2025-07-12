@@ -288,9 +288,9 @@ const QuestionAdd: React.FC = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 hover:bg-white"
                 >
                   <option value="multiple_choice">Trắc nghiệm nhiều lựa chọn</option>
-                  <option value="true_false">Đúng/Sai</option>
+                  {/* <option value="true_false">Đúng/Sai</option>
                   <option value="short_answer">Trả lời ngắn</option>
-                  <option value="essay">Tự luận</option>
+                  <option value="essay">Tự luận</option> */}
                 </select>
               </div>
 

@@ -11,13 +11,13 @@ export const useLectureProgress = (
   lectureId?: number, 
   onProgressUpdate?: (lectureId: number, progress: ProgressData) => void
 ) => {
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const elapsedSecRef = useRef(0);
   const bottomReachedRef = useRef(false);
   const isActiveRef = useRef(true);
   const MIN_COMPLETE_TIME = 10; // seconds
   const completedRef = useRef(false);
-  const callbackRef = useRef<typeof onProgressUpdate>();
+  const callbackRef = useRef<typeof onProgressUpdate | null>(null);
   // Update callback ref on every render
   useEffect(() => {
     callbackRef.current = onProgressUpdate;
@@ -26,11 +26,9 @@ export const useLectureProgress = (
   useEffect(() => {
     if (!lectureId) return;
 
-    console.log('🎓 Starting lecture progress tracking for lecture:', lectureId);
     
     // Start lecture tracking
     progressService.startLecture(lectureId).then(() => {
-      console.log('✅ Lecture started successfully');
     }).catch(err => {
       console.error('❌ Failed to start lecture:', err);
     });
@@ -77,7 +75,6 @@ export const useLectureProgress = (
 
       elapsedSecRef.current += 1;
       detectBottom();
-      console.log(`⏱️ Time elapsed: ${elapsedSecRef.current}s, Bottom reached: ${bottomReachedRef.current}`);
 
       // Trigger immediate sync when conditions met
       if (!completedRef.current && bottomReachedRef.current && elapsedSecRef.current >= MIN_COMPLETE_TIME) {
@@ -89,7 +86,6 @@ export const useLectureProgress = (
     // Handle visibility change
     const onVisibilityChange = () => {
       isActiveRef.current = document.visibilityState === 'visible';
-      console.log('👁️ Visibility changed:', document.visibilityState);
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
 

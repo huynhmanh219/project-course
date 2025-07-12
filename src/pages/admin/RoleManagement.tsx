@@ -16,7 +16,7 @@ const initialRoles = [
   {
     id: 2,
     name: "Giảng viên",
-    desc: "Quản lý lớp, khóa học",
+    desc: "Quản lý lớp phần, môn học",
     icon: (
       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
     ),

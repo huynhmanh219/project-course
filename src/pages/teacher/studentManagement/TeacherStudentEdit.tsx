@@ -14,6 +14,7 @@ const TeacherStudentEdit: React.FC = () => {
     student_id: "",
     first_name: "",
     last_name: "",
+    personal_email: "",
     phone: "",
     date_of_birth: "",
     address: "",
@@ -44,6 +45,7 @@ const TeacherStudentEdit: React.FC = () => {
         student_id: profile.student_id || "",
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
+        personal_email: profile.personal_email || "",
         phone: profile.phone || "",
         date_of_birth: profile.date_of_birth || "",
         address: profile.address || "",
@@ -73,7 +75,7 @@ const TeacherStudentEdit: React.FC = () => {
     setSaving(true);
     setError("");
 
-    if (!form.email || !form.student_id || !form.first_name || !form.last_name) {
+    if (!form.student_id || !form.first_name || !form.last_name) {
       setError("Vui lòng điền đầy đủ thông tin bắt buộc");
       setSaving(false);
       return;
@@ -81,13 +83,13 @@ const TeacherStudentEdit: React.FC = () => {
 
     try {
       const updateData: any = {
-        email: form.email,
         student_id: form.student_id,
         first_name: form.first_name,
         last_name: form.last_name,
         is_active: form.is_active
       };
       
+      if (form.personal_email.trim()) updateData.personal_email = form.personal_email.trim();
       if (form.phone.trim()) updateData.phone = form.phone.trim();
       if (form.date_of_birth) updateData.date_of_birth = form.date_of_birth;
       if (form.address.trim()) updateData.address = form.address.trim();
@@ -150,17 +152,16 @@ const TeacherStudentEdit: React.FC = () => {
             </div>
             <div>
               <label className="block text-gray-700 mb-2 font-semibold">
-                Email <span className="text-red-500">*</span>
+                Email cá nhân
               </label>
               <input
-                name="email"
-                value={form.email}
+                name="personal_email"
+                value={form.personal_email}
                 onChange={handleChange}
-                required
                 type="email"
                 disabled={saving}
                 className="border rounded-xl px-3 py-2 w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-base disabled:bg-gray-100"
-                placeholder="student@university.edu.vn"
+                placeholder="student@example.com"
               />
             </div>
           </div>

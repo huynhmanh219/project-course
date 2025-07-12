@@ -349,12 +349,21 @@ class SimpleCourseService {
     }
   }
 
-  async bulkEnrollStudents(classId: number, studentIds: (number | string)[]): Promise<any> {
+  async bulkEnrollStudents(classId: number, items: any[]): Promise<any> {
     try {
-      const enrollments = studentIds.map(studentId => ({
-        student_id: studentId,
-        course_section_id: classId
-      }));
+      const enrollments = items.map((item: any) => {
+        if (typeof item === 'object') {
+          return {
+            student_id: item.student_id || item.id || item.studentId,
+            personal_email: item.personal_email || item.email || undefined,
+            course_section_id: classId
+          };
+        }
+        return {
+          student_id: item,
+          course_section_id: classId
+        };
+      });
       
       const response = await fetch(`${API_BASE_URL}/courses/enrollment/bulk`, {
         method: 'POST',

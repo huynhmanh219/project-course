@@ -6,6 +6,7 @@ import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { simpleCourseService } from '../../../services';
 import Papa from 'papaparse';
+import ClassChat from '../../../components/ClassChat';
 
 interface Student {
   id: number;
@@ -162,83 +163,51 @@ const ManageStudent: React.FC = () => {
         return;
       }
 
-      const rawIds: any[] = [];
+      const rawEntries: {student_id:any, personal_email?:string}[] = [];
       
       results.data.forEach((row: any, index: number) => {
-        if (!row) {
-          return;
-        }
+        if (!row) return;
+        let studentId: any = null;
+        let personalEmail: string | undefined;
 
-        let studentId = null;
-        
         if (!hasHeader || Array.isArray(row)) {
-          const firstValue = Array.isArray(row) ? row[0] : row;
-          studentId = firstValue;
+          studentId = Array.isArray(row) ? row[0] : row;
+          if (Array.isArray(row) && row.length > 1) personalEmail = String(row[1]).trim();
         } else if (typeof row === 'object') {
           const possibleKeys = ['student_id', 'id', 'mssv', 'studentid'];
           for (const key of possibleKeys) {
-            if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
-              studentId = row[key];
-              break;
-            }
+            if (row[key]) { studentId = row[key]; break; }
           }
-
-          if (!studentId) {
-            const values = Object.values(row).filter(v => 
-              v !== null && v !== undefined && String(v).trim() !== ''
-            );
-            if (values.length > 0) {
-              studentId = values[0];
-              console.log(`Row ${index + 1}: Using first non-empty value:`, studentId);
-            }
-          }
+          personalEmail = row.personal_email || row.email;
         } else {
-          // Primitive value
           studentId = row;
-          console.log(`Row ${index + 1}: Primitive value:`, studentId);
         }
 
-        if (studentId !== null && studentId !== undefined) {
+        if (studentId) {
           const cleanId = String(studentId).trim();
-          if (cleanId !== '' && cleanId.toLowerCase() !== 'student_id' && cleanId.toLowerCase() !== 'mssv' && cleanId.toLowerCase() !== 'id') {
-            console.log(`Row ${index + 1}: Adding ID:`, cleanId);
-            rawIds.push(cleanId);
-          } else {
-            console.log(`Row ${index + 1}: Skipping header or empty ID:`, cleanId);
+          if (cleanId && cleanId.toLowerCase() !== 'student_id') {
+            rawEntries.push({ student_id: cleanId, personal_email: personalEmail });
           }
-        } else {
-          console.log(`Row ${index + 1}: No valid student ID found`, row);
         }
       });
 
-      console.log('Raw IDs extracted:', rawIds);
+      console.log('Raw entries extracted:', rawEntries);
 
-      const validIds = Array.from(
-        new Set(
-          rawIds
-            .map((v: any) => {
-              const cleanId = String(v).trim();
-              const numericId = parseInt(cleanId);
-              if (!isNaN(numericId) && numericId > 0) {
-                return numericId;
-              }
-              if (cleanId.length >= 3 && /^[A-Za-z0-9]+$/.test(cleanId)) {
-                return cleanId;
-              }
-              return null;
-            })
-            .filter((id: any) => id !== null)
-        )
-      );
+      const validEntries = rawEntries.filter(e => {
+        const id = String(e.student_id).trim();
+        if (!id) return false;
+        if (/^[A-Za-z0-9]{3,}$/.test(id)) return true;
+        return !isNaN(parseInt(id));
+      });
 
-      console.log('Valid student IDs:', validIds);
+      console.log('Valid entries:', validEntries);
 
-      if (validIds.length === 0) {
-        alert(`Không tìm thấy student_id hợp lệ trong file.\n\nFile cần có cột 'student_id', 'id', 'mssv' hoặc 'studentid' với ID hợp lệ (số hoặc chuỗi ít nhất 3 ký tự).\n\nSố dòng đã đọc: ${results.data.length}\nSố ID thô: ${rawIds.length}`);
+      if (validEntries.length === 0) {
+        alert('Không tìm thấy student_id hợp lệ trong file.');
         return;
       }
 
-      const confirmMessage = `Tìm thấy ${validIds.length} student ID hợp lệ.\n\nBạn có muốn tiếp tục import không?\n\nDanh sách ID: ${validIds.slice(0, 10).join(', ')}${validIds.length > 10 ? '...' : ''}`;
+      const confirmMessage = `Tìm thấy ${validEntries.length} sinh viên hợp lệ. Bạn có muốn tiếp tục import không?`;
       
       if (!window.confirm(confirmMessage)) {
         return;
@@ -250,14 +219,14 @@ const ManageStudent: React.FC = () => {
       const errors: string[] = [];
 
       try {
-        console.log(`Starting import for ${validIds.length} students in chunks of 100`);
+        console.log(`Starting import for ${validEntries.length} students in chunks of 100`);
         
-        for (let i = 0; i < validIds.length; i += 100) {
-          const chunk = validIds.slice(i, i + 100);
-          console.log(`Processing chunk ${Math.floor(i / 100) + 1}: IDs ${chunk[0]} to ${chunk[chunk.length - 1]}`);
+        for (let i = 0; i < validEntries.length; i += 100) {
+          const chunk = validEntries.slice(i, i + 100);
+          console.log(`Processing chunk ${Math.floor(i / 100) + 1}: IDs ${chunk[0].student_id} to ${chunk[chunk.length - 1].student_id}`);
           
           try {
-            const result = await simpleCourseService.bulkEnrollStudents(Number(classId), chunk as (number | string)[]);
+            const result = await simpleCourseService.bulkEnrollStudents(Number(classId), chunk);
             console.log(`Chunk ${Math.floor(i / 100) + 1} result:`, result);
             
             if (result && result.results) {
@@ -577,6 +546,12 @@ const ManageStudent: React.FC = () => {
           </div>
         )}
 
+        {/* Class Chat */}
+        <div className="mt-10">
+          <h2 className="text-xl font-bold mb-3">Thảo luận lớp</h2>
+          <ClassChat classId={Number(classId)} />
+        </div>
+
         {/* Back to Class Management */}
         <div className="flex justify-center">
           <Button
@@ -606,7 +581,8 @@ const ManageStudent: React.FC = () => {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <h4 className="font-semibold text-blue-900 mb-2">Hướng dẫn định dạng file CSV:</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• File phải có cột với tên: <code className="bg-blue-100 px-1 rounded">student_id</code>, <code className="bg-blue-100 px-1 rounded">id</code>, <code className="bg-blue-100 px-1 rounded">mssv</code> hoặc <code className="bg-blue-100 px-1 rounded">studentid</code></li>
+                    <li>• File phải có cột: <code className="bg-blue-100 px-1 rounded">student_id</code> (bắt buộc) và <code className="bg-blue-100 px-1 rounded">personal_email</code> (tuỳ chọn)</li>
+                    <li className="ml-4">- Nếu không có <code className="bg-blue-100 px-1 rounded">personal_email</code>, hệ thống sẽ KHÔNG gửi email tự động</li>
                     <li>• Mỗi dòng chứa một MSSV (số nguyên dương)</li>
                     <li>• Ví dụ: 20200001, 20200002, 20200003</li>
                     <li>• <strong>Hệ thống tự động tạo tài khoản cho sinh viên chưa có:</strong></li>
@@ -623,7 +599,7 @@ const ManageStudent: React.FC = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      const csvContent = "student_id\n20200001\n20200002\n20200003\n20200004\n20200005";
+                      const csvContent = "student_id,personal_email\n20200001,sv1@example.com\n20200002,sv2@example.com\n20200003,sv3@example.com";
                       const blob = new Blob([csvContent], { type: 'text/csv' });
                       const url = window.URL.createObjectURL(blob);
                       const a = document.createElement('a');

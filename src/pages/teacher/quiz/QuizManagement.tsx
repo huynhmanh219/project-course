@@ -482,7 +482,7 @@ const QuizManagement: React.FC = () => {
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <Calendar className="w-4 h-4" />
                         <span>Tạo:</span>
-                        <span className="font-medium">{formatDate(quiz.ngayTao)}</span>
+                        <span className="font-medium">{formatDate(quiz.created_at)}</span>
                       </div>
                     </div>
                   </div>
