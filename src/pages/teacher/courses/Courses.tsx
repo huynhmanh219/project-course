@@ -27,7 +27,6 @@ const TeacherCourses: React.FC = () => {
       setLoading(true);
       setError('');
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
@@ -36,41 +35,31 @@ const TeacherCourses: React.FC = () => {
         return;
       }
 
-      // Check if user is admin
       const userRole = currentUser.role || currentUser.roleName;
       setIsAdmin(userRole === 'admin');
       console.log('User role:', userRole, 'Is admin:', userRole === 'admin');
 
-      console.log('Fetching courses...');
       const response = await SimpleCourseService.getCourses({ page, limit: 12 });
-      console.log('Courses response:', response);
 
       if (response && response.pagination) {
         setTotalPages(response.pagination.totalPages || response.pagination.total_pages || 1);
       }
       
-      // Backend returns: { status: 'success', data: { courses: [...], pagination: {...} } }
-      // Check multiple possible response formats
       let coursesData = [];
       
       if (response && response.data && response.data.courses) {
-        // Backend format: response.data.courses
         coursesData = response.data.courses;
       } else if (response && response.data && Array.isArray(response.data)) {
-        // Already processed format: response.data
         coursesData = response.data;
       } else if (response && Array.isArray(response)) {
-        // Direct array format
         coursesData = response;
       } else {
         console.warn('Unexpected response format:', response);
         coursesData = [];
       }
       
-      console.log('Courses data to process:', coursesData);
       
       if (coursesData && coursesData.length > 0) {
-        // Process course data
         const processedCourses = coursesData.map((course: any) => ({
           id: course.id || course.subject_id,
           tenKhoaHoc: course.subject_name || course.name || 'Chưa có tên',
@@ -87,7 +76,6 @@ const TeacherCourses: React.FC = () => {
           namHoc: course.academic_year || new Date().getFullYear()
         }));
         
-        console.log('Processed courses:', processedCourses);
         setCourses(processedCourses);
       } else {
         console.log('No courses found');
@@ -101,11 +89,9 @@ const TeacherCourses: React.FC = () => {
     }
   };
 
-  // Helper function to check if user can edit/delete a course
   const canEditCourse = (course: any) => {
-    if (isAdmin) return true; // Admin can edit all courses
+    if (isAdmin) return true;
     
-    // Lecturer can only edit courses they are assigned to
     const currentUserId = Number(user?.id);
     const currentLecturerId = Number(user?.lecturerId || user?.lecturer_id);
     
@@ -119,7 +105,6 @@ const TeacherCourses: React.FC = () => {
     const course = courses.find(c => c.id === courseId);
     if (!course) return;
 
-    // Prevent deleting if already deleting another course
     if (deletingCourseId !== null) {
       alert('Vui lòng đợi quá trình xóa hiện tại hoàn thành');
       return;
@@ -128,22 +113,18 @@ const TeacherCourses: React.FC = () => {
     try {
       setDeletingCourseId(courseId);
       
-      // Try to check classes first, but proceed with delete if check fails
       let hasClasses = false;
       let classNames = '';
       
       try {
-        console.log('Checking classes for course:', courseId);
         const classes = await SimpleCourseService.getClassesBySubject(courseId);
         
         if (classes && Array.isArray(classes) && classes.length > 0) {
           hasClasses = true;
           classNames = classes.map((cls: any) => cls.section_name || cls.name || 'Chưa có tên').join(', ');
-          console.log('Found classes:', classes);
         }
       } catch (checkError: any) {
         console.warn('Error checking classes, proceeding with delete attempt:', checkError);
-        // Continue with delete attempt even if class check fails
       }
       
       if (hasClasses) {
@@ -155,26 +136,19 @@ const TeacherCourses: React.FC = () => {
         return;
       }
 
-      // If no classes detected, proceed with delete confirmation
       const confirmMessage = `Bạn có chắc chắn muốn xóa môn học "${course.tenKhoaHoc}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
     
     if (window.confirm(confirmMessage)) {
-        console.log('Deleting course:', courseId);
-        
-        // Call delete API
         await SimpleCourseService.deleteCourse(courseId);
         
-        // Remove from local state
         setCourses(courses.filter((c) => c.id !== courseId));
         alert("Đã xóa môn học thành công!");
         
-        // Refresh the list to ensure consistency
         fetchCourses();
       }
     } catch (error: any) {
       console.error('Error deleting course:', error);
       
-      // Handle specific error messages
       let errorMessage = 'Lỗi khi xóa môn học: ';
       if (error.message.includes('Cannot delete course with active sections')) {
         errorMessage = `Không thể xóa môn học "${course.tenKhoaHoc}"!\n\nMôn học này vẫn còn có lớp học đang hoạt động. Vui lòng xóa tất cả các lớp học trước khi xóa môn học.\n\nBạn có thể vào mục "Quản lý lớp học" để xóa các lớp học liên quan.`;
@@ -197,7 +171,6 @@ const TeacherCourses: React.FC = () => {
           className="h-full flex flex-col shadow-lg border border-gray-200 bg-white group-hover:scale-[1.02] group-hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden"
           onClick={() => navigate(`/teacher/courses/${course.id}`)}
         >
-          {/* Header gradient bar */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           
           <CardContent className="flex-1 flex flex-col p-6">
@@ -377,7 +350,7 @@ const TeacherCourses: React.FC = () => {
                 <AlertCircle className="w-5 h-5" />
                 <span className="font-medium">{error}</span>
                 <Button 
-                  onClick={fetchCourses}
+                  onClick={() => fetchCourses()}
                   variant="outline"
                   size="sm"
                   className="ml-auto border-red-300 text-red-700 hover:bg-red-100"

@@ -29,7 +29,6 @@ const QuizAdd: React.FC = () => {
     shuffle_answers: false
   });
 
-  // Load subjects on component mount
   useEffect(() => {
     loadSubjects();
   }, []);
@@ -38,10 +37,8 @@ const QuizAdd: React.FC = () => {
     try {
       setLoadingSubjects(true);
       
-      // Get valid token
       const token = await authService.getValidToken();
       
-      // Fetch courses directly
       const response = await fetch('http://localhost:3000/api/courses', {
         method: 'GET',
         headers: {
@@ -51,11 +48,9 @@ const QuizAdd: React.FC = () => {
       });
       
       const result = await response.json();
-      console.log('Subjects response:', result);
       
       if (response.ok && result.status === 'success' && result.data?.courses) {
         setSubjects(result.data.courses);
-        console.log('Loaded subjects:', result.data.courses.length, 'courses');
       } else {
         console.error('Failed to load subjects:', result);
         if (response.status === 401) {
@@ -83,9 +78,6 @@ const QuizAdd: React.FC = () => {
     setLoading(true);
     
     try {
-      console.log('Creating quiz with data:', formData);
-      
-      // Validate required fields
       if (!formData.title || !formData.subject_id || !formData.time_limit || !formData.total_points) {
         alert('Vui lòng điền đầy đủ thông tin bắt buộc');
         return;
@@ -108,7 +100,6 @@ const QuizAdd: React.FC = () => {
       };
 
       const response = await simpleQuizService.createQuiz(quizData);
-      console.log('Quiz created:', response);
       
       alert('Tạo bài kiểm tra thành công!');
       navigate('/teacher/quiz');
@@ -124,7 +115,6 @@ const QuizAdd: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

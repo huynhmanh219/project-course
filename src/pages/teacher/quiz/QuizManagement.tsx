@@ -156,7 +156,6 @@ const QuizManagement: React.FC = () => {
       setQuizzes(prev => prev.map(quiz => 
         quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'published' as const } : quiz
       ));
-      console.log('Quiz published successfully');
     } catch (err: any) {
       console.error('Error publishing quiz:', err);
       alert('không thể xuất bảng khi không có câu hỏi');
@@ -169,7 +168,6 @@ const QuizManagement: React.FC = () => {
       setQuizzes(prev => prev.map(quiz => 
         quiz.id === quizId ? { ...quiz, trangThaiQuiz: 'closed' as const } : quiz
       ));
-      console.log('Quiz closed successfully');
     } catch (err: any) {
       console.error('Error closing quiz:', err);
       alert('Không thể đóng bài kiểm tra khi đang có sinh viên làm bài');
@@ -182,7 +180,6 @@ const QuizManagement: React.FC = () => {
     try {
       await simpleQuizService.deleteQuiz(quizId);
       setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
-      console.log('Quiz deleted successfully');
     } catch (err: any) {
       console.error('Error deleting quiz:', err);
       alert('Không thể xóa bài kiểm tra khi đang có sinh viên làm bài');
@@ -199,13 +196,11 @@ const QuizManagement: React.FC = () => {
     if (!confirmed) return;
     
     try {
-      // For closed quizzes, we might need special API endpoint or force delete
       await simpleQuizService.deleteQuiz(quizId);
       setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
       alert('Đã xóa bài kiểm tra thành công!');
     } catch (err: any) {
       console.error('Error deleting closed quiz:', err);
-      // If normal delete fails, show option to force delete
       const forceDelete = confirm(
         'Không thể xóa bình thường do có dữ liệu sinh viên.\n' +
         'Bạn có muốn xóa gồm cả dữ liệu sinh viên không?\n\n' +
@@ -216,7 +211,6 @@ const QuizManagement: React.FC = () => {
         try {
           await simpleQuizService.forceDeleteQuiz(quizId);
           
-          // For now, remove from frontend (you may need backend API update)
           setQuizzes(prev => prev.filter(quiz => quiz.id !== quizId));
           alert('Đã force xóa bài kiểm tra và toàn bộ dữ liệu liên quan!');
         } catch (forceErr: any) {
@@ -229,7 +223,6 @@ const QuizManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

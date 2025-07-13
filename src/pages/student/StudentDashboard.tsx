@@ -44,7 +44,6 @@ export function StudentDashboard() {
         const studentClasses = classesResponse.data;
         setClasses(studentClasses);
         
-        // Update stats
         setStats(prev => ({
           ...prev,
           totalClasses: studentClasses.length,
@@ -53,11 +52,8 @@ export function StudentDashboard() {
         }));
       }
 
-      // Fetch quiz statistics
       try {
-        console.log('Fetching quiz statistics...');
         const quizzesResponse = await SimpleQuizService.getQuizzes();
-        console.log('Quizzes response:', quizzesResponse);
         
         if (quizzesResponse && quizzesResponse.data) {
           const totalQuizzes = quizzesResponse.data.length;
@@ -70,18 +66,15 @@ export function StudentDashboard() {
           }));
         }
       } catch (quizError) {
-        console.log('Quiz stats not available:', quizError);
       }
 
     } catch (error: any) {
-      console.error('Dashboard data fetch error:', error);
       setError('Không thể tải dữ liệu dashboard');
     } finally {
       setLoading(false);
     }
   };
 
-  // Convert class data for display
   const formatClassForDisplay = (classData: any) => {
     const colors = [
       "from-blue-400 to-blue-600",
@@ -125,7 +118,6 @@ export function StudentDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header chào mừng */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

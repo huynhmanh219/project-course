@@ -36,7 +36,6 @@ const TeacherStudentAdd: React.FC = () => {
     setLoading(true);
     setError('');
 
-    // Basic validation
     if (!form.student_id || !form.first_name || !form.last_name) {
       setError('Vui lòng điền đầy đủ thông tin bắt buộc');
       setLoading(false);
@@ -62,7 +61,6 @@ const TeacherStudentAdd: React.FC = () => {
     }
 
     try {
-      // Get current user to check permissions
       const currentUser = authService.getCurrentUser();
       if (!currentUser || !['lecturer', 'admin'].includes(currentUser.role)) {
         setError('Bạn không có quyền tạo tài khoản sinh viên');
@@ -70,18 +68,7 @@ const TeacherStudentAdd: React.FC = () => {
         return;
       }
 
-      console.log('Creating student with data:', form);
-      
-      // Debug: Log each field individually
-      console.log('Form data breakdown:');
-      console.log('- student_id:', JSON.stringify(form.student_id), typeof form.student_id);
-      console.log('- first_name:', JSON.stringify(form.first_name), typeof form.first_name);
-      console.log('- last_name:', JSON.stringify(form.last_name), typeof form.last_name);
-      console.log('- phone:', JSON.stringify(form.phone), typeof form.phone);
-      console.log('- date_of_birth:', JSON.stringify(form.date_of_birth), typeof form.date_of_birth);
-      console.log('- address:', JSON.stringify(form.address), typeof form.address);
-      
-      // Sanitize data to ensure all fields are strings and handle empty values
+   
       const sanitizedData = {
         student_id: String(form.student_id || '').trim(),
         first_name: String(form.first_name || '').trim(),
@@ -92,11 +79,8 @@ const TeacherStudentAdd: React.FC = () => {
         address: String(form.address || '').trim() || undefined
       };
       
-      console.log('Sanitized data:', sanitizedData);
       
-      // Create student via API
       const response = await SimpleUserService.createStudent(sanitizedData);
-      console.log('Student created successfully:', response);
       
       const autoEmail = `${form.student_id}@lms.com`;
       const autoPassword = form.student_id;
@@ -107,7 +91,6 @@ const TeacherStudentAdd: React.FC = () => {
     } catch (error: any) {
       console.error('Create student error:', error);
       
-      // Handle specific error messages
       let errorMessage = 'Lỗi khi tạo tài khoản sinh viên: ';
       if (error.message.includes('Student ID already exists')) {
         errorMessage = 'MSSV đã tồn tại trong hệ thống!';

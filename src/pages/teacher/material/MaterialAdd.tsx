@@ -69,17 +69,12 @@ const MaterialAdd: React.FC = () => {
       setLoadingSubjects(true);
       setError('');
       
-      // Get courses (subjects) from the API
-      console.log('Loading subjects...');
       const response = await simpleCourseService.getCourses({ page: 1, size: 100 });
-      console.log('Subjects response:', response);
       
-      // Handle the correct response format: {data: Array, pagination: {...}}
       if (response && response.data && Array.isArray(response.data)) {
         setSubjects(response.data);
         console.log(`Loaded ${response.data.length} subjects`);
       } else if (response && response.items && Array.isArray(response.items)) {
-        // Fallback for old format
         setSubjects(response.items);
         console.log(`Loaded ${response.items.length} subjects`);
       } else {
@@ -99,21 +94,17 @@ const MaterialAdd: React.FC = () => {
   const loadChapters = async (subjectId: number) => {
     try {
       setLoadingChapters(true);
-      console.log(`Loading chapters for subject ${subjectId}...`);
       
       const response = await simpleChapterService.getChapters({ 
         subject_id: subjectId, 
         page: 1, 
         limit: 100 
       });
-      console.log('Chapters response:', response);
       
-      // Handle the correct response format
       if (response && response.data && Array.isArray(response.data)) {
         setChapters(response.data);
         console.log(`Loaded ${response.data.length} chapters`);
       } else if (response && response.items && Array.isArray(response.items)) {
-        // Fallback for old format
         setChapters(response.items);
         console.log(`Loaded ${response.items.length} chapters`);
       } else {
@@ -140,7 +131,6 @@ const MaterialAdd: React.FC = () => {
       setSelectedFile(file);
       setError('');
       
-      // Auto-set title if empty
       if (!formData.title) {
         const fileName = file.name.split('.').slice(0, -1).join('.');
         setFormData(prev => ({ ...prev, title: fileName }));
@@ -169,7 +159,6 @@ const MaterialAdd: React.FC = () => {
       setError('');
       setUploadProgress(0);
 
-      // Upload file material
       const uploadData: UploadMaterialData = {
         title: formData.title,
         description: formData.description,
@@ -240,7 +229,6 @@ const MaterialAdd: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

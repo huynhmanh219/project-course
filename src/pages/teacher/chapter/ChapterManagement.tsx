@@ -8,7 +8,6 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader } from "../../../components/ui/card";
 
-// Mock data structure - replace with actual API calls
 interface Chapter {
   id: number;
   title: string;

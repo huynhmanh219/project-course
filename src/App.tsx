@@ -67,14 +67,10 @@ import QuizResult from "./pages/student/quiz/QuizResult"
 import QuizHistory from "./pages/student/quiz/QuizHistory"
 import LectureRating from "./pages/student/lecture/LectureRating"
 import ClassRatingPage from "./pages/student/ClassRating"
-import TestRating from "./pages/TestRating"
-import TestClassRating from "./pages/TestClassRating"
 import AdminClassRatings from "./pages/admin/ClassRatings"
 import TeacherClassRatings from "./pages/teacher/ClassRatings"
 import PendingClassRatings from "./pages/admin/PendingClassRatings";
 
-import TestAPI from "./pages/TestAPI"
-import TestQuizRouting from "./pages/TestQuizRouting"
 
 export function App() {
   return (
@@ -83,10 +79,7 @@ export function App() {
         {/* Các trang không cần layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/test-api" element={<TestAPI />} />
-        <Route path="/test-quiz-routing" element={<TestQuizRouting />} />
-        <Route path="/test-rating" element={<TestRating />} />
-        <Route path="/test-class-rating" element={<TestClassRating />} />
+ 
 
         {/* Các trang cần layout và authentication */}
         <Route

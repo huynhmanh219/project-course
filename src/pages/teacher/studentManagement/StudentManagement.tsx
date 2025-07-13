@@ -36,7 +36,6 @@ const StudentManagement: React.FC = () => {
   });
   const navigate = useNavigate();
 
-  // Load students from API
   const loadStudents = async (page = 1, search = '') => {
     try {
       setLoading(true);
@@ -81,7 +80,6 @@ const StudentManagement: React.FC = () => {
     loadStudents();
   }, []);
 
-  // Search handler
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     loadStudents(1, searchTerm);
@@ -110,10 +108,8 @@ const StudentManagement: React.FC = () => {
         setLoading(true);
         await simpleUserService.deleteStudent(id);
         
-        // Show success message
         alert(`Đã xóa sinh viên "${fullName}" thành công!`);
         
-        // Reload students list
         loadStudents(pagination.page, searchTerm);
       } catch (error: any) {
         console.error('Delete student error:', error);

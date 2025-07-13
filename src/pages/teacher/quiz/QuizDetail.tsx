@@ -48,15 +48,11 @@ const QuizDetail: React.FC = () => {
       setError(null);
       
       const currentUser = authService.getCurrentUser();
-      console.log('🔍 [QuizDetail] Current user from auth:', currentUser);
-      console.log('🔍 [QuizDetail] Current user ID:', currentUser?.id);
-      console.log('🔍 [QuizDetail] Current user role:', currentUser?.role);
       
       const quizData = await simpleQuizService.getQuiz(parseInt(id!));
     
       const permissionCheck = PermissionUtils.canAccessQuiz(quizData);
       if (!permissionCheck.canAccess) {
-        console.log('Permission denied:', permissionCheck.reason);
         PermissionUtils.redirectIfNoPermission(false, permissionCheck.reason);
         return;
       }
@@ -76,7 +72,6 @@ const QuizDetail: React.FC = () => {
       setLoadingQuestions(true);
       
       const questionsData = await simpleQuizService.getQuizQuestions(parseInt(id!), true);
-      console.log('Loaded questions:', questionsData);
       setQuestions(questionsData || []);
       
     } catch (err: any) {
@@ -94,7 +89,6 @@ const QuizDetail: React.FC = () => {
     if (!confirmed) return;
 
     try {
-      console.log(`Deleting question ${questionId}...`);
       
       await simpleQuizService.deleteQuestion(questionId);
       
@@ -223,9 +217,7 @@ const QuizDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Quiz Information */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Info */}
           <div className="lg:col-span-2">
             <Card className="shadow-lg border border-gray-200">
               <CardContent className="p-6">

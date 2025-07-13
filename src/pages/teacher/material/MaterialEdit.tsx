@@ -34,28 +34,22 @@ const MaterialEdit: React.FC = () => {
     is_public: true
   });
   
-  // Original material data
   const [originalMaterial, setOriginalMaterial] = useState<Material | null>(null);
   
-  // File handling
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  // Loading states
   const [loading, setLoading] = useState(false);
   const [loadingMaterial, setLoadingMaterial] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [loadingChapters, setLoadingChapters] = useState(false);
   
-  // Data
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   
-  // UI states
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
 
-  // Load material details on mount
   useEffect(() => {
     if (id) {
       loadMaterial(Number(id));
@@ -66,7 +60,6 @@ const MaterialEdit: React.FC = () => {
     }
   }, [id]);
 
-  // Load chapters when subject changes
   useEffect(() => {
     if (formData.subject_id) {
       loadChapters(Number(formData.subject_id));
@@ -81,9 +74,7 @@ const MaterialEdit: React.FC = () => {
       setLoadingMaterial(true);
       setError('');
       
-      console.log(`Loading material ${materialId}...`);
       const material = await simpleMaterialService.getMaterialDetails(materialId);
-      console.log('Material details:', material);
       
       setOriginalMaterial(material);
       setFormData({
@@ -109,16 +100,12 @@ const MaterialEdit: React.FC = () => {
     try {
       setLoadingSubjects(true);
       
-      console.log('Loading subjects...');
       const response = await simpleCourseService.getCourses({ page: 1, size: 100 });
-      console.log('Subjects response:', response);
       
       if (response && response.data && Array.isArray(response.data)) {
         setSubjects(response.data);
-        console.log(`Loaded ${response.data.length} subjects`);
       } else if (response && response.items && Array.isArray(response.items)) {
         setSubjects(response.items);
-        console.log(`Loaded ${response.items.length} subjects`);
       } else {
         console.error('Invalid subjects response format:', response);
         setSubjects([]);
@@ -134,23 +121,18 @@ const MaterialEdit: React.FC = () => {
   const loadChapters = async (subjectId: number) => {
     try {
       setLoadingChapters(true);
-      console.log(`Loading chapters for subject ${subjectId}...`);
       
       const response = await simpleChapterService.getChapters({ 
         subject_id: subjectId, 
         page: 1, 
         limit: 100 
-      });
-      console.log('Chapters response:', response);
+      });   
       
       if (response && response.data && Array.isArray(response.data)) {
         setChapters(response.data);
-        console.log(`Loaded ${response.data.length} chapters`);
       } else if (response && response.items && Array.isArray(response.items)) {
         setChapters(response.items);
-        console.log(`Loaded ${response.items.length} chapters`);
       } else {
-        console.log('No chapters found or invalid format');
         setChapters([]);
       }
     } catch (err: any) {
@@ -200,7 +182,6 @@ const MaterialEdit: React.FC = () => {
       setError('');
       setUploadProgress(0);
 
-      // Update material metadata
       const updateData: UpdateMaterialData = {
         title: formData.title,
         description: formData.description,
@@ -210,9 +191,7 @@ const MaterialEdit: React.FC = () => {
 
       await simpleMaterialService.updateMaterial(Number(id), updateData);
 
-      // If there's a new file, upload it
       if (selectedFile) {
-        // TODO: Implement file replacement API endpoint
         console.log('File replacement not implemented yet:', selectedFile.name);
       }
 

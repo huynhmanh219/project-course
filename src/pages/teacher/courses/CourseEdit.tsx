@@ -57,14 +57,12 @@ const CourseEdit: React.FC = () => {
     academic_year: '2024-2025'
   });
 
-  // Load course data and lecturers
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Get current user first
         const currentUser = authService.getCurrentUser();
         setUser(currentUser);
         
@@ -73,20 +71,15 @@ const CourseEdit: React.FC = () => {
           return;
         }
 
-        // Check if user is admin
         const userRole = currentUser.role || currentUser.roleName;
         setIsAdmin(userRole === 'admin');
         
-        // Load course details first to check ownership
         const courseResponse = await simpleCourseService.getCourse(Number(id));
         
-        console.log('Course data:', courseResponse);
         
-        // Set course data - backend returns { data: { course: {...} } }
         const courseData = courseResponse.course || courseResponse;
         setCourse(courseData);
         
-        // Check if user can edit this course
         const currentUserId = currentUser?.id;
         const currentLecturerId = currentUser?.lecturerId || currentUser?.lecturer_id;
         const canUserEdit = userRole === 'admin' || 
@@ -110,14 +103,12 @@ const CourseEdit: React.FC = () => {
           academic_year: courseData.academic_year || '2024-2025'
         });
         
-        // Only load lecturers if admin (can change lecturer)
         if (userRole === 'admin') {
           const lecturersResponse = await simpleCourseService.getLecturers();
           setLecturers(lecturersResponse || []);
         }
         
       } catch (error: any) {
-        console.error('Error loading data:', error);
         setError(error.message || 'Không thể tải dữ liệu');
       } finally {
         setLoading(false);
@@ -151,8 +142,6 @@ const CourseEdit: React.FC = () => {
       setSaving(true);
       setError(null);
       
-      console.log('Updating course:', form);
-      
       await simpleCourseService.updateCourse(Number(id), form);
       
       alert("Đã cập nhật môn học thành công!");
@@ -175,8 +164,6 @@ const CourseEdit: React.FC = () => {
     }
 
     try {
-      // First, check if course has active classes
-      console.log('Checking classes for course:', id);
       const classes = await simpleCourseService.getClassesBySubject(Number(id));
       
       if (classes && classes.length > 0) {
@@ -189,14 +176,11 @@ const CourseEdit: React.FC = () => {
         return;
       }
 
-      // If no classes, proceed with normal delete confirmation
       const confirmMessage = `Bạn có chắc chắn muốn xóa môn học "${course.subject_name}" không?\n\nHành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác.`;
       
       if (window.confirm(confirmMessage)) {
         setDeleting(true);
         setError(null);
-        
-        console.log('Deleting course:', id);
         
         await simpleCourseService.deleteCourse(Number(id));
         
@@ -205,8 +189,7 @@ const CourseEdit: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error deleting course:', error);
-      
-      // Handle specific error messages
+        
       let errorMessage = 'Không thể xóa môn học';
       if (error.message.includes('Cannot delete course with active sections')) {
         errorMessage = `Không thể xóa môn học "${course.subject_name}"!\n\nMôn học này vẫn còn có lớp học đang hoạt động. Vui lòng xóa tất cả các lớp học trước khi xóa môn học.\n\nBạn có thể vào mục "Quản lý lớp học" để xóa các lớp học liên quan.`;

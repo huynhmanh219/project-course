@@ -134,7 +134,6 @@ const ClassDetail: React.FC = () => {
     }
   }, [classId]);
 
-  // Fetch lectures - ONLY after classInfo is loaded
   useEffect(() => {
     const fetchLectures = async () => {
       try {
@@ -154,7 +153,6 @@ const ClassDetail: React.FC = () => {
           // });
           
           setLectures(response.data);
-          // Set first lecture as selected
           if (response.data.length > 0 && !selectedLecture) {
             setSelectedLecture(response.data[0]);
           }
@@ -163,7 +161,6 @@ const ClassDetail: React.FC = () => {
           loadLectureRatings(response.data);
         }
       } catch (error: any) {
-        console.error('Error fetching lectures:', error);
         console.error('Lectures API failed with:', error.message);
       } finally {
         setLoadingLectures(false);
@@ -181,8 +178,6 @@ const ClassDetail: React.FC = () => {
       
       for (const lecture of lectureList) {
         try {
-          // const response = await lectureRatingService.getRatingsForLecture(lecture.id);
-          
           const mockRating = {
             averageRating: Math.random() * 5, 
             totalRatings: Math.floor(Math.random() * 20) 
@@ -236,7 +231,6 @@ const ClassDetail: React.FC = () => {
     }
   }, [classInfo]);
 
-  // Callback to update progress when hook syncs with backend
   const handleProgressUpdate = (lectureId: number, progressData: any) => {
     setLectureProgresses(prev => ({
       ...prev,
@@ -244,10 +238,8 @@ const ClassDetail: React.FC = () => {
     }));
   };
 
-  // Use progress hook for selected lecture
   useLectureProgress(selectedLecture?.id, handleProgressUpdate);
 
-  // Load lecture progress when lectures are loaded
   useEffect(() => {
     const loadLectureProgresses = async () => {
       if (lectures.length === 0) return;
@@ -256,7 +248,6 @@ const ClassDetail: React.FC = () => {
         setLoadingProgress(true);
         const progressMap: {[key: number]: any} = {};
         
-        // Load progress for each lecture
         for (const lecture of lectures) {
           try {
             const progress = await progressService.getLectureProgress(lecture.id);
@@ -280,27 +271,23 @@ const ClassDetail: React.FC = () => {
     loadLectureProgresses();
   }, [lectures]);
 
-  // Helper function to check if lecture is completed
   const isLectureCompleted = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const completed = progress && progress.status === 'completed';
     return completed;
   };
 
-  // Helper function to get lecture status
   const getLectureStatus = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const status = progress ? progress.status : 'not_started';
     return status;
   };
 
-  // Helper to calculate progress percent (0-100)
   const getLecturePercent = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     if (!progress) return 0;
     if (progress.progress_percent !== undefined) return progress.progress_percent;
-    // fallback: derive from time_spent and scrolled_to_bottom
-    const timeRatio = Math.min(progress.time_spent_sec / 10, 1); // MIN_COMPLETE_TIME
+    const timeRatio = Math.min(progress.time_spent_sec / 10, 1);
     const timePart = timeRatio * 50;
     const scrollPart = progress.scrolled_to_bottom ? 50 : 0;
     return Math.round(timePart + scrollPart);
@@ -380,7 +367,6 @@ const ClassDetail: React.FC = () => {
     );
   }
 
-  // Error state
   if (error || !classInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">

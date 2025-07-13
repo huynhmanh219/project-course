@@ -21,7 +21,6 @@ const QuizTaking: React.FC = () => {
   const navigate = useNavigate();
   const { quizId } = useParams();
   
-  // State management
   const [quiz, setQuiz] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -41,7 +40,6 @@ const QuizTaking: React.FC = () => {
     }
   }, [quizId]);
 
-  // Timer effect
   useEffect(() => {
     if (timeRemaining > 0) {
       const timer = setInterval(() => {
@@ -58,7 +56,6 @@ const QuizTaking: React.FC = () => {
     }
   }, [timeRemaining]);
 
-  // Auto-save progress every 30 seconds
   useEffect(() => {
     if (quiz && Object.keys(answers).length > 0) {
       const autoSave = setInterval(() => {
@@ -72,57 +69,42 @@ const QuizTaking: React.FC = () => {
   const loadQuizData = async () => {
     try {
       setLoading(true);
-      setError(''); // Reset error state
+      setError(''); 
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
       if (!currentUser) {
-        console.error('No current user found, redirecting to login');
         navigate('/login');
         return;
       }
 
-      console.log('Loading quiz data for ID:', quizId, 'User:', currentUser.email);
       
-      // Add timeout for API calls
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 15000); // 15 second timeout
+        setTimeout(() => reject(new Error('Request timeout')), 15000); 
       });
 
       try {
-        // Fetch quiz details with timeout
-        console.log('Fetching quiz details...');
         const quizResponse = await Promise.race([
           SimpleQuizService.getQuizById(parseInt(quizId!)),
           timeoutPromise
         ]);
-                console.log('Quiz response:', quizResponse);
-        console.log('Quiz response type:', typeof quizResponse);
-        console.log('Quiz response keys:', Object.keys(quizResponse || {}));
+        
 
         if (!quizResponse) {
           throw new Error('No response from quiz API');
         }
 
-        // handleResponse already unwraps the data, so quizResponse IS the quiz data
         const quizData = quizResponse;
         if (!quizData || !quizData.id) {
           throw new Error('Quiz data is empty or invalid');
         }
         
-        // Check if quiz is available for taking
         const now = new Date();
         const startDate = quizData.start_time ? new Date(quizData.start_time) : null;
         const endDate = quizData.end_time ? new Date(quizData.end_time) : null;
         
-        console.log('Quiz timing check:', {
-          now: now.toISOString(),
-          startDate: startDate?.toISOString(),
-          endDate: endDate?.toISOString(),
-          status: quizData.status
-        });
+        
         
         if (startDate && now < startDate) {
           setError('Bài kiểm tra chưa đến thời gian làm bài');
@@ -151,29 +133,24 @@ const QuizTaking: React.FC = () => {
           attempts_allowed: quizData.attempts_allowed || 1
         };
         
-        console.log('Processed quiz:', processedQuiz);
         setQuiz(processedQuiz);
         
         const duration = (processedQuiz.thoiGianLamBai) * 60; 
         setTimeRemaining(duration);
 
         try {
-          console.log('Checking existing quiz attempts...');
           const debugResponse = await fetch(`http://localhost:3000/api/debug-direct?quiz_id=${processedQuiz.id}`, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
           const debugResult = await debugResponse.json();
-          console.log('Debug API response:', debugResult);
           const myAttempts = debugResult.success ? debugResult.data : [];
-          console.log('My attempts for this quiz:', myAttempts);
           
           if (myAttempts && Array.isArray(myAttempts) && myAttempts.length > 0) {
             const inProgressAttempt = myAttempts.find((attempt: any) => attempt.status === 'in_progress');
             
             if (inProgressAttempt) {
-              console.log('Found in-progress attempt, resuming:', inProgressAttempt.id);
               setAttemptId(inProgressAttempt.id);
               
               const startTime = new Date(inProgressAttempt.started_at);
@@ -183,7 +160,6 @@ const QuizTaking: React.FC = () => {
               setTimeRemaining(remainingTime);
               
               if (remainingTime <= 0) {
-                console.log('Time expired, auto-submitting...');
                 await SimpleQuizService.submitQuizAttempt(inProgressAttempt.id);
                 navigate(`/student/quiz/${quizId}/result/${inProgressAttempt.id}`);
                 return;
@@ -194,7 +170,6 @@ const QuizTaking: React.FC = () => {
               );
               
               if (completedAttempt) {
-                console.log('Found completed attempt, redirecting to results:', completedAttempt.id);
                 navigate(`/student/quiz/${quizId}/result/${completedAttempt.id}`);
                 return;
               }
@@ -205,37 +180,30 @@ const QuizTaking: React.FC = () => {
                 return;
               }
               
-              console.log(`Creating new attempt (${myAttempts.length + 1}/${attemptsAllowed})...`);
               const attemptData = {
                 quiz_id: processedQuiz.id
               };
-              const attemptResponse = await SimpleQuizService.createQuizAttempt(attemptData);
-              console.log('Quiz attempt created:', attemptResponse);
+              const attemptResponse = await SimpleQuizService.createQuizAttempt(attemptData);   
               
               if (attemptResponse && attemptResponse.submission_id) {
                 setAttemptId(attemptResponse.submission_id);
-                console.log('Attempt ID set to:', attemptResponse.submission_id);
               } else {
                 throw new Error('Failed to create quiz attempt');
               }
             }
           } else {
-            console.log('No existing attempts, creating new quiz attempt...');
             const attemptData = {
               quiz_id: processedQuiz.id
             };
             const attemptResponse = await SimpleQuizService.createQuizAttempt(attemptData);
-            console.log('Quiz attempt created:', attemptResponse);
             
             if (attemptResponse && attemptResponse.submission_id) {
               setAttemptId(attemptResponse.submission_id);
-              console.log('Attempt ID set to:', attemptResponse.submission_id);
             } else {
               throw new Error('Failed to create quiz attempt');
             }
           }
         } catch (attemptError: any) {
-          console.error('Error managing quiz attempt:', attemptError);
           
           if (attemptError.message.includes('Maximum attempts reached')) {
             setError('Bạn đã hết lượt làm bài cho quiz này. Vui lòng xem kết quả từ lần làm trước.');
@@ -245,13 +213,11 @@ const QuizTaking: React.FC = () => {
           return;
         }
         
-        console.log('Fetching quiz questions...');
         try {
           const questionsResponse = await Promise.race([
             SimpleQuizService.getQuizQuestions(parseInt(quizId!)),
             timeoutPromise
           ]);
-          console.log('Questions response:', questionsResponse);
           
           if (!questionsResponse) {
             throw new Error('No response from questions API');
@@ -259,7 +225,6 @@ const QuizTaking: React.FC = () => {
 
           const questionsData = questionsResponse;
           if (!questionsData || !Array.isArray(questionsData) || questionsData.length === 0) {
-            console.warn('Questions API response invalid or empty, trying fallback...');
             const mockQuestions = [{
               id: 1,
               noiDungCauHoi: 'Đây là câu hỏi demo (API chưa hoạt động)',
@@ -274,7 +239,6 @@ const QuizTaking: React.FC = () => {
               ]
             }];
             setQuestions(mockQuestions);
-            console.log('Using mock questions for demo');
             return;
           }
 
@@ -293,17 +257,14 @@ const QuizTaking: React.FC = () => {
           }));
           
           processedQuestions.sort((a: any, b: any) => a.thuTu - b.thuTu);
-          console.log('Processed questions:', processedQuestions.length);
           setQuestions(processedQuestions);
           
         } catch (questionsError: any) {
-          console.error('Error loading questions:', questionsError);
-          console.log('Trying alternative questions API...');
+          console.error('Error loading questions:', questionsError);  
           
           try {
             const alternativeResponse = await SimpleQuizService.getQuiz(parseInt(quizId!));
             if (alternativeResponse && alternativeResponse.questions) {
-              console.log('Got questions from alternative API');
               const altQuestions = alternativeResponse.questions.map((q: any, index: number) => ({
                 id: q.question_id || q.id || index + 1,
                 noiDungCauHoi: q.question_text || q.content || q.question || `Câu hỏi ${index + 1}`,
@@ -322,12 +283,10 @@ const QuizTaking: React.FC = () => {
               throw new Error('Alternative API also failed');
             }
           } catch (altError) {
-            console.error('Alternative questions API also failed:', altError);
             setError('Không thể tải câu hỏi của bài kiểm tra. Vui lòng thử lại sau.');
           }
         }
       } catch (quizError: any) {
-        console.error('Error loading quiz details:', quizError);
         if (quizError.message === 'Request timeout') {
           setError('Quá thời gian tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
         } else {
@@ -335,7 +294,6 @@ const QuizTaking: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error('General error in loadQuizData:', error);
       setError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
     } finally {
       setLoading(false);
@@ -345,7 +303,6 @@ const QuizTaking: React.FC = () => {
   const saveProgress = async () => {
     try {
       console.log('Auto-saving progress:', answers);
-      // TODO: Implement auto-save API call
       // await SimpleQuizService.saveProgress(quizId, answers);
     } catch (error) {
       console.error('Auto-save failed:', error);
@@ -383,7 +340,6 @@ const QuizTaking: React.FC = () => {
   const handleSubmitQuiz = async () => {
     if (isSubmitting || !attemptId) return;
     
-    // Confirmation dialog
     const unansweredCount = questions.length - Object.keys(answers).length;
     if (unansweredCount > 0) {
       const confirmed = window.confirm(
@@ -394,7 +350,6 @@ const QuizTaking: React.FC = () => {
     
     setIsSubmitting(true);
     try {
-      console.log('Submitting quiz answers before final submission...');
       
       for (const [questionId, answerId] of Object.entries(answers)) {
         try {
@@ -403,16 +358,11 @@ const QuizTaking: React.FC = () => {
             answer_id: answerId
           };
           await SimpleQuizService.submitAnswer(attemptId, answerData);
-          console.log(`Submitted answer for question ${questionId}`);
         } catch (answerError: any) {
-          console.error(`Error submitting answer for question ${questionId}:`, answerError);
         }
       }
 
-      console.log('Submitting final quiz attempt...');
-      
       const submitResponse = await SimpleQuizService.submitQuizAttempt(attemptId);
-      console.log('Final submit response:', submitResponse);
 
       if (submitResponse) {
         navigate(`/student/quiz/${quizId}/result/${attemptId}`);
@@ -420,7 +370,6 @@ const QuizTaking: React.FC = () => {
         throw new Error('Không nhận được phản hồi từ server');
       }
     } catch (error: any) {
-      console.error('Error submitting quiz:', error);
       alert('Lỗi khi nộp bài: ' + (error.message || 'Vui lòng thử lại'));
       setIsSubmitting(false);
     }
@@ -470,7 +419,6 @@ const QuizTaking: React.FC = () => {
               </Button>
               <Button 
                 onClick={() => {
-                  console.log('Testing API connectivity...');
                   fetch('http://localhost:3000/api/ping')
                     .then(res => res.json())
                     .then(data => console.log('API Test:', data))

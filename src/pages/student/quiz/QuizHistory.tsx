@@ -33,16 +33,11 @@ const QuizHistory: React.FC = () => {
         return;
       }
 
-      console.log('Loading quiz history for user:', currentUser);
-
-      // Fetch quiz attempts from API
       const response = await simpleQuizService.getMyAttempts({
         page: 1,
-        size: 100, // Get all attempts
-        status: 'submitted' // Only get submitted attempts
+        size: 100, 
+        status: 'submitted' 
       });
-      
-      console.log('My attempts response:', response);
       
       if (response && response.results) {
         const processedHistory = response.results.map((submission: any) => ({
@@ -53,7 +48,7 @@ const QuizHistory: React.FC = () => {
           ngayLam: submission.submitted_at || submission.created_at,
           diem: parseFloat(submission.score || 0),
           diemToiDa: parseFloat(submission.max_score || submission.quiz?.total_points || 100),
-          thoiGianLam: Math.floor((submission.time_spent || 0) / 60), // Convert seconds to minutes
+          thoiGianLam: Math.floor((submission.time_spent || 0) / 60), 
           trangThai: submission.status,
           percentage: parseFloat(submission.percentage || 0),
           passed: submission.passed,
@@ -66,7 +61,6 @@ const QuizHistory: React.FC = () => {
         setHistory([]);
       }
     } catch (error: any) {
-      console.error('Error loading quiz history:', error);
       setError('Không thể tải lịch sử làm bài');
       setHistory([]);
     } finally {

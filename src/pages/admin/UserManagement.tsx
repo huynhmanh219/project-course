@@ -63,14 +63,12 @@ const UserManagement: React.FC = () => {
         return;
       }
 
-      console.log('🔄 Fetching teachers...');
       const params: any = {
         page: page.toString(),
         limit: pagination.limit.toString()
       };
       const teachersData = await SimpleUserService.getTeachers(params);
       
-      console.log('📥 Teachers response:', teachersData);
       
       if (teachersData && Array.isArray(teachersData.teachers)) {
         const processedTeachers = teachersData.teachers.map((teacher: any) => ({
@@ -88,7 +86,6 @@ const UserManagement: React.FC = () => {
           profile: teacher.profile
         }));
         
-        console.log('✅ Processed teachers:', processedTeachers);
         setTeachers(processedTeachers);
         if (teachersData.pagination) {
           setPagination({
@@ -99,13 +96,9 @@ const UserManagement: React.FC = () => {
           });
         }
       } else {
-        console.warn('⚠️ No teachers data received or incorrect format');
         setTeachers([]);
       }
     } catch (error: any) {
-      console.error('❌ Error fetching teachers:', error);
-      
-      // Handle token expiration
       if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
         setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
         setTimeout(() => {
@@ -130,18 +123,13 @@ const UserManagement: React.FC = () => {
 
     if (window.confirm(confirmMessage)) {
       try {
-        console.log('🗑️ Deleting teacher:', teacherId);
         await SimpleUserService.deleteTeacher(teacherId);
         
-        // Update local state - remove the teacher from list
         setTeachers(teachers.filter((t) => t.id !== teacherId));
         
-        // Show success message
         alert(`✅ Đã xóa giảng viên "${teacher.fullName}" thành công!`);
         
-        console.log('✅ Teacher deleted successfully');
       } catch (error: any) {
-        console.error('❌ Error deleting teacher:', error);
         
         if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
           setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
@@ -165,7 +153,6 @@ const UserManagement: React.FC = () => {
     setShowDetailsModal(false);
   };
 
-  // Filter teachers
   const filteredTeachers = teachers.filter(teacher => {
     const matchesSearch = teacher.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          teacher.email.toLowerCase().includes(searchTerm.toLowerCase()) ||

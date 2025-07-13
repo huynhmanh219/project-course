@@ -24,7 +24,6 @@ const TeacherClasses: React.FC = () => {
       setLoading(true);
       setError('');
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
       
@@ -33,9 +32,6 @@ const TeacherClasses: React.FC = () => {
         return;
       }
 
-      console.log('🔄 Fetching classes for user:', currentUser);
-      
-      // Check if user has appropriate permissions
       if (!currentUser.role || !['admin', 'lecturer'].includes(currentUser.role)) {
         setError('Bạn không có quyền truy cập chức năng này');
         return;
@@ -43,27 +39,18 @@ const TeacherClasses: React.FC = () => {
 
       let response;
       if(currentUser.role==='admin'){
-        // Check if admin account also has lecturer profile
         try {
           const profile = await simpleClassService.getCurrentLecturerProfile();
-          // If lecturer profile exists, get classes by lecturer_id
           response = await simpleClassService.getClasses({ lecturer_id: profile.lecturer_id, limit: 100 });
         } catch {
-          // Admin without lecturer profile – fetch all classes
           response = await simpleClassService.getClasses({ limit: 100 });
         }
       } else {
         response = await simpleClassService.getMyClasses();
       }
-      console.log('📥 Classes response:', response);
-      
-      // Backend returns: { data: [...], pagination: {...} }
       let classesData = response.data || [];
       
-      console.log('📋 Classes data to process:', classesData);
-      
       if (classesData && classesData.length > 0) {
-        // Process class data - map from API format to UI format
         const processedClasses = classesData.map((classItem: any) => ({
           id: classItem.id,
           name: classItem.section_name || 'Chưa có tên',
@@ -81,16 +68,13 @@ const TeacherClasses: React.FC = () => {
           lecturerName: classItem.lecturer ? `${classItem.lecturer.first_name} ${classItem.lecturer.last_name}` : ''
         }));
         
-        console.log('✅ Processed classes:', processedClasses);
         setClasses(processedClasses);
       } else {
-        console.log('ℹ️ No classes found');
         setClasses([]);
       }
     } catch (error: any) {
-      console.error('❌ Error fetching classes:', error);
+      console.error('Error fetching classes:', error);
       
-      // Better error handling
       if (error.message.includes('Token expired') || error.message.includes('Unauthorized')) {
         setError('Phiên đăng nhập đã hết hạn. Đang chuyển hướng...');
         setTimeout(() => {
@@ -139,7 +123,6 @@ const TeacherClasses: React.FC = () => {
     
     if (window.confirm(confirmMessage)) {
         setDeletingClassId(classId);
-        console.log('Deleting class:', classId);
         
         await simpleClassService.deleteClass(classId);
         
@@ -167,7 +150,6 @@ const TeacherClasses: React.FC = () => {
   const ClassCard: React.FC<{ classItem: any }> = ({ classItem }) => {
     return (
       <Card className="h-full flex flex-col shadow-lg border border-gray-200 bg-white hover:shadow-xl transition-all duration-300 relative overflow-hidden group w-full max-w-[380px] m-4">
-        {/* Header gradient bar */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
         
         <CardContent className="flex-1 flex flex-col p-6">

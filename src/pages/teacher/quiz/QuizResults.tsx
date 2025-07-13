@@ -58,17 +58,11 @@ const QuizResults: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load quiz details and results
       const [quizResponse, resultsResponse] = await Promise.all([
         simpleQuizService.getQuiz(parseInt(id!)),
         simpleQuizService.getQuizResults(parseInt(id!))
       ]);
 
-      console.log('Quiz Response:', quizResponse);
-      console.log('Results Response:', resultsResponse);
-
-      // simpleQuizService already unwraps the .data property (if present),
-      // so quizResponse IS the quiz object, not { data: quiz }
       const quizData: any = (quizResponse && (quizResponse.data || quizResponse)) || null;
       if (quizData) {
         setQuiz({
@@ -79,8 +73,6 @@ const QuizResults: React.FC = () => {
         });
       }
 
-      // Results response comes back as { data: paginatedResults, statistics: stats }
-      // where paginatedResults has a .data array. Adjust accordingly.
       if (resultsResponse) {
         const paginated = resultsResponse.data || resultsResponse;
         const resultsArray = Array.isArray(paginated.data) ? paginated.data : paginated;

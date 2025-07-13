@@ -35,43 +35,25 @@ const CourseAdd: React.FC = () => {
     try {
       setLoadingData(true);
       
-      // Get current user
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
-      
-      console.log('🔍 Current user info:', currentUser);
-      console.log('🔍 User role:', currentUser?.role);
-      console.log('🔍 User permissions:', currentUser?.permissions);
-      console.log('🔍 JWT Token:', authService.getToken()?.substring(0, 50) + '...');
       
       if (!currentUser) {
         navigate('/login');
         return;
       }
 
-      // Check if user is admin  (use local variable to avoid async state delay)
       const userRole = currentUser.role || currentUser.roleName;
       const isCurrentAdmin = userRole === 'admin';
       setIsAdmin(isCurrentAdmin);
-      console.log('User role:', userRole, 'Is admin:', isCurrentAdmin);
 
-      // Permission check and suggestion
       if (!isCurrentAdmin && currentUser.role !== 'lecturer') {
-        console.log('⚠️ User role might not have teachers access. Current role:', currentUser.role);
         setError(`Role hiện tại (${currentUser.role}) có thể không có quyền truy cập teachers API. Thử login với admin hoặc lecturer account.`);
       }
 
-      // Only admin can select lecturers; lecturer auto-assigns themself
       if (isCurrentAdmin) {
-        // Fetch teachers list for admin
-        console.log('🔍 Loading teachers list for admin...');
         try {
           const teachersResponse = await SimpleUserService.getTeachers();
-          console.log('✅ Raw API response:', teachersResponse);
-          console.log('✅ Response type:', typeof teachersResponse);
-          console.log('✅ Response keys:', teachersResponse ? Object.keys(teachersResponse) : 'null/undefined');
-          
-          // Handle different possible response structures
           let teachersData = null;
           if (teachersResponse && Array.isArray(teachersResponse.teachers)) {
             teachersData = teachersResponse.teachers;
@@ -80,16 +62,11 @@ const CourseAdd: React.FC = () => {
           } else if (teachersResponse && Array.isArray(teachersResponse)) {
             teachersData = teachersResponse;
           } else {
-            console.log('⚠️ Unexpected response structure:', teachersResponse);
+            console.log('Unexpected response structure:', teachersResponse);
           }
           
           if (teachersData && Array.isArray(teachersData) && teachersData.length > 0) {
-            console.log('✅ Processing teachers data:', teachersData.length, 'teachers found');
-            
             const processedTeachers = teachersData.map((teacher: any) => {
-              console.log('🔍 Processing teacher:', teacher);
-              
-              // Handle different teacher object structures
               const teacherId = teacher.profile?.id || teacher.lecturer_id || teacher.id || teacher.account_id;
               const firstName = teacher.first_name || teacher.profile?.first_name || teacher.lecturer?.first_name;
               const lastName = teacher.last_name || teacher.profile?.last_name || teacher.lecturer?.last_name;
@@ -103,22 +80,17 @@ const CourseAdd: React.FC = () => {
               };
             });
             
-            console.log('✅ Processed teachers:', processedTeachers);
             setGiangVienOptions(processedTeachers);
             
-            // Set first teacher as default if available
             if (processedTeachers.length > 0) {
               setForm(prev => ({ ...prev, giangVienId: processedTeachers[0].id.toString() }));
             }
           } else {
-            console.log('⚠️ No valid teachers data found');
             throw new Error('No teachers data received');
           }
         } catch (teacherError: any) {
-          console.error('❌ Teachers API failed:', teacherError);
+          console.error('Teachers API failed:', teacherError);
           
-          // Fallback: Use mock teachers data
-          console.log('🔧 Using fallback mock teachers data...');
           const mockTeachers = [
             { id: 1, name: "Nguyễn Văn A", email: "teacher1@lms.com" },
             { id: 2, name: "Trần Thị B", email: "teacher2@lms.com" },
@@ -127,14 +99,9 @@ const CourseAdd: React.FC = () => {
           setGiangVienOptions(mockTeachers);
           setForm(prev => ({ ...prev, giangVienId: mockTeachers[0].id.toString() }));
           
-          // Show warning but don't fail completely
           setError('Không thể tải danh sách giảng viên từ server. Đang sử dụng dữ liệu mẫu.');
         }
       } else {
-        // Lecturer automatically creates for themselves
-        console.log('🔍 Lecturer creating course for themselves...');
-        
-        // Get lecturer profile to find correct lecturer_id
         try {
           const token = authService.getToken();
           const response = await fetch(`${API_BASE_URL}/users/profile`, {
@@ -147,20 +114,15 @@ const CourseAdd: React.FC = () => {
           
           if (response.ok && profileData?.status === 'success') {
             const lecturerId = profileData.data?.user?.profile?.id || currentUser.id;
-            console.log('🔍 Lecturer profile info:', profileData);
-            console.log('🔍 Using lecturer_id:', lecturerId);
             setForm(prev => ({ ...prev, giangVienId: lecturerId.toString() }));
           } else {
-            console.log('⚠️ Could not get lecturer profile, using currentUser.id');
             setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
           }
         } catch (profileError) {
-          console.log('⚠️ Profile API error, using currentUser.id:', profileError);
         setForm(prev => ({ ...prev, giangVienId: currentUser.id.toString() }));
         }
       }
     } catch (error: any) {
-      console.error('❌ Error loading initial data:', error);
       setError('Không thể tải dữ liệu ban đầu: ' + (error.message || 'Lỗi không xác định'));
     } finally {
       setLoadingData(false);
@@ -180,11 +142,7 @@ const CourseAdd: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check permission before submit
     const currentUser = authService.getCurrentUser();
-    console.log('🚀 SUBMIT - Current user:', currentUser);
-    console.log('🚀 SUBMIT - User role:', currentUser?.role);
-    console.log('🚀 SUBMIT - JWT Token exists:', !!authService.getToken());
     
     if (currentUser?.role !== 'admin' && currentUser?.role !== 'lecturer') {
       setError(`❌ Cần admin hoặc lecturer role để tạo course. Role hiện tại: ${currentUser?.role}. Hãy login với admin@lms.com / admin123 hoặc teacher account.`);
@@ -205,26 +163,17 @@ const CourseAdd: React.FC = () => {
     setError('');
     
     try {
-      console.log('Creating course with data:', form);
-      
-      // Prepare course data for API
       const courseData = {
         subject_name: form.tenMonHoc,
         subject_code: form.tenMonHoc.replace(/\s+/g, '').toUpperCase().substring(0, 10), // Generate code from name
         description: form.moTa || '',
         credits: parseInt(form.soTinChi.toString()),
         lecturer_id: parseInt(form.giangVienId.toString()),
-        // Convert Vietnamese semester to English
         semester: form.hocKy === '1' ? 'fall' : form.hocKy === '2' ? 'spring' : 'summer',
-        // Convert to YYYY-YYYY format
         academic_year: `${form.namHoc}-${parseInt(form.namHoc.toString()) + 1}`
       };
 
-      console.log('Sending course data to API:', courseData);
-      
-      // Call API to create course
       const response = await SimpleCourseService.createCourse(courseData);
-      console.log('Create course response:', response);
 
       if (response) {
         alert("Đã tạo môn học thành công!");
@@ -235,7 +184,6 @@ const CourseAdd: React.FC = () => {
     } catch (error: any) {
       console.error('Error creating course:', error);
       
-      // Check if it's a validation error with specific details
       if (error.validationErrors && Array.isArray(error.validationErrors)) {
         setError('Lỗi validation: ' + error.validationErrors.join(', '));
       } else if (error.message.includes('Validation failed')) {

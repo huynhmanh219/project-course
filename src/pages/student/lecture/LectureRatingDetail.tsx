@@ -63,7 +63,6 @@ const LectureRatingDetail: React.FC = () => {
     try {
       setLoading(true);
       const data = await lectureRatingService.getRatingsForLecture(Number(lectureId));
-      console.log('Ratings data:', data);
       
       if (data.success) {
         setRatings(data.data.ratings || []);
@@ -72,7 +71,6 @@ const LectureRatingDetail: React.FC = () => {
         setDistribution(data.data.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
       }
     } catch (error) {
-      console.error('Error loading ratings:', error);
       showNotification('error', 'Không thể tải danh sách đánh giá');
     } finally {
       setLoading(false);
@@ -93,7 +91,6 @@ const LectureRatingDetail: React.FC = () => {
         setNewComment(data.data.rating.comment || '');
       }
     } catch (error) {
-      console.log('No existing rating found');
     }
   };
 
@@ -119,18 +116,13 @@ const LectureRatingDetail: React.FC = () => {
         showNotification('success', 'Tạo đánh giá thành công!');
       }
       
-      console.log('Submit result:', result);
-      
-      // Reset form
       setShowRatingForm(false);
       setEditingRating(null);
       setNewComment('');
       
-      // Reload data
       await loadRatings();
       await loadMyRating();
     } catch (error: any) {
-      console.error('Error submitting rating:', error);
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá';
       showNotification('error', errorMessage);
     } finally {
@@ -156,7 +148,6 @@ const LectureRatingDetail: React.FC = () => {
       await loadMyRating();
       setMyRating(null);
     } catch (error: any) {
-      console.error('Error deleting rating:', error);
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi xóa đánh giá';
       showNotification('error', errorMessage);
     } finally {
@@ -177,7 +168,6 @@ const LectureRatingDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Notification */}
         {notification && (
           <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
             notification.type === 'success' 

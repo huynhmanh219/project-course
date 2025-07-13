@@ -134,27 +134,20 @@ const TeacherAdd: React.FC = () => {
     setSuccess('');
     
     try {
-      console.log('✅ Creating teacher with form data:', form);
       
-      // Filter data to match backend validation schema
-      // Backend only accepts: email, password, first_name, last_name, phone, title, department, bio
       const teacherData = {
         email: form.email.trim(),
         password: form.password,
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
-        // Only include optional fields if they have values
         ...(form.phone && form.phone.trim() && { phone: form.phone.trim() }),
         ...(form.title && form.title.trim() && { title: form.title.trim() }),
         ...(form.department && form.department.trim() && { department: form.department.trim() }),
         ...(form.bio && form.bio.trim() && { bio: form.bio.trim() })
       };
       
-      console.log('📤 Filtered data for API:', teacherData);
-      
       const result = await simpleUserService.createTeacher(teacherData);
       
-      console.log('✅ Teacher created successfully:', result);
       setSuccess('Tạo tài khoản giảng viên thành công!');
       
       setTimeout(() => {
@@ -162,9 +155,7 @@ const TeacherAdd: React.FC = () => {
       }, 2000);
       
     } catch (error: any) {
-      console.error('❌ Error creating teacher:', error);
       
-      // Better error handling for different types of errors
       if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
         setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
         setTimeout(() => {
@@ -183,7 +174,6 @@ const TeacherAdd: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
       <div className="w-full max-w-3xl mx-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 rounded-3xl shadow-2xl p-8 mb-8 flex items-center gap-4 text-white">
           <UserPlus className="w-10 h-10 text-white drop-shadow-lg" />
           <div className="flex-1">

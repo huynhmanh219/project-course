@@ -44,17 +44,14 @@ const LectureRatingPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await lectureRatingService.getRatingsForLecture(Number(lectureId));
-      console.log('Ratings data:', data);
       
       if (data.success) {
         setRatings(data.data.ratings || []);
         setAverageRating(data.data.averageRating || 0);
         setTotalRatings(data.data.totalRatings || 0);
       } else {
-        // Handle legacy format
         setRatings(data.ratings || []);
         
-        // Calculate stats
         if (data.ratings && data.ratings.length > 0) {
           const total = data.ratings.length;
           const avg = data.ratings.reduce((sum: number, r: LectureRating) => sum + r.rating, 0) / total;
@@ -82,13 +79,11 @@ const LectureRatingPage: React.FC = () => {
         setNewRating(data.data.rating.rating);
         setNewComment(data.data.rating.comment || '');
       } else if (data.rating) {
-        // Handle legacy format
         setMyRating(data.rating);
         setNewRating(data.rating.rating);
         setNewComment(data.rating.comment || '');
       }
     } catch (error) {
-      console.log('No existing rating found');
     }
   };
 
@@ -115,7 +110,6 @@ const LectureRatingPage: React.FC = () => {
       await loadRatings();
       await loadMyRating();
     } catch (error) {
-      console.error('Error submitting rating:', error);
     } finally {
       setLoading(false);
     }

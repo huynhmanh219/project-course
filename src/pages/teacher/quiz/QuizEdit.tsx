@@ -16,7 +16,6 @@ const QuizEdit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<any[]>([]);
   
-  // Form data matching API structure
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -46,17 +45,13 @@ const QuizEdit: React.FC = () => {
       setError(null);
       
       const quizData = await simpleQuizService.getQuiz(parseInt(id!));
-      console.log('Loaded quiz data:', quizData);
       
-      // Check permission to edit this quiz
       const permissionCheck = PermissionUtils.canEditQuiz(quizData);
       if (!permissionCheck.canEdit) {
-        console.log('Edit permission denied:', permissionCheck.reason);
         PermissionUtils.redirectIfNoPermission(false, permissionCheck.reason);
         return;
       }
       
-      // Transform API data to form format
       setFormData({
         title: quizData.title || '',
         description: quizData.description || '',
@@ -85,10 +80,8 @@ const QuizEdit: React.FC = () => {
     try {
       setLoadingSubjects(true);
       
-      // Get valid token
       const token = await authService.getValidToken();
       
-      // Fetch courses directly
       const response = await fetch('http://localhost:3000/api/courses', {
         method: 'GET',
         headers: {
@@ -124,9 +117,6 @@ const QuizEdit: React.FC = () => {
     setLoading(true);
     
     try {
-      console.log('Updating quiz with data:', formData);
-      
-      // Validate required fields
       if (!formData.title || !formData.subject_id || !formData.time_limit || !formData.total_points) {
         alert('Vui lòng điền đầy đủ thông tin bắt buộc');
         return;
@@ -149,7 +139,6 @@ const QuizEdit: React.FC = () => {
       };
 
       const response = await simpleQuizService.updateQuiz(parseInt(id!), updateData);
-      console.log('Quiz updated:', response);
       
       alert('Cập nhật bài kiểm tra thành công!');
       navigate('/teacher/quiz');
@@ -165,7 +154,6 @@ const QuizEdit: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">

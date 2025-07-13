@@ -28,7 +28,6 @@ const Materials: React.FC = () => {
     }
   });
 
-  // Check authentication on mount
   useEffect(() => {
     const checkAuth = () => {
       const token = authService.getToken();
@@ -54,18 +53,16 @@ const Materials: React.FC = () => {
     }
   }, []);
 
-  // Load materials
   const loadMaterials = async (params?: MaterialQueryParams) => {
     try {
       setLoading(true);
       setError('');
       
-      // Debug: Check authentication
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       console.log('Auth token exists:', !!token);
       
       if (!token) {
-        setError('❌ Chưa đăng nhập! Vui lòng đăng nhập để xem tài liệu.');
+        setError('Chưa đăng nhập! Vui lòng đăng nhập để xem tài liệu.');
         setMaterials([]);
         setLoading(false);
         return;
@@ -89,7 +86,6 @@ const Materials: React.FC = () => {
       const response = await simpleMaterialService.getMaterials(queryParams);
       console.log('Raw response from service:', response);
       
-      // Ensure we have a valid response structure
       if (!response) {
         console.warn('No response from service');
         setMaterials([]);
@@ -97,7 +93,6 @@ const Materials: React.FC = () => {
         return;
       }
 
-      // Handle different response structures
       let materialsList: Material[] = [];
       let totalPagesValue = 1;
 
@@ -116,9 +111,7 @@ const Materials: React.FC = () => {
         totalPagesValue = 1;
       }
 
-      console.log('Processed materials list:', materialsList);
-      console.log('Total pages:', totalPagesValue);
-
+ 
       setMaterials(materialsList);
       setTotalPages(totalPagesValue);
       
@@ -126,9 +119,9 @@ const Materials: React.FC = () => {
       console.error('Error loading materials:', err);
       
       if (err.message && (err.message.includes('Access denied') || err.message.includes('token'))) {
-        setError('🔐 Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.');
+        setError('Phiên đăng nhập hết hạn! Vui lòng đăng nhập lại.');
       } else {
-        setError(`⚠️ ${err.message || 'Không thể tải danh sách tài liệu'}`);
+        setError(`${err.message || 'Không thể tải danh sách tài liệu'}`);
       }
       
       setMaterials([]); 

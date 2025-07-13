@@ -48,7 +48,6 @@ const StudentAddToClass: React.FC = () => {
   const [currentEnrollmentCount, setCurrentEnrollmentCount] = useState(0);
   const navigate = useNavigate();
 
-  // Load available students and class info
   const loadData = async () => {
     if (!classId) {
       setError('Không tìm thấy ID lớp học');
@@ -60,28 +59,21 @@ const StudentAddToClass: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load class info and current enrollment count
       const classResponse = await simpleCourseService.getClass(Number(classId));
-      console.log('Class info response:', classResponse);
       
       if (classResponse.class) {
         setClassInfo(classResponse.class);
       }
 
-      // Load current students in class to get enrollment count
       const currentStudentsResponse = await simpleCourseService.getClassStudents(Number(classId));
-      console.log('Current students response:', currentStudentsResponse);
       
       if (currentStudentsResponse.students) {
         setCurrentEnrollmentCount(currentStudentsResponse.students.length);
       }
 
-      // Load all students  
       const studentsResponse = await simpleUserService.getStudents();
-      console.log('All students response:', studentsResponse);
       
       if (studentsResponse.students) {
-        // Filter out students already enrolled in this class
         const enrolledStudentIds = currentStudentsResponse.students?.map((s: any) => s.account.id) || [];
         const availableStudents = studentsResponse.students.filter(
           (student: Student) => !enrolledStudentIds.includes(student.id) && student.is_active
@@ -102,7 +94,6 @@ const StudentAddToClass: React.FC = () => {
     loadData();
   }, [classId]);
 
-  // Handle student selection
   const toggleStudent = (studentId: number) => {
     setSelectedStudents(prev => 
       prev.includes(studentId) 
@@ -111,7 +102,6 @@ const StudentAddToClass: React.FC = () => {
     );
   };
 
-  // Select all filtered students
   const selectAll = () => {
     const filteredStudentIds = filteredStudents
       .slice(0, maxSelectable)
@@ -119,12 +109,10 @@ const StudentAddToClass: React.FC = () => {
     setSelectedStudents(filteredStudentIds);
   };
 
-  // Clear all selections
   const clearAll = () => {
     setSelectedStudents([]);
   };
 
-  // Handle enrollment
   const handleEnroll = async () => {
     if (selectedStudents.length === 0) {
       alert('Vui lòng chọn ít nhất một sinh viên để thêm vào lớp');
@@ -137,16 +125,12 @@ const StudentAddToClass: React.FC = () => {
       try {
         setEnrolling(true);
         
-        // Convert account IDs to student profile IDs
         const studentProfileIds = selectedStudents.map(accountId => {
           const student = students.find(s => s.id === accountId);
           return student?.profile.id;
         }).filter(id => id !== undefined);
 
-        console.log('Enrolling student profile IDs:', studentProfileIds);
-        
         const response = await simpleCourseService.enrollStudents(Number(classId), studentProfileIds);
-        console.log('Enrollment response:', response);
         
         if (response.results) {
           const { successful, failed } = response.results;
@@ -165,7 +149,6 @@ const StudentAddToClass: React.FC = () => {
           alert(message);
           
           if (successful.length > 0) {
-            // Navigate back to class management
             navigate(`/teacher/classes/${classId}/students`);
           }
         } else {
@@ -181,7 +164,6 @@ const StudentAddToClass: React.FC = () => {
     }
   };
 
-  // Filter students based on search
   const filteredStudents = students.filter(student => {
     if (!searchTerm.trim()) return true;
     const fullName = `${student.profile?.first_name || ''} ${student.profile?.last_name || ''}`.toLowerCase();
@@ -192,7 +174,6 @@ const StudentAddToClass: React.FC = () => {
     return fullName.includes(search) || studentId.includes(search) || email.includes(search);
   });
 
-  // Calculate max selectable students based on class capacity
   const remainingCapacity = classInfo ? classInfo.max_students - currentEnrollmentCount : 0;
   const maxSelectable = Math.min(remainingCapacity, filteredStudents.length);
 

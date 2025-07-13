@@ -60,7 +60,7 @@ const ClassRatingPage: React.FC = () => {
   const loadData = async () => {
     // Nếu route thiếu classId sẽ không gọi API, tránh tạo URL /undefined
     if (!classIdNum || isNaN(classIdNum) || classIdNum <= 0) {
-      console.warn('❌ ClassRatingPage: classId thiếu hoặc không hợp lệ →', classId);
+      console.warn('ClassRatingPage: classId thiếu hoặc không hợp lệ →', classId);
       setLoading(false);
       return;
     }
@@ -88,17 +88,13 @@ const ClassRatingPage: React.FC = () => {
           setMyRating(null);
         }
       } catch (error: any) {
-        console.log('No existing rating found or error:', error.message);
         setMyRating(null);
       }
 
       try {
-        // Load rating stats
         const statsResponse = await classRatingService.getClassRatingStats(classIdNum);
         setRatingStats(statsResponse);
       } catch (error: any) {
-        console.error('Error loading rating stats:', error);
-        // Set default stats if no ratings exist
         setRatingStats({
           averageRating: 0,
           totalRatings: 0,
@@ -107,17 +103,13 @@ const ClassRatingPage: React.FC = () => {
       }
 
       try {
-        // Load all ratings for this class
         const ratingsResponse = await classRatingService.getClassRatings(classIdNum);
-        console.log('Ratings response:', ratingsResponse);
         setAllRatings((ratingsResponse as any).data?.ratings || (ratingsResponse as any).ratings || []);
       } catch (error: any) {
-        console.error('Error loading all ratings:', error);
         setAllRatings([]);
       }
       
     } catch (error: any) {
-      console.error('Error loading data:', error);
       setMessage({ type: 'error', text: error.message });
     } finally {
       setLoading(false);
@@ -137,7 +129,6 @@ const ClassRatingPage: React.FC = () => {
       setMessage(null);
 
       if (myRating) {
-        // Update existing rating
         const updatedRating = await classRatingService.updateClassRating(myRating.id, {
           rating: formData.rating,
           comment: formData.comment
@@ -145,10 +136,8 @@ const ClassRatingPage: React.FC = () => {
         setMyRating(updatedRating);
         setMessage({ type: 'success', text: 'Cập nhật đánh giá thành công!' });
         
-        // Update in all ratings list
         setAllRatings(prev => prev.map(r => r.id === updatedRating.id ? updatedRating : r));
       } else {
-        // Create new rating
         const newRating = await classRatingService.createClassRating({
           class_id: classIdNum,
           rating: formData.rating,
@@ -157,11 +146,9 @@ const ClassRatingPage: React.FC = () => {
         setMyRating(newRating);
         setMessage({ type: 'success', text: 'Đánh giá đã được gửi thành công!' });
         
-        // Add to all ratings list
         setAllRatings(prev => [newRating, ...prev]);
       }
       
-      // Reload stats to reflect changes
       const statsResponse = await classRatingService.getClassRatingStats(classIdNum);
       setRatingStats(statsResponse);
       
@@ -185,10 +172,8 @@ const ClassRatingPage: React.FC = () => {
       setFormData({ rating: 0, comment: '' });
       setMessage({ type: 'success', text: 'Đã xóa đánh giá thành công!' });
       
-      // Remove from all ratings
       setAllRatings(prev => prev.filter(r => r.id !== myRating.id));
       
-      // Reload stats to reflect changes
       const statsResponse = await classRatingService.getClassRatingStats(classIdNum);
       setRatingStats(statsResponse);
       

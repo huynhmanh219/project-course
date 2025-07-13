@@ -279,7 +279,6 @@ const add = (a, b) => a + b;
     loadLectureProgresses();
   }, []);
 
-  // Helper function to check if lecture is completed
   const isLectureCompleted = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const completed = progress && progress.status === 'completed';
@@ -287,7 +286,6 @@ const add = (a, b) => a + b;
     return completed;
   };
 
-  // Helper function to get lecture status
   const getLectureStatus = (lectureId: number) => {
     const progress = lectureProgresses[lectureId];
     const status = progress ? progress.status : 'not_started';

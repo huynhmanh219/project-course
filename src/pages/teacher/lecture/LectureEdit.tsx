@@ -78,9 +78,7 @@ const LectureEdit: React.FC = () => {
         simpleLectureService.getLecture(Number(lectureId))
       ]);
 
-      console.log('Course info response:', courseResponse);
-      console.log('Chapter info response:', chapterResponse);
-      console.log('Lecture info response:', lectureResponse);
+  
       
       if (courseResponse.course) {
         setCourse(courseResponse.course);

@@ -66,20 +66,15 @@ const Profile: React.FC = () => {
     fetchUserProfile()
   }, [])
 
-  // Helper function to get proper avatar URL
   const getAvatarUrl = (profileData: any, currentUser: any): string => {
-    // Priority 1: Server profile data avatar
     if (profileData?.profile?.avatar) {
       const serverAvatar = profileData.profile.avatar
-      // If server avatar is already a full URL, return as-is
       if (serverAvatar.startsWith('http://') || serverAvatar.startsWith('https://') || serverAvatar.startsWith('blob:')) {
         return serverAvatar
       }
-      // If server avatar is a relative path, prepend server URL
       return `http://localhost:3000${serverAvatar}?t=${Date.now()}`
     }
     
-    // Priority 2: Current user avatar (from token)
     if (currentUser.profile?.avatar) {
       const userAvatar = currentUser.profile.avatar
       if (userAvatar.startsWith('http://') || userAvatar.startsWith('https://') || userAvatar.startsWith('blob:')) {
@@ -88,13 +83,11 @@ const Profile: React.FC = () => {
       return `http://localhost:3000${userAvatar}?t=${Date.now()}`
     }
     
-    // Priority 3: Check localStorage for uploaded avatar
     const savedAvatar = localStorage.getItem(`avatar_${currentUser.id}`)
     if (savedAvatar) {
       return savedAvatar
     }
     
-    // Priority 4: Default avatar
     const displayName = `${currentUser.profile?.first_name || ''} ${currentUser.profile?.last_name || currentUser.email}`.trim()
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0D8ABC&color=fff&size=200`
   }
@@ -110,7 +103,6 @@ const Profile: React.FC = () => {
         return
       }
 
-      // Try to call actual profile API to get latest avatar
       let profileData = null
       try {
         const token = await authService.getValidToken()
@@ -134,12 +126,10 @@ const Profile: React.FC = () => {
         console.log('❌ Failed to load profile from server, using mock data:', apiError)
       }
 
-      // Create profile data (server data takes priority over mock)
       const mockProfile = createMockProfile(currentUser, profileData)
       setUserData(mockProfile)
       setHoTen(mockProfile.hoTen)
       
-      // Load avatar with proper server URL handling
       const avatarUrl = getAvatarUrl(profileData, currentUser)
       setHinhAnh(avatarUrl)
       console.log('🖼️ Avatar URL set to:', avatarUrl)
@@ -177,7 +167,6 @@ const Profile: React.FC = () => {
       createdAt: new Date().toISOString()
     }
 
-    // Use server profile data if available
     if (serverProfile?.profile) {
       const profile = serverProfile.profile
       if (profile.first_name || profile.last_name) {
@@ -216,14 +205,12 @@ const Profile: React.FC = () => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
       setError('Định dạng file không hợp lệ. Chỉ chấp nhận JPG, PNG, GIF, WEBP')
       return
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2)
       setError(`Kích thước file quá lớn (${sizeMB}MB). Tối đa 5MB`)

@@ -134,7 +134,6 @@ const QuizResult: React.FC = () => {
             });
           }
         } catch (resultError) {
-          console.error('Error loading quiz result:', resultError);
           setError('Không thể tải kết quả bài kiểm tra. Vui lòng thử lại.');
         }
       } else {
@@ -202,12 +201,10 @@ const QuizResult: React.FC = () => {
           setError('Bạn chưa hoàn thành bài kiểm tra này.');
 
         } catch (searchError) {
-          console.error('Error searching for submissions:', searchError);
           setError('Không thể tìm thấy kết quả bài kiểm tra.');
         }
       }
     } catch (error: any) {
-      console.error('Error loading quiz result:', error);
       setError('Không thể tải kết quả bài kiểm tra');
     } finally {
       setLoading(false);

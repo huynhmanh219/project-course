@@ -73,11 +73,9 @@ class AuthService {
         });
       }
     } catch (error: any) {
-      console.error('Logout error:', error);
     } finally {
       // Luôn xóa local storage
       this.clearLocalStorage();
-      console.log('Logged out, local storage cleared, redirecting to login...');
       
       // Redirect ngay về trang login
       window.location.href = '/login';
@@ -104,7 +102,6 @@ class AuthService {
 
       return result;
     } catch (error: any) {
-      console.error('Change password error:', error);
       throw error;
     }
   }
@@ -119,7 +116,6 @@ class AuthService {
       const currentTime = Date.now() / 1000;
       return payload.exp < currentTime;
     } catch (error) {
-      console.error('Error checking token expiration:', error);
       return true;
     }
   }
@@ -164,7 +160,6 @@ class AuthService {
     
     // Kiểm tra token có hết hạn không
     if (this.isTokenExpired()) {
-      console.log('Token expired, attempting refresh...');
       return await this.refreshAccessToken();
     }
     
@@ -223,7 +218,6 @@ class AuthService {
     if (!user) return false;
     
     const userRole = user.role || 'student';
-    console.log('Checking permission:', userRole, 'vs', requiredRole);
     
     return userRole.toLowerCase().includes(requiredRole.toLowerCase());
   }
@@ -237,7 +231,6 @@ class AuthService {
     }
 
     const role = user.role || 'student';
-    console.log('Redirecting user with role:', role);
     
     switch (role.toLowerCase()) {
       case 'admin':
@@ -258,7 +251,6 @@ class AuthService {
   // Refresh user data từ server để kiểm tra
   async refreshUserData(): Promise<any> {
     try {
-      console.log('🔄 [refreshUserData] Fetching fresh user data from server...');
       
       const token = await this.getValidToken();
       if (!token) {
@@ -288,7 +280,6 @@ class AuthService {
         throw new Error(result.message || 'Failed to refresh user data');
       }
     } catch (error: any) {
-      console.error('❌ [refreshUserData] Error:', error);
       throw error;
     }
   }

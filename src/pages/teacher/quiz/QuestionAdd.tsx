@@ -37,10 +37,8 @@ const QuestionAdd: React.FC = () => {
     try {
       const quizData = await simpleQuizService.getQuiz(parseInt(quizId!));
       
-      // Check permission to manage questions for this quiz
       const permissionCheck = PermissionUtils.canManageQuestions(quizData);
       if (!permissionCheck.canManage) {
-        console.log('Question management permission denied:', permissionCheck.reason);
         PermissionUtils.redirectIfNoPermission(false, permissionCheck.reason, `/teacher/quiz/${quizId}`);
         return;
       }
@@ -115,7 +113,6 @@ const QuestionAdd: React.FC = () => {
     setLoading(true);
     
     try {
-      // Validation
       if (!formData.question_text.trim()) {
         alert('Vui lòng nhập nội dung câu hỏi');
         return;
@@ -158,10 +155,7 @@ const QuestionAdd: React.FC = () => {
           : []
       };
 
-      console.log('Creating question:', questionData);
-      
       const response = await simpleQuizService.createQuestion(questionData);
-      console.log('Question created:', response);
       
       alert('Thêm câu hỏi thành công!');
       navigate(`/teacher/quiz/${quizId}`);

@@ -39,19 +39,14 @@ const QuestionEdit: React.FC = () => {
     try {
       setLoading(true);
       
-      // Load quiz info and question data in parallel
       const [quizData, questionData] = await Promise.all([
         simpleQuizService.getQuiz(parseInt(quizId!)),
         simpleQuizService.getQuestion(parseInt(questionId!))
       ]);
       
-      console.log('Loaded quiz:', quizData);
-      console.log('Loaded question:', questionData);
       
-      // Check permission to manage questions for this quiz
       const permissionCheck = PermissionUtils.canManageQuestions(quizData);
       if (!permissionCheck.canManage) {
-        console.log('Question management permission denied:', permissionCheck.reason);
         PermissionUtils.redirectIfNoPermission(false, permissionCheck.reason, `/teacher/quiz/${quizId}`);
         return;
       }
@@ -59,7 +54,6 @@ const QuestionEdit: React.FC = () => {
       setQuiz(quizData);
       setOriginalQuestion(questionData);
       
-      // Populate form with existing data
       setFormData({
         question_text: questionData.question_text || '',
         question_type: questionData.question_type || 'multiple_choice',
@@ -151,7 +145,6 @@ const QuestionEdit: React.FC = () => {
     setSubmitting(true);
     
     try {
-      // Validation
       if (!formData.question_text.trim()) {
         alert('Vui lòng nhập nội dung câu hỏi');
         return;
@@ -194,10 +187,8 @@ const QuestionEdit: React.FC = () => {
           : []
       };
 
-      console.log('Updating question:', questionData);
       
       const response = await simpleQuizService.updateQuestion(parseInt(questionId!), questionData);
-      console.log('Question updated:', response);
       
       alert('Cập nhật câu hỏi thành công!');
       navigate(`/teacher/quiz/${quizId}`);

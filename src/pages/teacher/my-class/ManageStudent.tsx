@@ -72,10 +72,8 @@ const ManageStudent: React.FC = () => {
         params.search = search.trim();
       }
       
-      console.log(`Loading students for class ${classId} with params:`, params);
       const response = await simpleCourseService.getClassStudents(Number(classId), params);
       
-      console.log('Class students API response:', response);
       
       if (response.students) {
         setStudents(response.students);
@@ -103,7 +101,6 @@ const ManageStudent: React.FC = () => {
     loadClassStudents();
   }, [classId]);
 
-  // Search handler
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     loadClassStudents(1, searchTerm);
@@ -144,15 +141,11 @@ const ManageStudent: React.FC = () => {
       return;
     }
 
-    console.log('Parsing CSV file:', importFile.name);
-    
     const processResults = async (results: any, hasHeader: boolean) => {
-      console.log('CSV parsing results:', results);
       
       if (results.errors && results.errors.length > 0) {
         const criticalErrors = results.errors.filter((e: any) => e.type === 'Quotes' || e.type === 'Delimiter');
         if (criticalErrors.length > 0) {
-          console.error('Critical CSV parsing errors:', criticalErrors);
           alert('Lỗi đọc file CSV: ' + criticalErrors.map((e: any) => e.message).join(', '));
           return;
         }
@@ -191,7 +184,6 @@ const ManageStudent: React.FC = () => {
         }
       });
 
-      console.log('Raw entries extracted:', rawEntries);
 
       const validEntries = rawEntries.filter(e => {
         const id = String(e.student_id).trim();
@@ -200,7 +192,6 @@ const ManageStudent: React.FC = () => {
         return !isNaN(parseInt(id));
       });
 
-      console.log('Valid entries:', validEntries);
 
       if (validEntries.length === 0) {
         alert('Không tìm thấy student_id hợp lệ trong file.');
@@ -219,7 +210,6 @@ const ManageStudent: React.FC = () => {
       const errors: string[] = [];
 
       try {
-        console.log(`Starting import for ${validEntries.length} students in chunks of 100`);
         
         for (let i = 0; i < validEntries.length; i += 100) {
           const chunk = validEntries.slice(i, i + 100);
@@ -227,7 +217,6 @@ const ManageStudent: React.FC = () => {
           
           try {
             const result = await simpleCourseService.bulkEnrollStudents(Number(classId), chunk);
-            console.log(`Chunk ${Math.floor(i / 100) + 1} result:`, result);
             
             if (result && result.results) {
               successful += result.results.successful?.length || 0;
@@ -243,7 +232,6 @@ const ManageStudent: React.FC = () => {
               successful += chunk.length;
             }
           } catch (chunkError: any) {
-            console.error(`Error in chunk ${Math.floor(i / 100) + 1}:`, chunkError);
             failed += chunk.length;
             errors.push(`Chunk ${Math.floor(i / 100) + 1}: ${chunkError.message}`);
           }
@@ -263,7 +251,6 @@ const ManageStudent: React.FC = () => {
         
         setShowImport(false);
       } catch (err: any) {
-        console.error('Import error:', err);
         alert('Có lỗi khi import: ' + err.message);
       } finally {
         setImporting(false);
@@ -285,8 +272,6 @@ const ManageStudent: React.FC = () => {
           await processResults(results, true);
         },
         error: (error: any) => {
-          console.error('Papa Parse error (with header):', error);
-          console.log('Trying without header...');
           parseWithoutHeader();
         }
       });
@@ -299,8 +284,7 @@ const ManageStudent: React.FC = () => {
         complete: async (results: any) => {
           await processResults(results, false);
         },
-        error: (error: any) => {
-          console.error('Papa Parse error (without header):', error);
+        error: (error: any) => {  
           alert('Lỗi đọc file CSV: ' + error.message);
         }
       });

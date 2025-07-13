@@ -10,12 +10,10 @@ export function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Check if already logged in
   useEffect(() => {
     const token = authService.getToken();
     const user = authService.getCurrentUser();
     if (token && user) {
-      // Redirect based on role
       redirectToRoleDashboard(user.role);
     }
   }, []);
@@ -26,7 +24,7 @@ export function Login() {
         navigate('/admin/dashboard');
         break;
       case 'lecturer':
-        navigate('/teacher/courses'); // Teacher dashboard not ready yet, use courses
+        navigate('/teacher/courses'); 
         break;
       case 'student':
         navigate('/student/classes');
@@ -41,7 +39,6 @@ export function Login() {
     setLoading(true);
     setError("");
 
-    // Basic validation
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ email và mật khẩu");
       setLoading(false);
@@ -57,17 +54,15 @@ export function Login() {
     try {
       console.log('Attempting login:', { email });
       
-      // Use correct field name for backend
       const loginData = {
         email: email,
-        password: password // FIX: Backend expects 'password' field, not 'matKhau'
+        password: password 
       };
 
       const response = await authService.login(loginData);
       console.log('Login successful:', response);
 
       if (response && response.user) {
-        // Redirect to appropriate dashboard based on role
         redirectToRoleDashboard(response.user.role);
       } else {
         setError("Đăng nhập thành công nhưng không nhận được thông tin người dùng");
@@ -75,7 +70,6 @@ export function Login() {
     } catch (err: any) {
       console.error('Login failed:', err);
       
-      // Handle different error types
       if (err.message) {
         setError(err.message);
       } else if (err.response?.data?.message) {
@@ -91,13 +85,11 @@ export function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-2">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        {/* Logo/Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-blue-600 mb-2">LMS Portal</h1>
           <p className="text-gray-600">Hệ thống quản lý học tập</p>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-gray-700 font-medium mb-2">Email</label>
@@ -125,7 +117,6 @@ export function Login() {
             />
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               <div className="flex items-center">
@@ -135,7 +126,6 @@ export function Login() {
             </div>
           )}
 
-          {/* Submit Button */}
           <Button 
             type="submit" 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition duration-200 flex items-center justify-center"
@@ -152,7 +142,6 @@ export function Login() {
           </Button>
         </form>
 
-        {/* Test Accounts Info */}
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="font-medium text-gray-700 mb-2">🧪 Tài khoản test:</h3>
           <div className="text-sm text-gray-600 space-y-1">

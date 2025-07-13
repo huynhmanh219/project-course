@@ -49,10 +49,8 @@ const TeacherEdit: React.FC = () => {
       }
 
       try {
-        console.log('🔄 Loading teacher with ID:', id);
         
         const result = await simpleUserService.getTeacher(parseInt(id));
-        console.log('📥 Teacher data loaded:', result);
         
         if (result && result.teacher) {
           const teacher = result.teacher;
@@ -71,12 +69,10 @@ const TeacherEdit: React.FC = () => {
             is_active: teacher.is_active !== false
           });
           
-          console.log('✅ Form populated with teacher data');
         } else {
           throw new Error('Không tìm thấy thông tin giảng viên');
         }
       } catch (error: any) {
-        console.error('❌ Error loading teacher:', error);
         
         if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
           setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
@@ -146,26 +142,21 @@ const TeacherEdit: React.FC = () => {
     setSuccess('');
     
     try {
-      console.log('💾 Updating teacher with data:', form);
       
-      // Prepare data for update - filter out empty optional fields
       const updateData = {
         email: form.email.trim(),
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         is_active: form.is_active,
-        // Only include optional fields if they have values
         ...(form.phone && form.phone.trim() && { phone: form.phone.trim() }),
         ...(form.title && form.title.trim() && { title: form.title.trim() }),
         ...(form.department && form.department.trim() && { department: form.department.trim() }),
         ...(form.bio && form.bio.trim() && { bio: form.bio.trim() })
       };
       
-      console.log('📤 Filtered update data:', updateData);
       
       const result = await simpleUserService.updateTeacher(parseInt(id!), updateData);
       
-      console.log('✅ Teacher updated successfully:', result);
       setSuccess('Cập nhật thông tin giảng viên thành công!');
       
       setTimeout(() => {
@@ -173,9 +164,7 @@ const TeacherEdit: React.FC = () => {
       }, 2000);
       
     } catch (error: any) {
-      console.error('❌ Error updating teacher:', error);
       
-      // Better error handling for different types of errors
       if (error.message === 'Token expired.' || error.message.includes('Unauthorized')) {
         setError('Phiên đăng nhập đã hết hạn. Bạn sẽ được chuyển về trang đăng nhập...');
         setTimeout(() => {
@@ -207,7 +196,6 @@ const TeacherEdit: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-10 px-4">
       <div className="w-full max-w-3xl mx-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 rounded-3xl shadow-2xl p-8 mb-8 flex items-center gap-4 text-white">
           <Edit className="w-10 h-10 text-white drop-shadow-lg" />
           <div className="flex-1">

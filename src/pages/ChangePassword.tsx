@@ -29,7 +29,7 @@ export function ChangePassword() {
       ...form,
       [name]: value,
     });
-    setError(''); // Clear error when user types
+    setError(''); 
   };
 
   const togglePasswordVisibility = (field: string) => {
@@ -80,7 +80,6 @@ export function ChangePassword() {
 
       setSuccess(true);
       
-      // Auto redirect after 3 seconds
       setTimeout(() => {
         authService.logout();
         navigate('/login', { 

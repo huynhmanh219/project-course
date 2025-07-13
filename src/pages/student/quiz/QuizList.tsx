@@ -84,7 +84,7 @@ const QuizList: React.FC = () => {
                   size: 20 
                 });
               } catch (mainApiError) {
-                console.warn(`Main API failed for quiz ${quizId}, trying debug route:`, mainApiError);
+               
                 
                
                 try {
@@ -101,7 +101,7 @@ const QuizList: React.FC = () => {
                     allAttemptsResponse = { data: [] };
                   }
                 } catch (debugError) {
-                  console.error(`Debug route also failed for quiz ${quizId}:`, debugError);
+                 
                   allAttemptsResponse = { data: [] }; 
                 }
               }
@@ -140,7 +140,7 @@ const QuizList: React.FC = () => {
                 }
               }
             } catch (attemptError) {
-              console.error(`Error checking attempts for quiz ${quiz.quiz_id || quiz.id}:`, attemptError);
+             
              
             }
 
@@ -173,7 +173,7 @@ const QuizList: React.FC = () => {
         setQuizzes([]);
       }
     } catch (error: any) {
-      console.error('Error fetching quizzes:', error);
+      
       setError('Không thể tải danh sách bài kiểm tra');
     } finally {
       setLoading(false);
