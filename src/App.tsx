@@ -166,7 +166,8 @@ export function App() {
                     <ProtectedRoute requiredRole={['student']}>
                       <QuizHistory />
                     </ProtectedRoute>
-                  } />
+                  } />  
+                  {/* test */}
                 
                 {/* Teacher routes group */}
                 <Route path="/teacher">
